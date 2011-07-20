@@ -251,6 +251,29 @@ public class Saga extends JavaPlugin {
 
     }
 
+   public void removeAllPlayers() {
+
+        Iterator<String> i = sagaPlayers.keySet().iterator();
+
+        //Save All Players
+        while ( i.hasNext() ) {
+
+            String player = i.next();
+            SagaPlayer sagaPlayer = sagaPlayers.get(player);
+            
+            try {
+                sagaPlayer.save();
+            } catch ( IOException e ) {
+                Saga.exception("Exception while writing player " + player + " data to disk.",e);
+            }
+
+        }
+
+        //Empty the table
+        sagaPlayers.clear();
+
+    }
+
     /**
      * True, if player information loading is disabled.
      *
