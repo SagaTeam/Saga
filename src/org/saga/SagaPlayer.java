@@ -1,262 +1,204 @@
 package org.saga;
 
-import java.util.*;
-import java.io.*;
+import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.util.Enumeration;
+import java.util.Vector;
 
 import org.bukkit.entity.Player;
 import org.bukkit.event.block.BlockBreakEvent;
 import org.bukkit.event.block.BlockPlaceEvent;
 import org.bukkit.event.entity.EntityDamageByEntityEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
-import org.saga.professions.*;
-import org.saga.utility.*;
-import org.saga.exceptions.*;
-import org.saga.defaults.*;
+import org.saga.abilities.Ability;
+import org.saga.professions.FighterProfession;
+import org.saga.professions.Profession;
+import org.saga.professions.ProfessionHolder;
+import org.saga.professions.WoodcutterProfession;
+import org.saga.utility.WriterReader;
 
-public class SagaPlayer {
+import com.google.gson.JsonParseException;
 
-	// Keys:
-	/**
-	 * First key groove.
-	 */
-	private static final String KEY_FIRST_GROOVE= "player_";
+public class SagaPlayer{
 
-
-	// Balance information keys:
-	/**
-	 * Last key groove for maximum stamina.
-	 */
-	private static final String KEY_LAST_GROOVE_MAXIMUM_STAMINA= "maximum_stamina";
-
-	/**
-	 * Last key groove for stamina regeneration per second.
-	 */
-	private static final String KEY_LAST_GROOVE_STAMINA_REGENERATION_PER_SECOND= "stamina_regeneration_per_second";
-
-
-	// Player information keys:
-	/**
-	 * Last key groove for stamina value.
-	 */
-	private static String KEY_LAST_GROOVE_STAMINA= "stamina";
-
-
-	// Balance information:
-	/**
-	 * Maximum stamina.
-	 */
-	private double fMaximumStamina;
-
-	/**
-	 * Stamina gain per second.
-	 */
-	private double fStaminaPerSecond;
-
-
+	
 	// Player information:
+	/**
+	 * Name.
+	 */
+	private String name=null;
+	
 	/**
 	 * Stamina.
 	 */
-	private double fStamina;
+	private Double stamina;
 
 	/**
-	 * Accessible abilities.
+	 * Determines which professions are selected for the player. 
 	 */
-	private Boolean[] accessibleAbilities= {true, true, true, true}; //TODO Should be loaded from player information
+	private Boolean[] selectedProfessions;
 
-
-	// Wrapped:
+	
+	// Access:
 	/**
-	 * Plugin instance.
+	 * Pluging.
 	 */
-	private final Saga fPlugin;
-
+	transient private Saga plugin;
+	
 	/**
-	 * Minecraft player instance.
+	 * Balance information.
 	 */
-	private final String name;
-
-
-	// Main:
+	transient private BalanceInformation balanceInformation;
+	
 	/**
-	 * All professions.
+	 * Minecraft player.
 	 */
-	private Vector<Profession> fProfessions= new Vector<Profession>();
-
-
-	// Initialization, saving and loading:
+	transient private Player player;
+	
+	
+	// Main fields:
 	/**
-	 * Initializes by setting all required information.
-	 *
-	 * @param pPlugin plugin.
-	 * @param pPlayer player
-	 * @param pBalanceInformation balance information
-	 * @param pPlayerInformation player information
+	 * Wrapped professions.
 	 */
-	public SagaPlayer(String name, Properties pBalanceInformation, Properties pPlayerInformation) {
-
-		// Wrap:
-		fPlugin= Saga.plugin();
-                this.name = name;
-
-		// Initialize all professions:
-		//fProfessions.add(new FighterProfession(pBalanceInformation, pPlayerInformation, pPlugin, this));
-		//fProfessions.add(new WoodcutterProfession(pBalanceInformation, pPlayerInformation, pPlugin, this));
-
-		// Balance information:
-		this.takeBalanceInformation(pBalanceInformation);
-
-		// Player information:
-		this.takePlayerInformation(pPlayerInformation);
-
-		// Calculated Values:
-		this.refreshCalculatedValues();
-
-
+	private ProfessionHolder professions;
+	
+	
+	// Control:
+	/**
+	 * Specifies if the player is online.
+	 */
+	transient private boolean isOnlinePlayer= false;
+	
+	/**
+	 * Disables and enables player information saving.
+	 */
+	transient private boolean isSavingEnabled=true;
+	
+	
+	// Loading and initialization:
+	/**
+	 * Used by gson loader.
+	 */
+	public SagaPlayer() {
+		
+		
+		// Sets to offline by default.
+		isOnlinePlayer=false;
+		
+		
 	}
-
-        public SagaPlayer(Player player, Properties pBalanceInformation) {
-
-		// Wrap:
-		fPlugin = Saga.plugin();
-                this.name = player.getName();
-
-                //TODO: Load Default Player Properties here
-                Properties pPlayerInformation = new Properties();
-
-		// Initialize all professions:
-		//fProfessions.add(new FighterProfession(pBalanceInformation, pPlayerInformation, pPlugin, this));
-		//fProfessions.add(new WoodcutterProfession(pBalanceInformation, pPlayerInformation, pPlugin, this));
-
-		// Balance information:
-		this.takeBalanceInformation(pBalanceInformation);
-
-		// Player information:
-		this.takePlayerInformation(pPlayerInformation);
-
-		// Calculated Values:
-		this.refreshCalculatedValues();
-
-
-	}
-
-        public static SagaPlayer load(String name) throws SagaPlayerNotFoundException {
-
-            // Read player information:
-            Properties playerInformation = new Properties();
-            Properties balanceInformation = Saga.plugin().getBalanceProperties();
-
-            try {
-                playerInformation = WriterReader.readPlayerInformation(name);
-            } catch (FileNotFoundException e) {
-                Saga.info(name+" player information file not found.");
-                throw new SagaPlayerNotFoundException(name);
-            } catch (IOException e) {
-                Saga.exception(name+" player information load failure",e);
-                // TODO Need to disable information saving for this player,
-                // because default information will erase all progress
-            }
-
-            //Finally just make a new wrap around player
-            SagaPlayer player = new SagaPlayer(name,balanceInformation, playerInformation);
-
-            return player;
-
-        }
-
-        public void save() throws IOException {
-
-            WriterReader.writePlayerInformation(name, collectPlayerInformation());
-
-        }
-
+	
 	/**
-	 * Takes all balance information and sets fields.
-	 * Disables saving and loading if a required value is missing or invalid.
-	 *
-	 * @param pBalanceInformation balance information
+	 * Sets access to all required variables.
+	 * 
+	 * @param plugin plugin
+	 * @param player minecraft player
 	 */
-	private void takeBalanceInformation(Properties pBalanceInformation) {
-
-		// Maximum stamina:
-		fMaximumStamina= PlayerDefaults.getDoubleProperty(getKeyBeginning()+KEY_LAST_GROOVE_MAXIMUM_STAMINA, pBalanceInformation, PlayerDefaults.MAXIMUM_STAMINA,fPlugin, getPlayer(), true);
-		// Stamina per second:
-		fStaminaPerSecond= PlayerDefaults.getDoubleProperty(getKeyBeginning()+KEY_LAST_GROOVE_STAMINA_REGENERATION_PER_SECOND, pBalanceInformation, PlayerDefaults.STAMINA_REGENERATION_PER_SECOND,fPlugin, getPlayer(), true);
-
+	public void setAccess(Saga plugin, BalanceInformation balanceInformation) {
+		
+		
+		this.plugin= plugin;
+		this.balanceInformation= balanceInformation;
+		
+		
+		// Add access variables to children:
+		professions.setAccess(plugin, balanceInformation, this);
 	}
-
-	/**
-	 * Takes all player information and sets fields.
-	 *
-	 * @param pPlayerInformation player information
-	 */
-	private void takePlayerInformation(Properties pPlayerInformation) {
-
-
-		// Stamina:
-		fStamina = PlayerDefaults.getDoubleProperty(getKeyBeginning()+KEY_LAST_GROOVE_STAMINA, pPlayerInformation, PlayerDefaults.STAMINA,fPlugin, getPlayer(), false);
-
-
-	}
-
-	/**
-	 * Refreshes all values that are based on player or balance information.
-	 *
-	 */
-	private void refreshCalculatedValues() {
-
-
-
-	}
-
-	/**
-	 * Collects all player information for saving.
-	 *
-	 * @return player information
-	 */
-	public Properties collectPlayerInformation() {
-
-
-		Properties playerInformation= new Properties();
-
-		// Collect from here:
-		putPlayerInformation(playerInformation);
-
-		// Collect from all professions:
-		for (Profession profession : fProfessions) {
-			profession.collectPlayerInformation(playerInformation);
-		}
-		return playerInformation;
-
-
-	}
-
-	/**
-	 * Puts all player information into the given variable.
-	 *
-	 * @param pPlayerInformation player information
-	 */
-	private void putPlayerInformation(Properties pPlayerInformation) {
-
-
-		// Stamina:
-		pPlayerInformation.setProperty(getKeyBeginning()+KEY_LAST_GROOVE_STAMINA, fStamina+"");
-
-
-	}
-
+	
+	
 	// Interaction:
 	/**
-	 * Returns player.
-	 *
-	 * @return player
+	 * Returns player name.
+	 * 
+	 * @return player name
+	 */
+	public String getName() {
+		return name;
+	}
+	
+	/**
+	 * Sets player name. Used when loading.
+	 * 
+	 * @param name player name
+	 */
+	private void setName(String name) {
+		this.name = name;
+	}
+	
+	/**
+	 * Returns player name.
+	 * 
+	 * @return player name
 	 */
 	public Player getPlayer() {
-
-		return fPlugin.getServer().getPlayer(name);
-
+		return player;
 	}
 
+	/**
+	 * Sets the player and changes status to online.
+	 * 
+	 * @param player player
+	 */
+	public void setPlayer(Player player) {
+		this.player = player;
+		isOnlinePlayer=true;
+	}
+	
+	/**
+	 * Sets the player and changes status to offline.
+	 * 
+	 * @param player player
+	 */
+	public void removePlayer(Player player) {
+		this.player = null;
+		isOnlinePlayer=false;
+	}
+	
+	/**
+	 * Drains stamina and sends a message. Can go below zero.
+	 * 
+	 * @param drainAmount drain amount
+	 */
+	public void drainStamina(Double drainAmount) {
+
+		stamina-=drainAmount;
+		Messages.staminaUsed(this, drainAmount);
+		
+	}
+	
+	/**
+	 * Gets stamina.
+	 * 
+	 * @return stamina
+	 */
+	public Double getStamina() {
+		return stamina;
+	}
+	
+	/**
+	 * Gets players maximum stamina. Including bonuses.
+	 * 
+	 * @return player maximum stamina
+	 */
+	public double getMaximumStamina() {
+		
+		return balanceInformation.maximumStamina+0;
+
+	}
+	
+	/**
+	 * Check if there is enough stamina to drain.
+	 * 
+	 * @param drainAmount drain amount
+	 * @return true if there is enough stamina.
+	 */
+	public boolean enoughStamina(double drainAmount) {
+
+		return stamina>=drainAmount;
+		
+	}
+	
+	
 	// Events:
 	/**
 	 * Got damaged by living entity event.
@@ -287,7 +229,8 @@ public class SagaPlayer {
 	 */
 	public void leftClickInteractEvent(PlayerInteractEvent pEvent) {
 
-
+		// Forward to wrapped professions:
+		professions.leftClickInteractEvent(pEvent);
 
 	}
 
@@ -298,7 +241,8 @@ public class SagaPlayer {
 	 */
 	public void rightClickInteractEvent(PlayerInteractEvent pEvent) {
 
-
+		// Forward to wrapped professions:
+		professions.rightClickInteractEvent(pEvent);
 
 	}
 
@@ -309,7 +253,8 @@ public class SagaPlayer {
 	 */
 	public void placedBlockEvent(BlockPlaceEvent pEvent) {
 
-
+		// Forward to wrapped professions:
+		professions.placedBlockEvent(pEvent);
 
 	}
 
@@ -320,7 +265,8 @@ public class SagaPlayer {
 	 */
 	public void brokeBlockEvent(BlockBreakEvent pEvent) {
 
-
+		// Forward to wrapped professions:
+		professions.brokeBlockEvent(pEvent);
 
 	}
 
@@ -331,34 +277,168 @@ public class SagaPlayer {
 	 */
 	public void clockTickEvent(int pTick) {
 
+		// Forward to wrapped professions:
+		professions.clockTickEvent(pTick);
 
 	}
 
-
-	// Keys:
+	
+	// Saving and loading:
 	/**
-	 * Returns key beginning.
-	 *
-	 * @return key beginning
+	 * Loads a offline saga player.
+	 * 
+	 * @param playerName player name
+	 * @param player minecraft player
+	 * @param plugin plugin instance for access
+	 * @param balanceInformation balance information
+	 * @return saga player
 	 */
-	private String getKeyBeginning() {
-
-		return KEY_FIRST_GROOVE;
-
+	public static SagaPlayer loadOffline(String playerName, Player player, Saga plugin, BalanceInformation balanceInformation){
+		return loadOnline(playerName, null, plugin, balanceInformation);
+		// Might add something here
 	}
+	
+	/**
+	 * Loads a online saga player.
+	 * 
+	 * @param playerName player name
+	 * @param player minecraft player
+	 * @param plugin plugin instance for access
+	 * @param balanceInformation balance information
+	 * @return saga player
+	 */
+	public static SagaPlayer loadOnline(String playerName, Player player, Saga plugin, BalanceInformation balanceInformation){
+		
 
-        public void info(String string) {
-            this.getPlayer().sendMessage(Constants.infoColor+string);
-        }
+		// Try loading:
+		SagaPlayer sagaPlayer;
+		try {
+			sagaPlayer= WriterReader.readPlayerInformation(playerName);
+		} catch (FileNotFoundException e) {
+			Saga.info("Player information file not found. Loading default information.", playerName);
+			sagaPlayer= new SagaPlayer();
+			sagaPlayer.checkIntegrity(new Vector<String>());
+		} catch (IOException e) {
+			Saga.severe("Player information file not found. Loading default and disabling saving.", playerName);
+			sagaPlayer= new SagaPlayer();
+			sagaPlayer.setSavingEnabled(false);
+			sagaPlayer.checkIntegrity(new Vector<String>());
+			if(player!=null){
+				player.sendMessage(Messages.PLAYER_ERROR_MESSAGE);
+				player.sendMessage("Can't read player information. Your progress will not be saved for this session!");
+				}
+		} catch (JsonParseException e) {
+			Saga.severe("Player information file parse failure. Loading default information and disabling saving.", playerName);
+			sagaPlayer= new SagaPlayer();
+			sagaPlayer.setSavingEnabled(false);
+			sagaPlayer.checkIntegrity(new Vector<String>());
+			if(player!=null){
+				player.sendMessage(Messages.PLAYER_ERROR_MESSAGE);
+				player.sendMessage("Can't read player information. Your progress will not be saved for this session!");
+				}
+			Saga.severe("Can't read player information. Loading default and disabling saving.", playerName);
+			// TODO Rename user information file to recover the corrupt data
+		}
+		
+		// Add player if possible:
+		if(player!=null){
+			sagaPlayer.setPlayer(player);
+		}
+		// Set name:
+		sagaPlayer.setName(playerName);
+		
+		// Add access:
+		sagaPlayer.setAccess(plugin, balanceInformation);		
+		
+		return sagaPlayer;
+		
+		
+	}
+	
+	/**
+	 * Saves player information. Will not save if {@link #isSavingEnabled()} is false.
+	 */
+	public void save() {
+		
+		
+		if(isSavingEnabled()){
+			try {
+				WriterReader.writePlayerInformation(getName(), this);
+			} catch (Exception e) {
+				Saga.severe("Player information save failure.", getName());
+			}
+		}else{
+			Saga.info("Player information saving denied.", getName());
+		}
 
-        public void warning(String string) {
-            this.getPlayer().sendMessage(Constants.warningColor+string);
-        }
+		
+	}
+	
+	
+	// Integrity check:
+	/**
+	 * Checks the integrity of the player information.
+	 * Adds variable names that where problematic.
+	 * 
+	 * @param problematicFields Vector containing all problematic field names.
+	 * @return true, if everything is ok
+	 */
+	public Boolean checkIntegrity(Vector<String> problematicFields) {
+		
+		
+		// Professions field:
+		if(professions==null){
+			professions= new ProfessionHolder();
+			problematicFields.add("professions");
+			professions.checkIntegrity(new Vector<String>());
+		}
+		
+		// Professions:
+		professions.checkIntegrity(problematicFields);
+		
+		// All fields:
+		if(name==null){
+			name= PlayerDefaults.name;
+			problematicFields.add("name");
+		}
+		if(stamina==null){
+			stamina= PlayerDefaults.stamina;
+			problematicFields.add("stamina");
+		}
+		
+		
+		return problematicFields.size()==0;
 
-        public void severe(String string) {
-            this.getPlayer().sendMessage(Constants.severeColor+string);
-        }
-
-
-
+		
+	}
+	
+	
+	// Control:
+	/**
+	 * True if the player is online.
+	 * 
+	 * @return true if the player is online
+	 */
+	public boolean isOnlinePlayer() {
+		return isOnlinePlayer;
+	}
+	
+	/**
+	 * True if the player information should be saved.
+	 * 
+	 * @return true if player information should be saved
+	 */
+	public boolean isSavingEnabled() {
+		return isSavingEnabled;
+	}
+	
+	/**
+	 * Disables or enables player information saving.
+	 * 
+	 * @param savingDisabled true if player information should be disabled 
+	 */
+	public void setSavingEnabled(boolean savingDisabled) {
+		this.isSavingEnabled = savingDisabled;
+	}
+	
 }
