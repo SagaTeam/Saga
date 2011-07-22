@@ -74,7 +74,7 @@ public class ProfessionHolder {
 		
 		// Add to all professions:
 		for (int i = 0; i < allProfessions.length; i++) {
-			allProfessions[i].setAccess(plugin, balanceInformation, sagaPlayer);
+			allProfessions[i].setAccess(sagaPlayer);
 		}
 		
 		

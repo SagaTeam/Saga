@@ -35,18 +35,18 @@ import org.bukkit.plugin.java.*;
 public class Saga extends JavaPlugin {
 
     //Static Members
-    public static final Logger log = Logger.getLogger("Saga");
-    public static boolean debugging = true;
-    public static Saga instance;
+    private static final Logger log = Logger.getLogger("Saga");
+    private static boolean debugging = true;
+    private static Saga instance;
+    private static BalanceInformation balanceInformation;
 
     //Instance Members
     private static CommandsManager<Player> commandMap;
-    public WorldsHolder worldsHolder;
+    private WorldsHolder worldsHolder;
     private boolean playerInformationLoadingDisabled;
     private boolean playerInformationSavingDisabled;
     private HashMap<String,SagaPlayer> sagaPlayers;
     private SagaPlayerListener playerListener;
-    private BalanceInformation palanceInformation;
 
     public Saga() {
 
@@ -54,6 +54,10 @@ public class Saga extends JavaPlugin {
 
     static public Saga plugin() {
         return instance;
+    }
+    
+    static public BalanceInformation balanceInformation() {
+        return balanceInformation;
     }
 
     @Override
@@ -126,7 +130,12 @@ public class Saga extends JavaPlugin {
 			}
         }catch (IOException e) {
             Saga.exception("Balance information load failure. Loading defaults.",e);
+            balanceInformation= new BalanceInformation();
+            balanceInformation.checkIntegrity(new Vector<String>());
         }
+        
+        // Set global balance information:
+        Saga.balanceInformation= balanceInformation;
 
         //Create listeners
         playerListener = new SagaPlayerListener(this);

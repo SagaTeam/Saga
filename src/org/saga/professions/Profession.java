@@ -2,11 +2,8 @@ package org.saga.professions;
 
 import java.util.Vector;
 
-import org.bukkit.entity.Player;
-import org.saga.BalanceInformation;
 import org.saga.Messages;
 import org.saga.PlayerDefaults;
-import org.saga.Saga;
 import org.saga.SagaPlayer;
 import org.saga.abilities.Ability;
 
@@ -45,16 +42,6 @@ public abstract class Profession {
 	
 	// Access:
 	/**
-	 * Pluging.
-	 */
-	transient private Saga plugin;
-	
-	/**
-	 * Balance information.
-	 */
-	transient private BalanceInformation balanceInformation;
-	
-	/**
 	 * Minecraft player.
 	 */
 	transient private SagaPlayer sagaPlayer;
@@ -76,14 +63,11 @@ public abstract class Profession {
 	/**
 	 * Wraps all required variables.
 	 * 
-	 * @param plugin plugin
-	 * @param sagaPlayer minecraft player
+	 * @param sagaPlayer saga player
 	 */
-	public void setAccess(Saga plugin, BalanceInformation balanceInformation, SagaPlayer sagaPlayer) {
+	public void setAccess(SagaPlayer sagaPlayer) {
 		
 		
-		this.plugin= plugin;
-		this.balanceInformation= balanceInformation;
 		this.sagaPlayer= sagaPlayer;
 		
 		
@@ -120,9 +104,9 @@ public abstract class Profession {
 		
 		// Send message:
 		if(selectedNew==selectedAbility){
-			Messages.noAbilitiesAvailable(sagaPlayer);
+			sagaPlayer.sendMessage(Messages.noAbilitiesAvailable());
 		}else{
-			Messages.abilitySelect(sagaPlayer, professionAbilities[selectedNew]);
+			sagaPlayer.sendMessage(Messages.abilitySelect(professionAbilities[selectedNew]));
 		}
 		
 		

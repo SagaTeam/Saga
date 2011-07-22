@@ -39,17 +39,7 @@ public class SagaPlayer{
 	private Boolean[] selectedProfessions;
 
 	
-	// Access:
-	/**
-	 * Pluging.
-	 */
-	transient private Saga plugin;
-	
-	/**
-	 * Balance information.
-	 */
-	transient private BalanceInformation balanceInformation;
-	
+	// Wrapped:
 	/**
 	 * Minecraft player.
 	 */
@@ -86,23 +76,6 @@ public class SagaPlayer{
 		isOnlinePlayer=false;
 		
 		
-	}
-	
-	/**
-	 * Sets access to all required variables.
-	 * 
-	 * @param plugin plugin
-	 * @param player minecraft player
-	 */
-	public void setAccess(Saga plugin, BalanceInformation balanceInformation) {
-		
-		
-		this.plugin= plugin;
-		this.balanceInformation= balanceInformation;
-		
-		
-		// Add access variables to children:
-		professions.setAccess(plugin, balanceInformation, this);
 	}
 	
 	
@@ -162,7 +135,7 @@ public class SagaPlayer{
 	public void drainStamina(Double drainAmount) {
 
 		stamina-=drainAmount;
-		Messages.staminaUsed(this, drainAmount);
+		sendMessage(Messages.staminaUsed(drainAmount, getStamina(), getMaximumStamina()));
 		
 	}
 	
@@ -182,7 +155,7 @@ public class SagaPlayer{
 	 */
 	public double getMaximumStamina() {
 		
-		return balanceInformation.maximumStamina+0;
+		return Saga.balanceInformation().maximumStamina+0;
 
 	}
 	
@@ -198,6 +171,20 @@ public class SagaPlayer{
 		
 	}
 	
+	/**
+	 * Sends the player a message if he is online.
+	 * 
+	 * @param message
+	 */
+	public void sendMessage(String message) {
+		
+		
+		if(isOnlinePlayer()){
+			player.sendMessage(message);
+		}
+		
+
+	}
 	
 	// Events:
 	/**
@@ -293,23 +280,8 @@ public class SagaPlayer{
 	 * @param balanceInformation balance information
 	 * @return saga player
 	 */
-	public static SagaPlayer loadOffline(String playerName, Player player, Saga plugin, BalanceInformation balanceInformation){
-		return loadOnline(playerName, null, plugin, balanceInformation);
-		// Might add something here
-	}
-	
-	/**
-	 * Loads a online saga player.
-	 * 
-	 * @param playerName player name
-	 * @param player minecraft player
-	 * @param plugin plugin instance for access
-	 * @param balanceInformation balance information
-	 * @return saga player
-	 */
-	public static SagaPlayer loadOnline(String playerName, Player player, Saga plugin, BalanceInformation balanceInformation){
+	public static SagaPlayer load(String playerName){
 		
-
 		// Try loading:
 		SagaPlayer sagaPlayer;
 		try {
@@ -323,36 +295,27 @@ public class SagaPlayer{
 			sagaPlayer= new SagaPlayer();
 			sagaPlayer.setSavingEnabled(false);
 			sagaPlayer.checkIntegrity(new Vector<String>());
-			if(player!=null){
-				player.sendMessage(Messages.PLAYER_ERROR_MESSAGE);
-				player.sendMessage("Can't read player information. Your progress will not be saved for this session!");
-				}
 		} catch (JsonParseException e) {
 			Saga.severe("Player information file parse failure. Loading default information and disabling saving.", playerName);
 			sagaPlayer= new SagaPlayer();
 			sagaPlayer.setSavingEnabled(false);
 			sagaPlayer.checkIntegrity(new Vector<String>());
-			if(player!=null){
-				player.sendMessage(Messages.PLAYER_ERROR_MESSAGE);
-				player.sendMessage("Can't read player information. Your progress will not be saved for this session!");
-				}
+//			if(player!=null){
+//				player.sendMessage(Messages.PLAYER_ERROR_MESSAGE);
+//				player.sendMessage("Can't read player information. Your progress will not be saved for this session!");
+//				}
 			Saga.severe("Can't read player information. Loading default and disabling saving.", playerName);
 			// TODO Rename user information file to recover the corrupt data
 		}
 		
-		// Add player if possible:
-		if(player!=null){
-			sagaPlayer.setPlayer(player);
-		}
 		// Set name:
 		sagaPlayer.setName(playerName);
 		
 		// Add access:
-		sagaPlayer.setAccess(plugin, balanceInformation);		
 		
 		return sagaPlayer;
-		
-		
+				
+
 	}
 	
 	/**
