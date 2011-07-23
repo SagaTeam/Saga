@@ -170,6 +170,13 @@ public class Saga extends JavaPlugin {
 
     }
 
+    public SagaPlayer getPlayer(String name) {
+        return loadedPlayers.get(name);
+    }
+
+    public SagaPlayer getPlayer(Player player) {
+        return getPlayer(player.getName());
+    }
     
     // Adding and removing:
     /**

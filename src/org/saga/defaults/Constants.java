@@ -16,4 +16,6 @@ public class Constants {
     public static final String PLUGIN_DIRECTORY = "./Saga/";
     public static final String PLAYER_DIRECTORY = "./Saga/Players/";
 
+    public static final String WILDERNESS_STRING = "~Wilderness~";
+
 }

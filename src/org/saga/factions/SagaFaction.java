@@ -35,4 +35,12 @@ public class SagaFaction {
     public String motd;
 
 
+    public int getFactionId() {
+        return factionId;
+    }
+
+    public ChatColor getColor() {
+        return color;
+    }
+
 }

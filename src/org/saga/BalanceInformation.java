@@ -71,9 +71,7 @@ public class BalanceInformation {
 	 */
 	public Integer calculateExperienceRequirement(Short pLevel) {
 
-
 		return pLevel*experienceSlope*pLevel+experienceIntercept;
-
 
 	}
 	
