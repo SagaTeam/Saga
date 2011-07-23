@@ -120,9 +120,8 @@ public class SagaPlayer{
 	/**
 	 * Sets the player and changes status to offline.
 	 * 
-	 * @param player player
 	 */
-	public void removePlayer(Player player) {
+	public void removePlayer() {
 		this.player = null;
 		isOnlinePlayer=false;
 	}
@@ -273,6 +272,7 @@ public class SagaPlayer{
 	// Saving and loading:
 	/**
 	 * Loads a offline saga player.
+	 * Needs an integrity check.
 	 * 
 	 * @param playerName player name
 	 * @param player minecraft player

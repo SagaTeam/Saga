@@ -7,9 +7,15 @@ import org.saga.abilities.Ability;
 public class Messages {
 
 	/**
+	 * Low priority status messages like stamina regeneration.
+	 */
+	private static ChatColor WARNING= ChatColor.DARK_RED;
+	
+	/**
 	 * First line of the error report to the player.
 	 */
-	public static String PLAYER_ERROR_MESSAGE="Error, please contact somebody";
+	public static String PLAYER_ERROR_MESSAGE=WARNING+"Enouctered a problem, please contact the owner!";
+	
 	
 	/**
 	 * Low priority status messages like stamina regeneration.

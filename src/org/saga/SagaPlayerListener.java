@@ -40,7 +40,7 @@ public class SagaPlayerListener extends PlayerListener {
     @Override
     public void onPlayerQuit(PlayerQuitEvent event) {
 
-        plugin.removePlayer(event.getPlayer());
+        plugin.removePlayer(event.getPlayer().getName());
 
     }
 

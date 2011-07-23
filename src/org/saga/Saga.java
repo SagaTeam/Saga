@@ -45,7 +45,7 @@ public class Saga extends JavaPlugin {
     private WorldsHolder worldsHolder;
     private boolean playerInformationLoadingDisabled;
     private boolean playerInformationSavingDisabled;
-    private HashMap<String,SagaPlayer> sagaPlayers;
+    private HashMap<String,SagaPlayer> loadedPlayers;
     private SagaPlayerListener playerListener;
 
     public Saga() {
@@ -64,12 +64,15 @@ public class Saga extends JavaPlugin {
     public void onDisable() {
 
         // NOTE: All registered events are automatically unregistered when a plugin is disabled
+    	
+    	// Remove players:
+    	removeAllPlayers();
+        loadedPlayers = null;
 
-        sagaPlayers = null;
-
-        //Remove Global Instance
+        //Remove global instances
         Saga.instance = null;
-
+        Saga.balanceInformation=null;
+        
     	//Say Goodbye
         Saga.info("Saga Goodbye!");
 
@@ -85,8 +88,14 @@ public class Saga extends JavaPlugin {
         Saga.instance = this;
 
         //Allocate Instance Variables
-        sagaPlayers = new HashMap<String,SagaPlayer>();
+        loadedPlayers = new HashMap<String,SagaPlayer>();
 
+        // Add all already online players:
+        Player[] onlinePlayers= getServer().getOnlinePlayers();
+        for (int i = 0; i < onlinePlayers.length; i++) {
+			addPlayer(onlinePlayers[i]);
+		}
+        
         PluginManager pluginManager = getServer().getPluginManager();
         Plugin test = null;
 
@@ -149,67 +158,157 @@ public class Saga extends JavaPlugin {
 
     }
 
-
-    public SagaPlayer wrapPlayer(Player player) {
-
-        if ( player == null ) {
-            Saga.warning("Can't wrap null player");
-            return null;
-        }
-
-        //First try to get from loaded player map data
-        SagaPlayer wrappedPlayer = sagaPlayers.get(player.getName());
-
-        if ( wrappedPlayer != null ) {
-            return wrappedPlayer;
-        }
-
-        Saga.debug("wrapping player "+player.getName());
-
-        //Second try, attempt to load data from file
-        try {
-            wrappedPlayer = SagaPlayer.load(player.getName());
-        } catch( SagaPlayerNotFoundException e ) {
-            //Player With New Data
-            wrappedPlayer = new SagaPlayer(player,balanceProperties);
-        }
-
-        return wrappedPlayer;
-
-    }
-
+    
+    // Adding and removing:
+    /**
+     * Adds the player. Loads saga player if necessary.
+	 * If sagaPlayer is already set to online, then the add will be ignored.
+     * 
+     * @param player player
+     */
     public void addPlayer(Player player) {
-
-    	// Wrap the player and add him:
-    	sagaPlayers.put(player.getName(), wrapPlayer(player));
-        Saga.debug("adding player "+player.getName());
-
-    }
-
-    public void removePlayer(Player player) {
-
-        if ( player == null ) {
-            Saga.warning("Cannot remove null player");
-            return;
+    	
+    	
+    	SagaPlayer sagaPlayer;
+    	
+    	// Load if saga player isn't already loaded:
+    	if((sagaPlayer= loadedPlayers.get(player.getName()))!=null){
+    		Saga.info("Saga player already loaded. Wrapping player.", player.getName());
+    	}else{
+    		loadSagaPlayer(player.getName());
+    		sagaPlayer= loadedPlayers.get(player.getName());
+    	}
+    	
+    	// Notify if saving is disabled:
+    	if(!sagaPlayer.isSavingEnabled()){
+    		player.sendMessage(Messages.PLAYER_ERROR_MESSAGE);
+    		player.sendMessage("You player information will not be saved during this session!");
         }
+    	
+    	// Check if online:
+    	if(sagaPlayer.isOnlinePlayer()){
+    		severe("Cant wrap player, because sagaPlayer is already set to online. Wrapping ignored. ", player.getName());
+    		return;
+    	}
+    	
+    	// Add the player and set sagaPlayer status to online:
+    	sagaPlayer.setPlayer(player);
+    	
 
-        SagaPlayer sagaPlayer = sagaPlayers.remove(player.getName());
+	}
+    
+    /**
+     * Loads a saga player as offline.
+     * 
+     * @param name player name
+     */
+    private void loadSagaPlayer(String name) {
+    	
+    	
+    	SagaPlayer sagaPlayer;
+    	
+    	// Check if already loaded:
+    	if(loadedPlayers.get(name)!=null){
+    		severe("Tried loading an already loaded saga player. Loading ignored.", name);
+    		return;
+    	}
+    	sagaPlayer= SagaPlayer.load(name);
+    	loadedPlayers.put(name, sagaPlayer);
+    	
+    	// Integrity check:
+    	Vector<String> problematicFields= new Vector<String>();
+    	sagaPlayer.checkIntegrity(problematicFields);
+    	if(problematicFields.size()!=0){
+    		String probString="";
+    		for (String string : problematicFields) {
+				if(probString.length()!=0){
+					probString+=", ";
+				}
+				probString+=string;
+			}
+    		warning("Integrity check found problematic fields: "+probString+". Integrity check set defaults.", name);
+    	}
+    	
+    	
+	}
 
-        if ( sagaPlayer == null ) {
-            Saga.warning("SagaPlayer does not exist for player!",player);
-            return;
-        }
+    /**
+     * Unwraps the player and unloads saga player from the list.
+     * 
+     * @param player
+     */
+    public void removePlayer(String name) {
 
-        //Try to save player data
-        try {
-            sagaPlayer.save();
-        } catch ( IOException e ) {
-            Saga.exception("Exception while writing player " + player.getName() + " data to disk.",e);
-        }
+
+    	SagaPlayer sagaPlayer;
+    	// Check if loaded:
+    	if((sagaPlayer= loadedPlayers.get(name))==null){
+    		severe("Cant remove player wrap form non-existant saga player. Player information not saved.", name);
+    		return;
+    	}
+    	
+    	// Remove if online:
+    	if(!sagaPlayer.isOnlinePlayer()){
+    		severe("Cant remove player wrap from an offline player.", name);
+    	}else{
+    		sagaPlayer.removePlayer();
+    	}
+
+        //Save player data:
+        sagaPlayer.save();
+        
+        // Unload saga player:
+        unloadSagaPlayer(name);
 
         
     }
+    
+    /**
+     * Unloads a saga player as offline.
+     * Wrapped player must be removed first or this method will ignore unloading.
+     * 
+     * @param name player name
+     */
+    private void unloadSagaPlayer(String name) {
+    	
+    	
+    	// Check if already unloaded:
+    	if(loadedPlayers.get(name)==null){
+    		severe("Tried unloading an already not loaded saga player.", name);
+    		return;
+    	}
+    	
+    	// Check if the player is still wrapped:
+    	if(loadedPlayers.get(name).isOnlinePlayer()){
+    		severe("Tried unloading a online saga player. Unloading ignored.", name);
+    		return;
+    	}
+    	
+    	loadedPlayers.remove(name);
+    	
+    	
+	}
 
+    /**
+     * Removes all players.
+     */
+    private void removeAllPlayers() {
+
+        Iterator<String> i = loadedPlayers.keySet().iterator();
+
+        //Save All Players
+        while ( i.hasNext() ) {
+            String name = i.next();
+            removePlayer(name);
+        }
+
+        //Empty the table
+        loadedPlayers.clear();
+
+    }
+
+
+    
     //This code handles commands
     public boolean handleCommand(Player player, String[] split, String command) {
 
@@ -232,7 +331,7 @@ public class Saga extends JavaPlugin {
             }
 
             try {
-                commandMap.execute(split, player, this, wrapPlayer(player));
+                commandMap.execute(split, player, this);
                 String logString = "[Saga Command] " + player.getName() + ": " + command;
                 Saga.info(logString);
             } catch (CommandPermissionsException e) {
@@ -266,28 +365,7 @@ public class Saga extends JavaPlugin {
 
     }
 
-	public void removeAllPlayers() {
-
-        Iterator<String> i = sagaPlayers.keySet().iterator();
-
-        //Save All Players
-        while ( i.hasNext() ) {
-
-            String player = i.next();
-            SagaPlayer sagaPlayer = sagaPlayers.get(player);
-            
-            try {
-                sagaPlayer.save();
-            } catch ( IOException e ) {
-                Saga.exception("Exception while writing player " + player + " data to disk.",e);
-            }
-
-        }
-
-        //Empty the table
-        sagaPlayers.clear();
-
-    }
+	
 
     /**
      * True, if player information loading is disabled.
@@ -297,6 +375,7 @@ public class Saga extends JavaPlugin {
     public boolean isPlayerInformationLoadingDisabled() {
             return playerInformationLoadingDisabled;
     }
+    
 
     /**
      * True, if player information saving is disabled.
@@ -306,6 +385,7 @@ public class Saga extends JavaPlugin {
     public boolean isPlayerInformationSavingDisabled() {
             return playerInformationSavingDisabled;
     }
+    
 
     /**
      * Disables the loading and saving of player information.
@@ -325,38 +405,46 @@ public class Saga extends JavaPlugin {
     }
 
     //Debug/Log Output Functions
+    
     static public void info(String string) {
         log.info(string);
     }
 
+    
     static public void info(String string, String playerName) {
         string = "(" + playerName + ")" + string;
         log.info(string);
     }
 
+    
     static public void severe(String string) {
         log.severe(string);
     }
 
+    
     static public void severe(String string, String playerName) {
         string = "(" + playerName+ ")" + string;
         log.severe(string);
     }
 
+    
     static public void warning(String string) {
         log.warning(string);
     }
 
+    
     static public void warning(String string, String playerName) {
         string = "(" + playerName + ")" + string;
         log.warning(string);
     }
 
+    
     static public void exception(String string, Exception e) {
         string = string + " [" + e.getClass().getSimpleName() + "]" + e.getMessage();
         log.severe(string);
     }
 
+    
     static public void debug(String string) {
 
         if ( !debugging ) {
@@ -372,6 +460,7 @@ public class Saga extends JavaPlugin {
 
     }
 
+    
     static public void debug(String string, String playerName) {
 
         if ( !debugging ) {
