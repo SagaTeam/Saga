@@ -7,9 +7,15 @@ import org.saga.abilities.Ability;
 public class Messages {
 
 	/**
+	 * Low priority status messages like stamina regeneration.
+	 */
+	private static ChatColor WARNING= ChatColor.DARK_RED;
+	
+	/**
 	 * First line of the error report to the player.
 	 */
-	public static String PLAYER_ERROR_MESSAGE="Error, please contact somebody";
+	public static String PLAYER_ERROR_MESSAGE=WARNING+"Enouctered a problem, please contact the owner!";
+	
 	
 	/**
 	 * Low priority status messages like stamina regeneration.
@@ -28,9 +34,9 @@ public class Messages {
 	 * @param sagaPlayer
 	 * @param usedStamina
 	 */
-	public static void staminaUsed(SagaPlayer sagaPlayer, Double usedStamina) {
+	public static String staminaUsed(Double usedStamina, Double playerStamina, Double playerMaximumStamina) {
 
-		sagaPlayer.getPlayer().sendMessage("Lost "+usedStamina+" stamina. ("+sagaPlayer.getStamina()+"/"+sagaPlayer.getMaximumStamina()+")");
+		return "Lost "+usedStamina+" stamina. ("+playerStamina+"/"+playerMaximumStamina+")";
 		
 	}
 	
@@ -40,28 +46,27 @@ public class Messages {
 	 * @param sagaPlayer
 	 * @param regeneratedStamina
 	 */
-	public static void staminaRegeneration(SagaPlayer sagaPlayer, Double regeneratedStamina) {
+	public static String staminaRegeneration(Double playerStamina, Double playerMaximumStamina) {
 
-		if(((int)(sagaPlayer.getStamina()/10))!=((int)((sagaPlayer.getStamina()-regeneratedStamina)/10)))
-		sagaPlayer.getPlayer().sendMessage("Stamina regeneration. ("+sagaPlayer.getStamina()+"/"+sagaPlayer.getMaximumStamina()+")");
+		return "Stamina regeneration. ("+playerStamina+"/"+playerMaximumStamina+")";
 		
 	}
 	
-	public static void abilitySelect(SagaPlayer sagaPlayer, Ability selectedAbility) {
+	public static String abilitySelect(Ability selectedAbility) {
 
-		sagaPlayer.getPlayer().sendMessage("Selected "+selectedAbility.getAbilityName()+" ability.");
+		return "Selected "+selectedAbility.getAbilityName()+" ability.";
 				
 	}
 	
-	public static void noAbilitiesAvailable(SagaPlayer sagaPlayer, Ability ability) {
+	public static String noAbilitiesAvailable(Ability ability) {
 		
-		sagaPlayer.getPlayer().sendMessage("Selected "+ability.getAbilityName()+" ability.");
+		return "Selected "+ability.getAbilityName()+" ability.";
 
 	}
 	
-	public static void noAbilitiesAvailable(SagaPlayer sagaPlayer) {
+	public static String noAbilitiesAvailable() {
 		
-		sagaPlayer.getPlayer().sendMessage("You dont have any abilities.");
+		return "There are no abilities avaliable.";
 
 	}
 	

@@ -17,20 +17,24 @@ public class WriterReader {
 	/**
 	 * Main directory for plugin files.
 	 */
-	private static String MAIN_DIRECTORY="plugins"+File.separator+"Factio";
+	private static String MAIN_DIRECTORY="plugins"+File.separator+"Saga";
 	
 	/**
 	 * Player information directory.
 	 */
-
-	private static String PLAYER_INFORMATION_DIRECTORY="/home/andf/data/java/minecraft/plugins/SagaPlayer/players/";
-//	private static String PLAYER_INFORMATION_DIRECTORY=MAIN_DIRECTORY+File.separator+"players"+File.separator;
+//	private static String PLAYER_INFORMATION_DIRECTORY="/home/andf/data/java/minecraft/plugins/SagaPlayer/players/";
+	private static String PLAYER_INFORMATION_DIRECTORY=MAIN_DIRECTORY+File.separator+"players"+File.separator;
 	
 	/**
 	 * Balance information location.
 	 */
-	private static String BALANCE_INFORMATION_DIRECTORY="/home/andf/data/java/minecraft/plugins/SagaPlayer/balanceinformation";
-//	private static String BALANCE_INFORMATION_DIRECTORY=MAIN_DIRECTORY+"/balanceinformation.dat";
+//	private static String BALANCE_INFORMATION_DIRECTORY="/home/andf/data/java/minecraft/plugins/SagaPlayer/balanceinformation";
+	private static String BALANCE_INFORMATION_DIRECTORY=MAIN_DIRECTORY+File.separator;
+	
+	/**
+	 * File name for balance information.
+	 */
+	private static String BALANCE_INFORMATION_FILENAME="balanceinformation.json";
 	
 	
 	/**
@@ -45,22 +49,21 @@ public class WriterReader {
 	 */
 	public static SagaPlayer readPlayerInformation(String pPlayerName) throws FileNotFoundException,IOException,JsonParseException {
 
+            String directory= PLAYER_INFORMATION_DIRECTORY+pPlayerName+".json";
         
-        String directory= PLAYER_INFORMATION_DIRECTORY+pPlayerName+".json";
-        
-        File file = new File(directory);
-        int ch;
-        StringBuffer strContent = new StringBuffer("");
-        FileInputStream fin = null;
-        fin = new FileInputStream(file);
-        while ((ch = fin.read()) != -1){
-        	strContent.append((char) ch);
-        }
-        fin.close();
-        System.out.println(strContent);
-        
-        Gson gson= new Gson();
-        return gson.fromJson(strContent.toString(), SagaPlayer.class);
+            File file = new File(directory);
+            int ch;
+            StringBuffer strContent = new StringBuffer("");
+            FileInputStream fin = null;
+            fin = new FileInputStream(file);
+            while ((ch = fin.read()) != -1){
+                    strContent.append((char) ch);
+            }
+            fin.close();
+        //        System.out.println(strContent);
+
+            Gson gson= new Gson();
+            return gson.fromJson(strContent.toString(), SagaPlayer.class);
 		
 		
 	}
@@ -77,10 +80,9 @@ public class WriterReader {
 	 * @throws IOException If an error occurred while writing.
 	 */
 	public static void writePlayerInformation(String playerName, SagaPlayer playerInfo) throws IOException {
-
 		
-			File directory = new File(PLAYER_INFORMATION_DIRECTORY);
-			File file = new File(PLAYER_INFORMATION_DIRECTORY+playerName+".json");
+            File directory = new File(PLAYER_INFORMATION_DIRECTORY);
+            File file = new File(PLAYER_INFORMATION_DIRECTORY+playerName+".json");
 
             if( !directory.exists() ) {
                 directory.mkdirs();
@@ -97,7 +99,6 @@ public class WriterReader {
             BufferedWriter out = new BufferedWriter(new FileWriter(file));
             out.write(gson.toJson(playerInfo));
             out.close();
-		
             
 	}
 	
@@ -110,9 +111,9 @@ public class WriterReader {
 	 */
 	public static BalanceInformation readBalanceInformation() throws IOException, JsonParseException{
 
-            String directory= BALANCE_INFORMATION_DIRECTORY;
-        
-            File file = new File(directory);
+            String fileDirectory= BALANCE_INFORMATION_DIRECTORY+BALANCE_INFORMATION_FILENAME;
+		
+            File file = new File(fileDirectory);
             int ch;
             StringBuffer strContent = new StringBuffer("");
             FileInputStream fin = null;
@@ -125,7 +126,6 @@ public class WriterReader {
 
             Gson gson= new Gson();
             return gson.fromJson(strContent.toString(), BalanceInformation.class);
-	
         
 	}
 	
@@ -141,8 +141,14 @@ public class WriterReader {
 	 */
 	public static void writeBalanceInformation(BalanceInformation balanceInfo) throws IOException {
 
-            File file = new File(BALANCE_INFORMATION_DIRECTORY);
+            File directory = new File(BALANCE_INFORMATION_DIRECTORY);
+            File file = new File(BALANCE_INFORMATION_DIRECTORY+BALANCE_INFORMATION_FILENAME);
 
+			if(!directory.exists()){
+				directory.mkdirs();
+            	Saga.info("Creating "+directory+" directory.");
+            }
+			
             if(!file.exists()){
             	file.createNewFile();
             	Saga.info("Creating "+file+" file.");

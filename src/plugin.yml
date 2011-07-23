@@ -1,5 +1,5 @@
 name: Saga
-main: com.saga.Saga
+main: org.saga.Saga
 version: 0.1
 depend:
   - GroupManager
