@@ -11,11 +11,13 @@ public class FighterProfession extends Profession {
 	 */
 	transient private static final String PROFESSION_NAME= "fighter";
 
-        @Override
-	protected boolean checkExtensionIntegrity(ArrayList<String> problematicFields) {
-		// TODO Auto-generated method stub
-		return true;
+	
+	public FighterProfession() {
+		
+		super(PROFESSION_NAME);
+		
 	}
+	
 
 	/* 
 	 * (non-Javadoc)

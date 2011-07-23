@@ -1,12 +1,8 @@
 package org.saga;
 
-import java.io.*;
 import java.util.*;
 
 import org.saga.abilities.*;
-import org.saga.professions.*;
-
-import com.google.gson.Gson;
 
 public class BalanceInformation {
 
@@ -45,9 +41,8 @@ public class BalanceInformation {
 	public BalanceInformation() {
 		
 		
-		// Add abilities:
+		// Add all abilities:
 		Ability ability;
-		
 		// Counterattack:
 		ability= new CounterattackAbility();
 		abilities.put(ability.getClass().getSimpleName(), ability);
@@ -56,9 +51,11 @@ public class BalanceInformation {
 		ability= new DisarmAbility();
 		abilities.put(ability.getClass().getSimpleName(), ability);
 		
-		// Assign default values:
-		checkIntegrity(new ArrayList<String>());
-		
+		// Set fields:
+        maximumStamina= 100.0;
+        staminaPerSecond= 0.1;
+        staminaPerSecond= 0.1;
+
 		
 	}
 	
@@ -113,39 +110,5 @@ public class BalanceInformation {
 	}
 
 	
-	public static void main(String[] args) {
-		
-		Gson gson = new Gson();
-		SagaPlayer player = new SagaPlayer();
-		ArrayList<String> integcheck = new ArrayList<String>();
-		player.checkIntegrity(integcheck);
-		for (int i = 0; i < integcheck.size(); i++) {
-                    System.out.println(integcheck.get(i));
-		}
-		
-		try {
-                    write(gson.toJson(player));
-		} catch (IOException e) {
-                    e.printStackTrace();
-		}
-		
-	}
-	
-	static void write(String towrit) throws IOException  {
-	    
-            try {
-              // Create file
-              FileWriter fstream = new FileWriter(new File("/home/andf/data/java/minecraft/plugins/SagaPlayer/test"));
-              BufferedWriter out = new BufferedWriter(fstream);
-              out.write(towrit);
-              //Close the output stream
-              out.close();
-            } catch (Exception e) {//Catch exception if any
-                System.err.println("Error: " + e.getMessage());
-            }
-
-        }
-	    
-	 
 	
 }

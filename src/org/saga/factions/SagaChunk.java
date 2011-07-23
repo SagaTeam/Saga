@@ -6,7 +6,7 @@
 package org.saga.factions;
 
 import org.saga.*;
-import org.saga.defaults.*;
+import org.saga.constants.*;
 
 import org.bukkit.*;
 import org.bukkit.entity.*;
@@ -169,7 +169,7 @@ public class SagaChunk {
             SagaSettlement settlement = SagaSettlementManager.instance().getSettlement(settlementId);
             return settlement.getName();
         } else {
-            return Constants.WILDERNESS_STRING;
+            return General.WILDERNESS_STRING;
         }
 
     }
@@ -183,15 +183,15 @@ public class SagaChunk {
             SagaSettlement settlement = SagaSettlementManager.instance().getSettlement(settlementId);
 
             if ( settlement.getProperty("haven") ) {
-                color = Config.havenColor;
+                color = PlayerMessages.havenColor;
             } else if ( settlement.getProperty("arena") ) {
-                color = Config.arenaColor;
+                color = PlayerMessages.arenaColor;
             }
 
             return color + settlement.getName();
 
         } else {
-            return Constants.WILDERNESS_STRING;
+            return General.WILDERNESS_STRING;
         }
 
     }

@@ -5,7 +5,6 @@
 
 package org.saga.factions;
 
-import org.saga.*;
 import org.saga.utility.*;
 
 import java.util.*;

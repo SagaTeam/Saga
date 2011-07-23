@@ -1,21 +1,26 @@
 package org.saga;
 
 import java.io.*;
-import java.util.*;
 
 import org.bukkit.entity.Player;
 import org.bukkit.event.block.*;
 import org.bukkit.event.entity.EntityDamageByEntityEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
-import org.saga.abilities.*;
 import org.saga.professions.*;
 import org.saga.utility.WriterReader;
-import org.saga.defaults.*;
+import org.saga.constants.*;
 
 import com.google.gson.JsonParseException;
 
 public class SagaPlayer{
 
+	
+	// Wrapped:
+	/**
+	 * Minecraft player.
+	 */
+	transient private Player player;
+	
 	
 	// Player information:
 	/**
@@ -27,25 +32,16 @@ public class SagaPlayer{
 	 * Stamina.
 	 */
 	private Double stamina;
-
+	
 	/**
-	 * Determines which professions are selected for the player. 
+	 * All professions.
+	 */
+	private Profession[] professions;
+	
+	/**
+	 * Professions that the player can interact with.
 	 */
 	private Boolean[] selectedProfessions;
-
-	
-	// Wrapped:
-	/**
-	 * Minecraft player.
-	 */
-	transient private Player player;
-	
-	
-	// Main fields:
-	/**
-	 * Wrapped professions.
-	 */
-	private ProfessionHolder professions;
 	
 	
 	// Control:
@@ -66,8 +62,18 @@ public class SagaPlayer{
 	 */
 	public SagaPlayer() {
 		
-            // Sets to offline by default.
-            isOnlinePlayer = false;
+		// Sets to offline by default.
+		isOnlinePlayer = false;
+		
+		// Set defaults:
+		name = PlayerDefaults.name;
+		stamina = PlayerDefaults.stamina;
+		professions = PlayerDefaults.allProfessions;
+		selectedProfessions = new Boolean[professions.length];
+		for (int i = 0; i < selectedProfessions.length; i++) {
+			selectedProfessions[i] = true; // TODO Need a profession selection filter
+		}
+		
 		
 	}
 	
@@ -127,7 +133,7 @@ public class SagaPlayer{
 	public void drainStamina(Double drainAmount) {
 
 		stamina -= drainAmount;
-		this.info(Messages.staminaUsed(drainAmount, getStamina(), getMaximumStamina()));
+		this.info(PlayerMessages.staminaUsed(drainAmount, getStamina(), getMaximumStamina()));
 		
 	}
 	
@@ -201,8 +207,10 @@ public class SagaPlayer{
 	 * @param pEvent event
 	 */
 	public void leftClickInteractEvent(PlayerInteractEvent pEvent) {
-            // Forward to wrapped professions:
-            professions.leftClickInteractEvent(pEvent);
+		// Forward to all professions:
+		for (int i = 0; i < professions.length; i++) {
+			professions[i].leftClickInteractEvent(pEvent);
+		}
 	}
 
 	/**
@@ -211,8 +219,10 @@ public class SagaPlayer{
 	 * @param pEvent event
 	 */
 	public void rightClickInteractEvent(PlayerInteractEvent pEvent) {
-            // Forward to wrapped professions:
-            professions.rightClickInteractEvent(pEvent);
+		// Forward to all professions:
+		for (int i = 0; i < professions.length; i++) {
+			professions[i].rightClickInteractEvent(pEvent);
+		}
 	}
 
 	/**
@@ -221,8 +231,10 @@ public class SagaPlayer{
 	 * @param pEvent event
 	 */
 	public void placedBlockEvent(BlockPlaceEvent pEvent) {
-            // Forward to wrapped professions:
-            professions.placedBlockEvent(pEvent);
+		// Forward to all professions:
+		for (int i = 0; i < professions.length; i++) {
+			professions[i].placedBlockEvent(pEvent);
+		}
 	}
 
 	/**
@@ -231,8 +243,10 @@ public class SagaPlayer{
 	 * @param pEvent event
 	 */
 	public void brokeBlockEvent(BlockBreakEvent pEvent) {
-            // Forward to wrapped professions:
-            professions.brokeBlockEvent(pEvent);
+		// Forward to all professions:
+		for (int i = 0; i < professions.length; i++) {
+			professions[i].brokeBlockEvent(pEvent);
+		}
 	}
 
 	/**
@@ -241,8 +255,10 @@ public class SagaPlayer{
 	 * @param pTick tick number
 	 */
 	public void clockTickEvent(int pTick) {
-            // Forward to wrapped professions:
-            professions.clockTickEvent(pTick);
+		// Forward to all professions:
+		for (int i = 0; i < professions.length; i++) {
+			professions[i].clockTickEvent(pTick);
+		}
 	}
 
 	
@@ -272,22 +288,19 @@ public class SagaPlayer{
 
                 Saga.info("Player information file not found. Loading default information.", playerName);
                 sagaPlayer = new SagaPlayer();
-                sagaPlayer.checkIntegrity();
 
             } catch (IOException e) {
 
-                Saga.severe("Player information file not found. Loading default and disabling saving.", playerName);
+                Saga.severe("Player information file load failure. Loading default and disabling saving.", playerName);
                 sagaPlayer= new SagaPlayer();
                 sagaPlayer.setSavingEnabled(false);
-                sagaPlayer.checkIntegrity();
 
             } catch (JsonParseException e) {
 
                 Saga.severe("Player information file parse failure. Loading default information and disabling saving.", playerName);
                 sagaPlayer= new SagaPlayer();
                 sagaPlayer.setSavingEnabled(false);
-                sagaPlayer.checkIntegrity();
-                Saga.severe("Can't read player information. Loading default and disabling saving.", playerName);
+                Saga.severe("Player information parse failure. Loading default and disabling saving.", playerName);
                 // TODO Rename user information file to recover the corrupt data
 
             }
@@ -323,64 +336,7 @@ public class SagaPlayer{
 		
 	}
 	
-	
-	// Integrity check:
-	/**
-	 * Checks the integrity of the player information.
-	 * Adds variable names that where problematic.
-	 * 
-	 * @param problematicFields Vector containing all problematic field names.
-	 * @return true, if everything is ok
-	 */
-	public boolean checkIntegrity(ArrayList<String> problematicFields) {
 		
-		
-		// Professions field:
-		if( professions == null ) {
-                    professions= new ProfessionHolder();
-                    problematicFields.add("professions");
-                    professions.checkIntegrity(new ArrayList<String>());
-		}
-		
-		// Professions:
-		professions.checkIntegrity(problematicFields);
-		
-		// All fields:
-		if( name == null ){
-                    name = PlayerDefaults.name;
-                    problematicFields.add("name");
-		}
-
-		if( stamina == null ){
-                    stamina = PlayerDefaults.stamina;
-                    problematicFields.add("stamina");
-		}
-		
-		
-		return problematicFields.isEmpty();
-
-		
-	}
-
-        public boolean checkIntegrity() {
-
-            ArrayList<String> problematicFields = new ArrayList<String>();
-
-            if ( this.checkIntegrity(problematicFields) == true) {
-                return true;
-            }
-
-            for ( String field : problematicFields ) {
-
-                Saga.warning(field + " data invalid! Loaded default.", this.name);
-
-            }
-
-            return false;
-
-        }
-	
-	
 	// Control:
 	/**
 	 * True if the player is online.
@@ -412,7 +368,7 @@ public class SagaPlayer{
         public void info(String message) {
 
             if ( isOnlinePlayer() ) {
-                this.player.sendMessage(Config.infoColor + message);
+                this.player.sendMessage(PlayerMessages.infoColor + message);
             }
 
         }
@@ -420,7 +376,7 @@ public class SagaPlayer{
         public void warning(String message) {
 
             if ( isOnlinePlayer() ) {
-                this.player.sendMessage(Config.warningColor + message);
+                this.player.sendMessage(PlayerMessages.warningColor + message);
             }
 
         }
@@ -428,7 +384,7 @@ public class SagaPlayer{
         public void severe(String message) {
 
             if ( isOnlinePlayer() ) {
-                this.player.sendMessage(Config.warningColor + message);
+                this.player.sendMessage(PlayerMessages.warningColor + message);
             }
 
         }

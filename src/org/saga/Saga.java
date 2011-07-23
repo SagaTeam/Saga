@@ -10,8 +10,7 @@ import java.util.logging.*;
 //imports from this project
 import org.sk89q.*;
 import org.saga.utility.*;
-import org.saga.exceptions.*;
-import org.saga.professions.*;
+import org.saga.constants.PlayerMessages;
 
 //External Imports
 import java.util.*;
@@ -29,9 +28,6 @@ import org.bukkit.entity.*;
 import org.bukkit.plugin.*;
 import org.bukkit.plugin.java.*;
 
-import com.google.gson.*;
-import com.google.gson.reflect.*;
-import java.lang.reflect.Type;
 
 /**
  *
@@ -206,7 +202,7 @@ public class Saga extends JavaPlugin {
 
     	// Notify if saving is disabled:
     	if( !sagaPlayer.isSavingEnabled() ) {
-            player.sendMessage(Messages.PLAYER_ERROR_MESSAGE);
+            player.sendMessage(PlayerMessages.playerErrorMessage);
             player.sendMessage("You player information will not be saved during this session!");
         }
     	
@@ -238,26 +234,6 @@ public class Saga extends JavaPlugin {
 
     	sagaPlayer = SagaPlayer.load(name);
     	loadedPlayers.put(name, sagaPlayer);
-    	
-    	// Integrity check:
-    	ArrayList<String> problematicFields = new ArrayList<String>();
-    	sagaPlayer.checkIntegrity(problematicFields);
-    	
-        if( !problematicFields.isEmpty() ) {
-
-            String probString = "";
-            for ( String string : problematicFields ) {
-
-                if( probString.length() != 0 ){
-                    probString += ", ";
-                }
-
-                probString += string;
-
-            }
-            Saga.warning("Integrity check found problematic fields: "+probString+". Integrity check set defaults.", name);
-
-        }
     	
     	
     }

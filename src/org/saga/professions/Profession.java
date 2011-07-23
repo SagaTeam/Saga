@@ -2,10 +2,14 @@ package org.saga.professions;
 
 import java.util.*;
 
-import org.saga.Messages;
-import org.saga.PlayerDefaults;
+import org.bukkit.event.block.BlockBreakEvent;
+import org.bukkit.event.block.BlockPlaceEvent;
+import org.bukkit.event.entity.EntityDamageByEntityEvent;
+import org.bukkit.event.player.PlayerInteractEvent;
 import org.saga.SagaPlayer;
 import org.saga.abilities.Ability;
+import org.saga.constants.PlayerDefaults;
+import org.saga.constants.PlayerMessages;
 import org.saga.*;
 
 public abstract class Profession {
@@ -15,18 +19,18 @@ public abstract class Profession {
 	/**
 	 * Profession name.
 	 */
-	private final String professionName = getProfessionName();
+	transient private final String professionName;
 	
 	// Player information:
 	/**
 	 * Profession level.
 	 */
-	private Short level=null;
+	private Short level;
 
 	/**
 	 * Experience for the current level.
 	 */
-	private Integer levelExperience=null;
+	private Integer levelExperience;
 
 	
 	// Calculated:
@@ -34,13 +38,7 @@ public abstract class Profession {
 	 * Stamina drain for the current level.
 	 */
 	transient private Short[] staminaDrain;
-
-	/**
-	 * Activated abilities.
-	 */
-
-	transient private Boolean[] activeAbilities;
-
+	
 	
 	// Access:
 	/**
@@ -55,10 +53,28 @@ public abstract class Profession {
 	 */
 	transient short selectedAbility=0;
 	
+	/**
+	 * Activated abilities.
+	 */
+	transient private Boolean[] activeAbilities;
 	
 	
 	// Initialization:
-	public Profession() {
+	/**
+	 * Sets all default values. All extending classes must set all default values in a non-parameter constructor.
+	 * 
+	 * @param professionName profession name
+	 */
+	public Profession(String professionName) {
+	
+		
+		// Force all extending classes to provide a name:
+		this.professionName = professionName;
+		
+		// Set defaults:
+		level= PlayerDefaults.level;
+		levelExperience= PlayerDefaults.levelExperience;
+		
 		
 	}
 	
@@ -76,15 +92,17 @@ public abstract class Profession {
 	}
 	
 	
-	
-	
 	// Interaction:
 	/**
 	 * Returns the profession name.
 	 * 
 	 * @return the profession name
 	 */
-	public abstract String getProfessionName();
+	public String getProfessionName(){
+		
+		return professionName;
+		
+	}
 	
 	private void selectNextAbility() {
 
@@ -106,9 +124,9 @@ public abstract class Profession {
 		
 		// Send message:
 		if(selectedNew==selectedAbility){
-			sagaPlayer.sendMessage(Messages.noAbilitiesAvailable());
+			sagaPlayer.sendMessage(PlayerMessages.noAbilitiesAvailable());
 		}else{
-			sagaPlayer.sendMessage(Messages.abilitySelect(professionAbilities[selectedNew]));
+			sagaPlayer.sendMessage(PlayerMessages.abilitySelect(professionAbilities[selectedNew]));
 		}
 		
 		
@@ -120,63 +138,83 @@ public abstract class Profession {
 	 * @return all abilities
 	 */
 	protected abstract Ability[] getAbilities();
-
 	
-	// Integrity check after load:
+	
+	// Events:
 	/**
-	 * Checks the integrity of the player information.
-	 * Adds variable names that where problematic.
-	 * 
-	 * @param problematicFields Vector containing all problematic field names.
-	 * @return true, if everything is ok
+	 * Got damaged by living entity event.
+	 *
+	 * @param pEvent event
 	 */
-	public boolean checkIntegrity(ArrayList<String> problematicFields) {
-		
-		
-		// All fields:
-		if(level==null){
-			level= PlayerDefaults.level;
-			problematicFields.add(getProfessionName() + ":level");
-		}
-		if(levelExperience==null){
-			levelExperience= PlayerDefaults.levelExperience;
-			problematicFields.add(getProfessionName()+":levelExperience");
-		}
-		
-		// Check extension:
-		checkExtensionIntegrity(problematicFields);
-		
-		return problematicFields.isEmpty();
+	public void gotDamagedByLivingEntityEvent(EntityDamageByEntityEvent pEvent) {
 
-		
+
+
 	}
 
-        public boolean checkIntegrity() {
-
-            ArrayList<String> problematicFields = new ArrayList<String>();
-
-            if ( this.checkIntegrity(problematicFields) == true) {
-                return true;
-            }
-
-            for ( String field : problematicFields ) {
-
-                Saga.warning(field + " data invalid! Loaded default.");
-
-            }
-
-            return false;
-
-        }
-	
 	/**
-	 * Checks the integrity of the player information.
-	 * Adds variable names that where problematic.
-	 * 
-	 * @param problematicFields Vector containing all problematic field names.
-	 * @return true, if everything is ok
+	 * Damaged a living entity.
+	 *
+	 * @param pEvent event
 	 */
-	protected abstract boolean checkExtensionIntegrity(ArrayList<String> problematicFields);
-	
+	public void damagedLivingEntityEvent(EntityDamageByEntityEvent pEvent) {
+
+
+
+	}
+
+	/**
+	 * Left clicked.
+	 *
+	 * @param pEvent event
+	 */
+	public void leftClickInteractEvent(PlayerInteractEvent pEvent) {
+
+
+
+	}
+
+	/**
+	 * Right clicked.
+	 *
+	 * @param pEvent event
+	 */
+	public void rightClickInteractEvent(PlayerInteractEvent pEvent) {
+
+
+
+	}
+
+	/**
+	 * Player placed a block event.
+	 *
+	 * @param pEvent event
+	 */
+	public void placedBlockEvent(BlockPlaceEvent pEvent) {
+
+
+
+	}
+
+	/**
+	 * Player broke a block event.
+	 *
+	 * @param pEvent event
+	 */
+	public void brokeBlockEvent(BlockBreakEvent pEvent) {
+
+
+
+	}
+
+	/**
+	 * Sends a clock tick.
+	 *
+	 * @param pTick tick number
+	 */
+	public void clockTickEvent(int pTick) {
+
+
+	}
 
 }
