@@ -24,6 +24,10 @@ import org.anjocaido.groupmanager.dataholder.worlds.WorldsHolder;
 import org.bukkit.*;
 import org.bukkit.event.*;
 import org.bukkit.event.Event.Priority;
+import org.bukkit.event.block.BlockBreakEvent;
+import org.bukkit.event.block.BlockPlaceEvent;
+import org.bukkit.event.entity.EntityDamageByEntityEvent;
+import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.entity.*;
 import org.bukkit.plugin.*;
 import org.bukkit.plugin.java.*;
@@ -134,7 +138,6 @@ public class Saga extends JavaPlugin {
             Saga.severe("Missing balance information. Loading defaults and generating default balance information file.");
 
             balanceInformation = new BalanceInformation();
-            balanceInformation.checkIntegrity(new ArrayList<String>());
 
             // Write a new one:
             try {
@@ -147,7 +150,6 @@ public class Saga extends JavaPlugin {
 
             Saga.exception("Balance information load failure. Loading defaults.",e);
             balanceInformation = new BalanceInformation();
-            balanceInformation.checkIntegrity(new ArrayList<String>());
 
         }
         
@@ -309,6 +311,86 @@ public class Saga extends JavaPlugin {
 
     }
     
+    
+    // Events:
+    /**
+	 * Got damaged by living entity event.
+	 *
+	 * @param playerName player name
+	 * @param pEvent event
+	 */
+	public void gotDamagedByLivingEntityEvent(String playerName, EntityDamageByEntityEvent pEvent) {
+
+		// Only send the event 
+
+	}
+
+	/**
+	 * Damaged a living entity.
+	 *
+	 * @param pEvent event
+	 */
+	public void damagedLivingEntityEvent(EntityDamageByEntityEvent pEvent) {
+
+
+
+	}
+
+	/**
+	 * Left clicked.
+	 *
+	 * @param pEvent event
+	 */
+	public void leftClickInteractEvent(PlayerInteractEvent pEvent) {
+
+
+
+	}
+
+	/**
+	 * Right clicked.
+	 *
+	 * @param pEvent event
+	 */
+	public void rightClickInteractEvent(PlayerInteractEvent pEvent) {
+
+
+
+	}
+
+	/**
+	 * Player placed a block event.
+	 *
+	 * @param pEvent event
+	 */
+	public void placedBlockEvent(BlockPlaceEvent pEvent) {
+
+
+
+	}
+
+	/**
+	 * Player broke a block event.
+	 *
+	 * @param pEvent event
+	 */
+	public void brokeBlockEvent(BlockBreakEvent pEvent) {
+
+
+
+	}
+
+	/**
+	 * Sends a clock tick.
+	 *
+	 * @param pTick tick number
+	 */
+	public void clockTickEvent(int pTick) {
+
+
+	}
+    
+    
     //This code handles commands
     public boolean handleCommand(Player player, String[] split, String command) {
 
@@ -373,7 +455,6 @@ public class Saga extends JavaPlugin {
     public boolean isPlayerInformationLoadingDisabled() {
             return playerInformationLoadingDisabled;
     }
-    
 
     /**
      * True, if player information saving is disabled.
@@ -383,7 +464,6 @@ public class Saga extends JavaPlugin {
     public boolean isPlayerInformationSavingDisabled() {
             return playerInformationSavingDisabled;
     }
-    
 
     /**
      * Disables the loading and saving of player information.
@@ -403,7 +483,6 @@ public class Saga extends JavaPlugin {
     }
 
     //Debug/Log Output Functions
-    
     static public void info(String string) {
         log.info(string);
     }

@@ -73,42 +73,4 @@ public class BalanceInformation {
 	}
 	
 	
-	/**
-	 * Checks the integrity of the balance information.
-	 * Adds variable names that where problematic.
-	 * 
-	 * @param problematicFields Vector containing all problematic field names.
-	 * @return true, if everything is ok
-	 */
-	public Boolean checkIntegrity(ArrayList<String> problematicFields) {
-		
-		
-		// All fields:
-		if( maximumStamina == null ) {
-                    maximumStamina= 100.0;
-                    problematicFields.add("maximumStamina");
-		}
-		
-		if( staminaPerSecond == null ){
-                    staminaPerSecond= 0.1;
-                    problematicFields.add("staminaPerSecond");
-		}
-		
-		if( staminaPerSecond == null ){
-                    staminaPerSecond= 0.1;
-                    problematicFields.add("staminaPerSecond");
-		}
-		
-		// All abilities:
-		Enumeration<Ability> allAbilities= abilities.elements();
-		while(allAbilities.hasMoreElements()){
-                    allAbilities.nextElement().checkIntegrity(problematicFields);
-		}
-		
-		return problematicFields.isEmpty();
-
-	}
-
-	
-	
 }

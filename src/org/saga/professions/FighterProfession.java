@@ -14,7 +14,7 @@ public class FighterProfession extends Profession {
 	
 	public FighterProfession() {
 		
-		super(PROFESSION_NAME);
+		super(PROFESSION_NAME, FighterProfession.class.getName());
 		
 	}
 	

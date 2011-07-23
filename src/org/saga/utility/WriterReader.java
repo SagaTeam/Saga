@@ -13,7 +13,10 @@ import com.google.gson.InstanceCreator;
 import com.google.gson.JsonParseException;
 import com.google.gson.JsonSyntaxException;
 
+import org.saga.abilities.Ability;
+import org.saga.abilities.AbilityDeserializer;
 import org.saga.constants.*;
+import org.saga.professions.Profession;
 import org.saga.professions.ProfessionDeserializer;
 
 public class WriterReader {
@@ -63,7 +66,7 @@ public class WriterReader {
             fin.close();
 
             GsonBuilder gsonBuilder= new GsonBuilder();
-            gsonBuilder.registerTypeAdapter(Process.class, new ProfessionDeserializer());
+            gsonBuilder.registerTypeAdapter(Profession.class, new ProfessionDeserializer());
             Gson gson = gsonBuilder.create();
             return gson.fromJson(strContent.toString(), SagaPlayer.class);
 		
@@ -124,10 +127,10 @@ public class WriterReader {
                     strContent.append((char) ch);
             }
             fin.close();
-            System.out.println(strContent);
+//            System.out.println(strContent);
 
             GsonBuilder gsonBuilder= new GsonBuilder();
-            gsonBuilder.registerTypeAdapter(Process.class, new ProfessionDeserializer());
+            gsonBuilder.registerTypeAdapter(Ability.class, new AbilityDeserializer());
             Gson gson = gsonBuilder.create();
             return gson.fromJson(strContent.toString(), BalanceInformation.class);
         

@@ -15,11 +15,17 @@ import org.saga.*;
 public abstract class Profession {
 
 	
+	/**
+	 * Class name used by the loader
+	 */
+	private String _className;
+	
+	
 	// General:
 	/**
 	 * Profession name.
 	 */
-	transient private final String professionName;
+	transient private String professionName;
 	
 	// Player information:
 	/**
@@ -64,9 +70,14 @@ public abstract class Profession {
 	 * Sets all default values. All extending classes must set all default values in a non-parameter constructor.
 	 * 
 	 * @param professionName profession name
+	 * @param className class name
 	 */
-	public Profession(String professionName) {
+	public Profession(String professionName, String className) {
 	
+		
+		// Set class name:
+		_className = className;
+ 		
 		
 		// Force all extending classes to provide a name:
 		this.professionName = professionName;
@@ -76,6 +87,10 @@ public abstract class Profession {
 		levelExperience= PlayerDefaults.levelExperience;
 		
 		
+	}
+	
+	public Profession() {
+		// TODO Auto-generated constructor stub
 	}
 	
 	/**

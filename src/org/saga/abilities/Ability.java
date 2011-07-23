@@ -5,6 +5,11 @@ import java.util.*;
 public abstract class Ability {
 
 	
+	/**
+	 * Class name used by the loader
+	 */
+	private String _className;
+	
 	// General variables:
 	/**
 	 * Ability name.
@@ -38,10 +43,27 @@ public abstract class Ability {
 	 * 
 	 * @param abilityName ability name
 	 */
-	public Ability(String abilityName) {
+	public Ability(String abilityName, String className) {
 		
 		this.abilityName=abilityName;
 		
+		// Class name:
+		_className = className;
+		
+		// Set defaults:
+        abilityName = "null";
+        levelStaminaFunctionX1 = 100;
+        levelStaminaFunctionY1 = 100.0;
+        levelStaminaFunctionX2 = 100;
+        levelStaminaFunctionY2 = 100.0;
+		
+        
+        
+		
+	}
+	
+	public Ability() {
+		// TODO Auto-generated constructor stub
 	}
 	
 	
@@ -78,58 +100,6 @@ public abstract class Ability {
             return levelStaminaFunctionX1 >= level;
 		
 	}
-	
-	// Integrity check after load:
-	/**
-	 * Checks the integrity of the balance information.
-	 * Adds variable names that where problematic.
-	 * 
-	 * @param problematicFields Vector containing all problematic field names.
-	 * @return true, if everything is ok
-	 */
-	public boolean checkIntegrity(ArrayList<String> problematicFields) {
-
-            // Fields:
-            if( abilityName == null ){
-                abilityName = "null";
-                problematicFields.add("abilityName");
-            }
-
-            if( levelStaminaFunctionX1 == null ) {
-                levelStaminaFunctionX1 = 100;
-                problematicFields.add("levelStaminaFunctionX1");
-            }
-
-            if( levelStaminaFunctionY1 == null ){
-                levelStaminaFunctionY1 = 100.0;
-                problematicFields.add("levelStaminaFunctionY1");
-            }
-
-            if( levelStaminaFunctionX2 == null ){
-                levelStaminaFunctionX2 = 100;
-                problematicFields.add("levelStaminaFunctionX2");
-            }
-
-            if( levelStaminaFunctionY2 == null ){
-                levelStaminaFunctionY2 = 100.0;
-                problematicFields.add("levelStaminaFunctionY2");
-            }
-
-            // Check extension:
-            checkExtensionIntegrity(problematicFields);
-
-            return problematicFields.isEmpty();
-		
-	}
-	
-	/**
-	 * Checks the integrity of the balance information.
-	 * Adds variable names that where problematic.
-	 * 
-	 * @param problematicFields Vector containing all problematic field names.
-	 * @return true, if everything is ok
-	 */
-	protected abstract boolean checkExtensionIntegrity(ArrayList<String> problematicFields);
 	
 	
 	

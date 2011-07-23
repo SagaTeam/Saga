@@ -12,14 +12,9 @@ public class DisarmAbility extends Ability{
 	
 	public DisarmAbility() {
 		
-            super(ABILITY_NAME);
+            super(ABILITY_NAME, DisarmAbility.class.getName());
 		
 	}
-
 	
-	@Override
-	protected boolean checkExtensionIntegrity(ArrayList<String> problematicFields) {
-            return true;
-	}
 	
 }

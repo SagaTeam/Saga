@@ -5,6 +5,8 @@
 
 package org.saga;
 
+import org.bukkit.event.block.Action;
+import org.bukkit.event.Event;
 import org.bukkit.event.player.*;
 
 /**
@@ -64,6 +66,17 @@ public class SagaPlayerListener extends PlayerListener {
     @Override
     public void onPlayerInteract(PlayerInteractEvent event) {
 
+//		//Left click:
+//		if(event.getAction().equals(Action.LEFT_CLICK_AIR) || event.getAction().equals(Action.LEFT_CLICK_BLOCK)){
+//			Saga.plugin().abilityUseEvent(event.getPlayer().getName(), event);
+//		}
+//		
+//		//Right click:
+//		else if(event.getAction().equals(Action.RIGHT_CLICK_AIR) || event.getAction().equals(Action.RIGHT_CLICK_BLOCK)){
+//			Saga.plugin().abilityScrollEvent(event.getPlayer().getName(), event);
+//		}
+		
+    	
     }
 
 }

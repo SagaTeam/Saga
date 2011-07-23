@@ -14,14 +14,8 @@ public class CounterattackAbility extends Ability{
 	
 	public CounterattackAbility() {
 		
-            super(ABILITY_NAME);
+            super(ABILITY_NAME, CounterattackAbility.class.getName());
 		
-	}
-
-
-	@Override
-	protected boolean checkExtensionIntegrity(ArrayList<String> problematicFields) {
-            return true;
 	}
 
 	

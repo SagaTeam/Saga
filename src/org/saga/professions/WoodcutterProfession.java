@@ -11,6 +11,14 @@ public class WoodcutterProfession extends Profession {
 	 */
 	transient private static final String PROFESSION_NAME= "woodcutter";
 	
+	
+	public WoodcutterProfession() {
+		
+		super(PROFESSION_NAME, WoodcutterProfession.class.getName());
+		
+	}
+	
+	
 	/* 
 	 * (non-Javadoc)
 	 * @see org.saga.professions.Profession#getProfessionName()
@@ -20,14 +28,6 @@ public class WoodcutterProfession extends Profession {
 		return PROFESSION_NAME;
 	}
 	
-	
-	@Override
-	protected boolean checkExtensionIntegrity(ArrayList<String> problematicFields) {
-		// TODO Auto-generated method stub
-		return true;
-	}
-
-
 	@Override
 	protected Ability[] getAbilities() {
 		// TODO Auto-generated method stub

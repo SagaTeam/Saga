@@ -17,6 +17,7 @@ public class ProfessionDeserializer implements  JsonSerializer<Profession>, Json
 
        public Profession deserialize(JsonElement je, Type type, JsonDeserializationContext jdc) throws JsonParseException {
 
+    	   
             //If this JsonElement is not an object we cannot create a profession
             if ( !je.isJsonObject() ) {
                 throw new JsonParseException("ProfessionDeserializer JsonElement is not JsonObject!");
