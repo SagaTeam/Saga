@@ -8,12 +8,12 @@ public class PlayerDefaults {
 	 * Player name if the player has not yet been set.
 	 */
 	public static String name= "default~";
-
+	
 	/**
 	 * Stamina.
 	 */
 	public static Double stamina=60.0;
-
+	
 	// Profession defaults:
 	/**
 	 * Profession level.
@@ -25,7 +25,7 @@ public class PlayerDefaults {
 	 */
 	public static Integer levelExperience=0;
 
-
-
-
+	
+	
+	
 }

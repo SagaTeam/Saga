@@ -15,18 +15,16 @@ import org.saga.exceptions.*;
 //External Imports
 import java.util.*;
 import java.io.*;
-
-
-import org.anjocaido.groupmanager.GroupManager;
-import org.anjocaido.groupmanager.data.User;
-import org.anjocaido.groupmanager.dataholder.OverloadedWorldHolder;
-import org.anjocaido.groupmanager.dataholder.worlds.WorldsHolder;
 import org.bukkit.*;
 import org.bukkit.event.*;
 import org.bukkit.event.Event.Priority;
 import org.bukkit.entity.*;
 import org.bukkit.plugin.*;
 import org.bukkit.plugin.java.*;
+import org.anjocaido.groupmanager.*;
+import org.anjocaido.groupmanager.data.*;
+import org.anjocaido.groupmanager.dataholder.*;
+import org.anjocaido.groupmanager.dataholder.worlds.*;
 
 
 /**
@@ -45,10 +43,9 @@ public class Saga extends JavaPlugin {
     public WorldsHolder worldsHolder;
     private boolean playerInformationLoadingDisabled;
     private boolean playerInformationSavingDisabled;
-
+    private Properties balanceProperties;
     private HashMap<String,SagaPlayer> sagaPlayers;
     private SagaPlayerListener playerListener;
-    private BalanceInformation palanceInformation;
 
     public Saga() {
 
@@ -113,21 +110,14 @@ public class Saga extends JavaPlugin {
         };
 
         // Read balance information:
-        BalanceInformation balanceInformation;
+        balanceProperties = new Properties();
         try {
-        	balanceInformation = WriterReader.readBalanceInformation();
+            balanceProperties = WriterReader.readBalanceInformation();
         } catch (FileNotFoundException e) {
-            Saga.severe("Missing balance information. Loading defaults and generating default balance information file.");
-            balanceInformation= new BalanceInformation();
-            balanceInformation.checkIntegrity(new Vector<String>());
-            // Write a new one:
-            try {
-				WriterReader.writeBalanceInformation(balanceInformation);
-			} catch (Exception e2) {
-				Saga.severe("Balance information file save failure.");
-			}
+            Saga.severe("Missing balance information.");
+            //TODO Create new file with default balance information and add .info for it
         }catch (IOException e) {
-            Saga.exception("Balance information load failure. Loading defaults.",e);
+            Saga.exception("Balance information load failure.",e);
         }
 
         //Create listeners
@@ -142,9 +132,9 @@ public class Saga extends JavaPlugin {
 
     }
 
-    //public Properties getBalanceProperties() {
-    //    return balanceProperties;
-    //}
+    public Properties getBalanceProperties() {
+        return balanceProperties;
+    }
 
     public SagaPlayer wrapPlayer(Player player) {
 
@@ -163,12 +153,12 @@ public class Saga extends JavaPlugin {
         Saga.debug("wrapping player "+player.getName());
 
         //Second try, attempt to load data from file
-        //try {
-            //wrappedPlayer = SagaPlayer.load(player.getName());
-        //} catch( SagaPlayerNotFoundException e ) {
+        try {
+            wrappedPlayer = SagaPlayer.load(player.getName());
+        } catch( SagaPlayerNotFoundException e ) {
             //Player With New Data
-        //    wrappedPlayer = new SagaPlayer(player,balanceProperties);
-        //}
+            wrappedPlayer = new SagaPlayer(player,balanceProperties);
+        }
 
         return wrappedPlayer;
 
@@ -192,16 +182,16 @@ public class Saga extends JavaPlugin {
         SagaPlayer sagaPlayer = sagaPlayers.remove(player.getName());
 
         if ( sagaPlayer == null ) {
-            Saga.warning("SagaPlayer does not exist for player!",player.getName());
+            Saga.warning("SagaPlayer does not exist for player!",player);
             return;
         }
 
         //Try to save player data
-        // {
+        try {
             sagaPlayer.save();
-        //} catch ( IOException e ) {
-        //    Saga.exception("Exception while writing player " + player.getName() + " data to disk.",e);
-        //}
+        } catch ( IOException e ) {
+            Saga.exception("Exception while writing player " + player.getName() + " data to disk.",e);
+        }
 
     }
 
@@ -261,29 +251,6 @@ public class Saga extends JavaPlugin {
 
     }
 
-   public void removeAllPlayers() {
-
-        Iterator<String> i = sagaPlayers.keySet().iterator();
-
-        //Save All Players
-        while ( i.hasNext() ) {
-
-            String player = i.next();
-            SagaPlayer sagaPlayer = sagaPlayers.get(player);
-            
-            //try {
-                sagaPlayer.save();
-            //} catch ( IOException e ) {
-            //    Saga.exception("Exception while writing player " + player + " data to disk.",e);
-            //}
-
-        }
-
-        //Empty the table
-        sagaPlayers.clear();
-
-    }
-
     /**
      * True, if player information loading is disabled.
      *
@@ -324,8 +291,8 @@ public class Saga extends JavaPlugin {
         log.info(string);
     }
 
-    static public void info(String string, String playerName) {
-        string = "(" + playerName + ")" + string;
+    static public void info(String string,Player player) {
+        string = "(" + player.getName() + ")" + string;
         log.info(string);
     }
 
@@ -333,8 +300,8 @@ public class Saga extends JavaPlugin {
         log.severe(string);
     }
 
-    static public void severe(String string, String playerName) {
-        string = "(" + playerName+ ")" + string;
+    static public void severe(String string,Player player) {
+        string = "(" + player.getName() + ")" + string;
         log.severe(string);
     }
 
@@ -342,8 +309,8 @@ public class Saga extends JavaPlugin {
         log.warning(string);
     }
 
-    static public void warning(String string, String playerName) {
-        string = "(" + playerName + ")" + string;
+    static public void warning(String string,Player player) {
+        string = "(" + player.getName() + ")" + string;
         log.warning(string);
     }
 
@@ -367,7 +334,7 @@ public class Saga extends JavaPlugin {
 
     }
 
-    static public void debug(String string, String playerName) {
+    static public void debug(String string, Player player) {
 
         if ( !debugging ) {
             return;
