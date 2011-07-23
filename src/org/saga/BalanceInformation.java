@@ -1,20 +1,10 @@
 package org.saga;
 
-import java.io.BufferedWriter;
-import java.io.File;
-import java.io.FileWriter;
-import java.io.IOException;
-import java.util.Enumeration;
-import java.util.Hashtable;
-import java.util.Iterator;
-import java.util.Vector;
+import java.io.*;
+import java.util.*;
 
-import org.saga.abilities.Ability;
-import org.saga.abilities.CounterattackAbility;
-import org.saga.abilities.DisarmAbility;
-import org.saga.professions.FighterProfession;
-import org.saga.professions.Profession;
-import org.saga.professions.WoodcutterProfession;
+import org.saga.abilities.*;
+import org.saga.professions.*;
 
 import com.google.gson.Gson;
 
@@ -46,7 +36,7 @@ public class BalanceInformation {
 	/**
 	 * All abilities.
 	 */
-	public Hashtable<String, Ability> abilities= new Hashtable<String, Ability>();
+	public Hashtable<String, Ability> abilities = new Hashtable<String, Ability>();
 	
 	
 	/**
@@ -67,7 +57,7 @@ public class BalanceInformation {
 		abilities.put(ability.getClass().getSimpleName(), ability);
 		
 		// Assign default values:
-		checkIntegrity(new Vector<String>(0));
+		checkIntegrity(new ArrayList<String>());
 		
 		
 	}
@@ -95,69 +85,68 @@ public class BalanceInformation {
 	 * @param problematicFields Vector containing all problematic field names.
 	 * @return true, if everything is ok
 	 */
-	public Boolean checkIntegrity(Vector<String> problematicFields) {
+	public Boolean checkIntegrity(ArrayList<String> problematicFields) {
 		
 		
 		// All fields:
-		if(maximumStamina==null){
-			maximumStamina= 100.0;
-			problematicFields.add("maximumStamina");
+		if( maximumStamina == null ) {
+                    maximumStamina= 100.0;
+                    problematicFields.add("maximumStamina");
 		}
 		
-		if(staminaPerSecond==null){
-			staminaPerSecond= 0.1;
-			problematicFields.add("staminaPerSecond");
+		if( staminaPerSecond == null ){
+                    staminaPerSecond= 0.1;
+                    problematicFields.add("staminaPerSecond");
 		}
 		
-		if(staminaPerSecond==null){
-			staminaPerSecond= 0.1;
-			problematicFields.add("staminaPerSecond");
+		if( staminaPerSecond == null ){
+                    staminaPerSecond= 0.1;
+                    problematicFields.add("staminaPerSecond");
 		}
 		
 		// All abilities:
 		Enumeration<Ability> allAbilities= abilities.elements();
 		while(allAbilities.hasMoreElements()){
-			allAbilities.nextElement().checkIntegrity(problematicFields);
+                    allAbilities.nextElement().checkIntegrity(problematicFields);
 		}
 		
-		return problematicFields.size()==0;
+		return problematicFields.isEmpty();
 
-		
 	}
 
 	
 	public static void main(String[] args) {
 		
-		Gson gson= new Gson();
-		SagaPlayer player= new SagaPlayer();
-		Vector<String> integcheck= new Vector<String>();
+		Gson gson = new Gson();
+		SagaPlayer player = new SagaPlayer();
+		ArrayList<String> integcheck = new ArrayList<String>();
 		player.checkIntegrity(integcheck);
 		for (int i = 0; i < integcheck.size(); i++) {
-			System.out.println(integcheck.get(i));
+                    System.out.println(integcheck.get(i));
 		}
 		
 		try {
-			write(gson.toJson(player));
+                    write(gson.toJson(player));
 		} catch (IOException e) {
-			e.printStackTrace();
+                    e.printStackTrace();
 		}
 		
 	}
 	
 	static void write(String towrit) throws IOException  {
 	    
-	    
-	    try{
-	    	  // Create file 
-	    	  FileWriter fstream = new FileWriter(new File("/home/andf/data/java/minecraft/plugins/SagaPlayer/test"));
-	    	  BufferedWriter out = new BufferedWriter(fstream);
-	    	  out.write(towrit);
-	    	  //Close the output stream
-	    	  out.close();
-	    	  }catch (Exception e){//Catch exception if any
-	    	  System.err.println("Error: " + e.getMessage());
-	    	  }
-	    }
+            try {
+              // Create file
+              FileWriter fstream = new FileWriter(new File("/home/andf/data/java/minecraft/plugins/SagaPlayer/test"));
+              BufferedWriter out = new BufferedWriter(fstream);
+              out.write(towrit);
+              //Close the output stream
+              out.close();
+            } catch (Exception e) {//Catch exception if any
+                System.err.println("Error: " + e.getMessage());
+            }
+
+        }
 	    
 	 
 	

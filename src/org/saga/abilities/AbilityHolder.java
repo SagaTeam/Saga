@@ -1,6 +1,7 @@
 package org.saga.abilities;
 
-import java.util.Vector;
+import java.util.*;
+import org.saga.*;
 
 public class AbilityHolder {
 
@@ -8,7 +9,7 @@ public class AbilityHolder {
 	/**
 	 * Prefix for integrity check.
 	 */
-	private static String INTEGRITY_CHECK_PREFIX= "profession:";
+	private static String INTEGRITY_CHECK_PREFIX = "profession:";
 
 	
 	// Abilities:
@@ -42,40 +43,55 @@ public class AbilityHolder {
 	 * @param problematicFields Vector containing all problematic field names.
 	 * @return true, if everything is ok
 	 */
-	public boolean checkIntegrity(Vector<String> problematicFields) {
-		
+	public boolean checkIntegrity(ArrayList<String> problematicFields) {
 		
 		// Check abilities:
-		if(allAbilities==null){
-			allAbilities= new Ability[2];
+		if( allAbilities == null ){
+                    allAbilities = new Ability[2];
 		}
 		
 		// Counterattack:
-		if(counterattack==null){
-			counterattack= new CounterattackAbility();
-			problematicFields.add(INTEGRITY_CHECK_PREFIX+ "counterattack");
-			counterattack.checkIntegrity(new Vector<String>());
+		if( counterattack == null ){
+                    counterattack = new CounterattackAbility();
+                    problematicFields.add(INTEGRITY_CHECK_PREFIX + "counterattack");
+                    counterattack.checkIntegrity(problematicFields);
 		}
-		allAbilities[0]=counterattack;
+		allAbilities[0] = counterattack;
 		
 		// Counterattack:
-		if(disarm==null){
-			disarm= new DisarmAbility();
-			problematicFields.add(INTEGRITY_CHECK_PREFIX+ "disarm");
-			disarm.checkIntegrity(new Vector<String>());
+		if( disarm == null ) {
+                    disarm = new DisarmAbility();
+                    problematicFields.add(INTEGRITY_CHECK_PREFIX + "disarm");
+                    disarm.checkIntegrity(problematicFields);
 		}
-		allAbilities[1]=disarm;
+		allAbilities[1] = disarm;
 		
 		
 		// All abilities:
 		for (int i = 0; i < allAbilities.length; i++) {
-			allAbilities[i].checkIntegrity(problematicFields);
+                    allAbilities[i].checkIntegrity(problematicFields);
 		}
 		
-		
-		return problematicFields.size()==0;
+		return problematicFields.isEmpty();
 		
 	}
 	
-	
+        public boolean checkIntegrity() {
+
+            ArrayList<String> problematicFields = new ArrayList<String>();
+
+            if ( this.checkIntegrity(problematicFields) == true) {
+                return true;
+            }
+
+            for ( String field : problematicFields ) {
+
+                Saga.warning(field + " data invalid! Loaded default.");
+
+            }
+
+            return false;
+
+        }
+
 }

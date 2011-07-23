@@ -11,6 +11,7 @@ import java.util.logging.*;
 import org.sk89q.*;
 import org.saga.utility.*;
 import org.saga.exceptions.*;
+import org.saga.professions.*;
 
 //External Imports
 import java.util.*;
@@ -28,6 +29,9 @@ import org.bukkit.entity.*;
 import org.bukkit.plugin.*;
 import org.bukkit.plugin.java.*;
 
+import com.google.gson.*;
+import com.google.gson.reflect.*;
+import java.lang.reflect.Type;
 
 /**
  *
@@ -50,10 +54,6 @@ public class Saga extends JavaPlugin {
     private HashMap<String,SagaPlayer> loadedPlayers;
     private SagaPlayerListener playerListener;
 
-    public Saga() {
-
-    }
-
     static public Saga plugin() {
         return instance;
     }
@@ -73,7 +73,7 @@ public class Saga extends JavaPlugin {
 
         //Remove global instances
         Saga.instance = null;
-        Saga.balanceInformation=null;
+        Saga.balanceInformation = null;
         
     	//Say Goodbye
         Saga.info("Saga Goodbye!");
@@ -93,10 +93,10 @@ public class Saga extends JavaPlugin {
         loadedPlayers = new HashMap<String,SagaPlayer>();
 
         // Add all already online players:
-        Player[] onlinePlayers= getServer().getOnlinePlayers();
+        Player[] onlinePlayers = getServer().getOnlinePlayers();
         for (int i = 0; i < onlinePlayers.length; i++) {
-			addPlayer(onlinePlayers[i]);
-		}
+            addPlayer(onlinePlayers[i]);
+        }
         
         PluginManager pluginManager = getServer().getPluginManager();
         Plugin test = null;
@@ -106,6 +106,8 @@ public class Saga extends JavaPlugin {
         if ( test != null ) {
             Saga.info("Saga found Group Manager plugin!");
             worldsHolder = ((GroupManager)test).getWorldsHolder();
+        } else {
+            Saga.warning("Group Manager not found! Op only permissions!");
         }
 
         //Setup Command Manager
@@ -128,25 +130,33 @@ public class Saga extends JavaPlugin {
         // Read balance information:
         BalanceInformation balanceInformation;
         try {
-        	balanceInformation = WriterReader.readBalanceInformation();
+
+            balanceInformation = WriterReader.readBalanceInformation();
+
         } catch (FileNotFoundException e) {
+
             Saga.severe("Missing balance information. Loading defaults and generating default balance information file.");
-            balanceInformation= new BalanceInformation();
-            balanceInformation.checkIntegrity(new Vector<String>());
+
+            balanceInformation = new BalanceInformation();
+            balanceInformation.checkIntegrity(new ArrayList<String>());
+
             // Write a new one:
             try {
-				WriterReader.writeBalanceInformation(balanceInformation);
-			} catch (Exception e2) {
-				Saga.severe("Balance information file save failure.");
-			}
+                WriterReader.writeBalanceInformation(balanceInformation);
+            } catch (Exception e2) {
+                Saga.severe("Balance information file save failure.");
+            }
+
         }catch (IOException e) {
+
             Saga.exception("Balance information load failure. Loading defaults.",e);
-            balanceInformation= new BalanceInformation();
-            balanceInformation.checkIntegrity(new Vector<String>());
+            balanceInformation = new BalanceInformation();
+            balanceInformation.checkIntegrity(new ArrayList<String>());
+
         }
         
         // Set global balance information:
-        Saga.balanceInformation= balanceInformation;
+        Saga.balanceInformation = balanceInformation;
 
         //Create listeners
         playerListener = new SagaPlayerListener(this);
@@ -170,34 +180,39 @@ public class Saga extends JavaPlugin {
      */
     public void addPlayer(Player player) {
     	
-    	
-    	SagaPlayer sagaPlayer;
-    	
+    	SagaPlayer sagaPlayer = loadedPlayers.get(player.getName());
+
     	// Load if saga player isn't already loaded:
-    	if((sagaPlayer= loadedPlayers.get(player.getName()))!=null){
-    		Saga.info("Saga player already loaded. Wrapping player.", player.getName());
-    	}else{
-    		loadSagaPlayer(player.getName());
-    		sagaPlayer= loadedPlayers.get(player.getName());
+    	if( sagaPlayer != null ) {
+            sagaPlayer.setPlayer(player);
+            return;
     	}
-    	
+
+        //Player isn't loaded, so try loading
+        loadSagaPlayer(player.getName());
+
+        sagaPlayer = loadedPlayers.get(player.getName());
+
+        if ( sagaPlayer == null ) {
+            Saga.severe("Saga player was supposed to have been loaded!!");
+        }
+
     	// Notify if saving is disabled:
-    	if(!sagaPlayer.isSavingEnabled()){
-    		player.sendMessage(Messages.PLAYER_ERROR_MESSAGE);
-    		player.sendMessage("You player information will not be saved during this session!");
+    	if( !sagaPlayer.isSavingEnabled() ) {
+            player.sendMessage(Messages.PLAYER_ERROR_MESSAGE);
+            player.sendMessage("You player information will not be saved during this session!");
         }
     	
     	// Check if online:
-    	if(sagaPlayer.isOnlinePlayer()){
-    		severe("Cant wrap player, because sagaPlayer is already set to online. Wrapping ignored. ", player.getName());
-    		return;
+    	if( sagaPlayer.isOnlinePlayer() ) {
+            severe("Cant wrap player, because sagaPlayer is already set to online. Wrapping ignored. ", player.getName());
+            return;
     	}
     	
     	// Add the player and set sagaPlayer status to online:
     	sagaPlayer.setPlayer(player);
-    	
 
-	}
+    }
     
     /**
      * Loads a saga player as offline.
@@ -206,33 +221,39 @@ public class Saga extends JavaPlugin {
      */
     private void loadSagaPlayer(String name) {
     	
-    	
     	SagaPlayer sagaPlayer;
     	
     	// Check if already loaded:
-    	if(loadedPlayers.get(name)!=null){
-    		severe("Tried loading an already loaded saga player. Loading ignored.", name);
-    		return;
+    	if( loadedPlayers.get(name) != null ){
+            severe("Tried loading an already loaded saga player. Loading ignored.", name);
+            return;
     	}
-    	sagaPlayer= SagaPlayer.load(name);
+
+    	sagaPlayer = SagaPlayer.load(name);
     	loadedPlayers.put(name, sagaPlayer);
     	
     	// Integrity check:
-    	Vector<String> problematicFields= new Vector<String>();
+    	ArrayList<String> problematicFields = new ArrayList<String>();
     	sagaPlayer.checkIntegrity(problematicFields);
-    	if(problematicFields.size()!=0){
-    		String probString="";
-    		for (String string : problematicFields) {
-				if(probString.length()!=0){
-					probString+=", ";
-				}
-				probString+=string;
-			}
-    		warning("Integrity check found problematic fields: "+probString+". Integrity check set defaults.", name);
-    	}
+    	
+        if( !problematicFields.isEmpty() ) {
+
+            String probString = "";
+            for ( String string : problematicFields ) {
+
+                if( probString.length() != 0 ){
+                    probString += ", ";
+                }
+
+                probString += string;
+
+            }
+            Saga.warning("Integrity check found problematic fields: "+probString+". Integrity check set defaults.", name);
+
+        }
     	
     	
-	}
+    }
 
     /**
      * Unwraps the player and unloads saga player from the list.
@@ -241,19 +262,18 @@ public class Saga extends JavaPlugin {
      */
     public void removePlayer(String name) {
 
-
     	SagaPlayer sagaPlayer;
     	// Check if loaded:
-    	if((sagaPlayer= loadedPlayers.get(name))==null){
-    		severe("Cant remove player wrap form non-existant saga player. Player information not saved.", name);
-    		return;
+    	if( (sagaPlayer= loadedPlayers.get(name)) == null ) {
+            severe("Cant remove player wrap form non-existant saga player. Player information not saved.", name);
+            return;
     	}
     	
     	// Remove if online:
-    	if(!sagaPlayer.isOnlinePlayer()){
-    		severe("Cant remove player wrap from an offline player.", name);
-    	}else{
-    		sagaPlayer.removePlayer();
+    	if( !sagaPlayer.isOnlinePlayer() ) {
+            severe("Cant remove player wrap from an offline player.", name);
+    	} else {
+            sagaPlayer.removePlayer();
     	}
 
         //Save player data:
@@ -262,7 +282,6 @@ public class Saga extends JavaPlugin {
         // Unload saga player:
         unloadSagaPlayer(name);
 
-        
     }
     
     /**
@@ -273,23 +292,21 @@ public class Saga extends JavaPlugin {
      */
     private void unloadSagaPlayer(String name) {
     	
-    	
     	// Check if already unloaded:
-    	if(loadedPlayers.get(name)==null){
-    		severe("Tried unloading an already not loaded saga player.", name);
-    		return;
+    	if( loadedPlayers.get(name) == null ) {
+            severe("Tried unloading an already not loaded saga player.", name);
+            return;
     	}
     	
     	// Check if the player is still wrapped:
-    	if(loadedPlayers.get(name).isOnlinePlayer()){
-    		severe("Tried unloading a online saga player. Unloading ignored.", name);
-    		return;
+    	if( loadedPlayers.get(name).isOnlinePlayer() ) {
+            severe("Tried unloading a online saga player. Unloading ignored.", name);
+            return;
     	}
     	
     	loadedPlayers.remove(name);
     	
-    	
-	}
+    }
 
     /**
      * Removes all players.
@@ -308,8 +325,6 @@ public class Saga extends JavaPlugin {
         loadedPlayers.clear();
 
     }
-
-
     
     //This code handles commands
     public boolean handleCommand(Player player, String[] split, String command) {
@@ -467,12 +482,52 @@ public class Saga extends JavaPlugin {
             return;
         }
 
-
-        string = "[DEBUG] " + string;
+        string = "[DEBUG] (" + playerName + ") " + string;
 
         //Set to log
         log.info(string);
 
     }
+
+    /*
+    public static void main(String[] args) {
+
+        ArrayList<Profession> professionList = new ArrayList<Profession>();
+
+        //Load up some professions
+        professionList.add(new WoodcutterProfession());
+        professionList.add(new FighterProfession());
+
+        GsonBuilder gsonBuilder  = new GsonBuilder();
+        gsonBuilder.registerTypeAdapter(Profession.class, new ProfessionDeserializer());
+
+        Gson gson = gsonBuilder.create();
+
+        Type type = new TypeToken<ArrayList<Profession>>(){}.getType();
+        String json = gson.toJson(professionList,type);
+
+        //Read the json data
+        professionList = gson.fromJson(json, type);
+
+        if ( professionList == null ) {
+            info("List is null!");
+            return;
+        }
+
+        for ( int i = 0; i < professionList.size(); i++ ) {
+
+            Profession prof = professionList.get(i);
+
+            if ( prof == null ) {
+                info("prof is null : " + i);
+            } else {
+                info("Got Class " + prof.getClass().getName());
+            }
+
+            //info("Got class: " + prof.getClass().getSimpleName() );
+
+        }
+
+    }*/
 
 }

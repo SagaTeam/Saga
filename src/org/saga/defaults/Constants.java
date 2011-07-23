@@ -13,8 +13,7 @@ import org.bukkit.ChatColor;
  */
 public class Constants {
 
-    public static ChatColor infoColor = ChatColor.AQUA;
-    public static ChatColor warningColor = ChatColor.YELLOW;
-    public static ChatColor severeColor = ChatColor.RED;
+    public static final String PLUGIN_DIRECTORY = "./Saga/";
+    public static final String PLAYER_DIRECTORY = "./Saga/Players/";
 
 }

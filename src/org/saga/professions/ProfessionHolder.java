@@ -1,6 +1,6 @@
 package org.saga.professions;
 
-import java.util.Vector;
+import java.util.*;
 
 import org.bukkit.entity.Player;
 import org.bukkit.event.block.BlockBreakEvent;
@@ -71,12 +71,10 @@ public class ProfessionHolder {
 	 */
 	public void setAccess(Saga plugin, BalanceInformation balanceInformation, SagaPlayer sagaPlayer) {
 		
-		
-		// Add to all professions:
-		for (int i = 0; i < allProfessions.length; i++) {
-			allProfessions[i].setAccess(sagaPlayer);
-		}
-		
+            // Add to all professions:
+            for (int i = 0; i < allProfessions.length; i++) {
+                    allProfessions[i].setAccess(sagaPlayer);
+            }
 		
 	}
 	
@@ -167,55 +165,72 @@ public class ProfessionHolder {
 	 * @param problematicFields Vector containing all problematic field names.
 	 * @return true, if everything is ok
 	 */
-	public Boolean checkIntegrity(Vector<String> problematicFields) {
+	public Boolean checkIntegrity(ArrayList<String> problematicFields) {
 		
 		
-		// Initialize professions:
-		if(allProfessions==null){
-			allProfessions= new Profession[2];
-		}
-		if(allSelectedProfessions==null){
-			allSelectedProfessions= new Boolean[2];
-		}
-		
-		// Fighter:
-		if(fighter==null){
-			fighter= new FighterProfession();
-			problematicFields.add(INTEGRITY_CHECK_PREFIX+"fighter");
-			fighter.checkIntegrity(new Vector<String>());
-		}
-		allProfessions[0]=fighter;
-		if(fighterSelected==null){
-			fighterSelected=true;
-		}
-		allSelectedProfessions[0]=fighterSelected;
-		
-		// Woodcutter:
-		if(woodcutter==null){
-			woodcutter= new WoodcutterProfession();
-			problematicFields.add(INTEGRITY_CHECK_PREFIX+"woodcutter");
-			woodcutter.checkIntegrity(new Vector<String>());
-		}
-		allProfessions[1]=woodcutter;
-		if(woodcutterSelected==null){
-			woodcutterSelected=true;
-		}
-		allSelectedProfessions[1]=woodcutterSelected;
-		
-		
-		
-		// Check all Professions:
-		for (int i = 0; i < allProfessions.length; i++) {
-			allProfessions[i].checkIntegrity(problematicFields);
-		}
-		
-		
-		return problematicFields.size()!=0;
-		
-		
+            // Initialize professions:
+            if( allProfessions == null ) {
+                allProfessions= new Profession[2];
+            }
+            if( allSelectedProfessions == null ){
+                allSelectedProfessions= new Boolean[2];
+            }
+
+            // Fighter:
+            if( fighter == null ) {
+                fighter = new FighterProfession();
+                problematicFields.add(INTEGRITY_CHECK_PREFIX+"fighter");
+                fighter.checkIntegrity(new ArrayList<String>());
+            }
+
+            allProfessions[0]=fighter;
+            
+            if( fighterSelected == null ) {
+                fighterSelected = true;
+            }
+            
+            allSelectedProfessions[0] = fighterSelected;
+
+            // Woodcutter:
+            if( woodcutter == null ) {
+                woodcutter= new WoodcutterProfession();
+                problematicFields.add(INTEGRITY_CHECK_PREFIX+"woodcutter");
+                woodcutter.checkIntegrity(new ArrayList<String>());
+            }
+
+            allProfessions[1] = woodcutter;
+
+            if( woodcutterSelected == null ) {
+                woodcutterSelected = true;
+            }
+            allSelectedProfessions[1] = woodcutterSelected;
+
+            // Check all Professions:
+            for (int i = 0; i < allProfessions.length; i++) {
+                allProfessions[i].checkIntegrity(problematicFields);
+            }
+
+            return !problematicFields.isEmpty();
 		
 	}
-	
+
+        public boolean checkIntegrity() {
+
+            ArrayList<String> problematicFields = new ArrayList<String>();
+
+            if ( this.checkIntegrity(problematicFields) == true) {
+                return true;
+            }
+
+            for ( String field : problematicFields ) {
+
+                Saga.warning(field + " data invalid! Loaded default.");
+
+            }
+
+            return false;
+
+        }
 	
 	
 }

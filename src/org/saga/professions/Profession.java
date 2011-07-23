@@ -1,11 +1,12 @@
 package org.saga.professions;
 
-import java.util.Vector;
+import java.util.*;
 
 import org.saga.Messages;
 import org.saga.PlayerDefaults;
 import org.saga.SagaPlayer;
 import org.saga.abilities.Ability;
+import org.saga.*;
 
 public abstract class Profession {
 
@@ -14,7 +15,7 @@ public abstract class Profession {
 	/**
 	 * Profession name.
 	 */
-	private final String professionName= getProfessionName();
+	private final String professionName = getProfessionName();
 	
 	// Player information:
 	/**
@@ -129,26 +130,44 @@ public abstract class Profession {
 	 * @param problematicFields Vector containing all problematic field names.
 	 * @return true, if everything is ok
 	 */
-	public boolean checkIntegrity(Vector<String> problematicFields) {
+	public boolean checkIntegrity(ArrayList<String> problematicFields) {
 		
 		
 		// All fields:
 		if(level==null){
 			level= PlayerDefaults.level;
-			problematicFields.add(getProfessionName()+":"+"level");
+			problematicFields.add(getProfessionName() + ":level");
 		}
 		if(levelExperience==null){
 			levelExperience= PlayerDefaults.levelExperience;
-			problematicFields.add(getProfessionName()+":"+"levelExperience");
+			problematicFields.add(getProfessionName()+":levelExperience");
 		}
 		
 		// Check extension:
 		checkExtensionIntegrity(problematicFields);
 		
-		return problematicFields.size()==0;
+		return problematicFields.isEmpty();
 
 		
 	}
+
+        public boolean checkIntegrity() {
+
+            ArrayList<String> problematicFields = new ArrayList<String>();
+
+            if ( this.checkIntegrity(problematicFields) == true) {
+                return true;
+            }
+
+            for ( String field : problematicFields ) {
+
+                Saga.warning(field + " data invalid! Loaded default.");
+
+            }
+
+            return false;
+
+        }
 	
 	/**
 	 * Checks the integrity of the player information.
@@ -157,7 +176,7 @@ public abstract class Profession {
 	 * @param problematicFields Vector containing all problematic field names.
 	 * @return true, if everything is ok
 	 */
-	protected abstract boolean checkExtensionIntegrity(Vector<String> problematicFields);
+	protected abstract boolean checkExtensionIntegrity(ArrayList<String> problematicFields);
 	
 
 }

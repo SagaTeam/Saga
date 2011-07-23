@@ -1,6 +1,6 @@
 package org.saga.professions;
 
-import java.util.Vector;
+import java.util.*;
 
 import org.saga.abilities.Ability;
 
@@ -12,7 +12,7 @@ public class FighterProfession extends Profession {
 	transient private static final String PROFESSION_NAME= "fighter";
 
         @Override
-	protected boolean checkExtensionIntegrity(Vector<String> problematicFields) {
+	protected boolean checkExtensionIntegrity(ArrayList<String> problematicFields) {
 		// TODO Auto-generated method stub
 		return true;
 	}

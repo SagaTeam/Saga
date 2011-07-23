@@ -1,21 +1,16 @@
 package org.saga;
 
-import java.io.FileNotFoundException;
-import java.io.IOException;
-import java.util.Enumeration;
-import java.util.Vector;
+import java.io.*;
+import java.util.*;
 
 import org.bukkit.entity.Player;
-import org.bukkit.event.block.BlockBreakEvent;
-import org.bukkit.event.block.BlockPlaceEvent;
+import org.bukkit.event.block.*;
 import org.bukkit.event.entity.EntityDamageByEntityEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
-import org.saga.abilities.Ability;
-import org.saga.professions.FighterProfession;
-import org.saga.professions.Profession;
-import org.saga.professions.ProfessionHolder;
-import org.saga.professions.WoodcutterProfession;
+import org.saga.abilities.*;
+import org.saga.professions.*;
 import org.saga.utility.WriterReader;
+import org.saga.defaults.*;
 
 import com.google.gson.JsonParseException;
 
@@ -26,7 +21,7 @@ public class SagaPlayer{
 	/**
 	 * Name.
 	 */
-	private String name=null;
+	private String name = null;
 	
 	/**
 	 * Stamina.
@@ -71,10 +66,8 @@ public class SagaPlayer{
 	 */
 	public SagaPlayer() {
 		
-		
-		// Sets to offline by default.
-		isOnlinePlayer=false;
-		
+            // Sets to offline by default.
+            isOnlinePlayer = false;
 		
 	}
 	
@@ -86,7 +79,7 @@ public class SagaPlayer{
 	 * @return player name
 	 */
 	public String getName() {
-		return name;
+            return name;
 	}
 	
 	/**
@@ -95,7 +88,7 @@ public class SagaPlayer{
 	 * @param name player name
 	 */
 	private void setName(String name) {
-		this.name = name;
+            this.name = name;
 	}
 	
 	/**
@@ -104,7 +97,7 @@ public class SagaPlayer{
 	 * @return player name
 	 */
 	public Player getPlayer() {
-		return player;
+            return player;
 	}
 
 	/**
@@ -113,8 +106,8 @@ public class SagaPlayer{
 	 * @param player player
 	 */
 	public void setPlayer(Player player) {
-		this.player = player;
-		isOnlinePlayer=true;
+            this.player = player;
+            isOnlinePlayer = true;
 	}
 	
 	/**
@@ -123,7 +116,7 @@ public class SagaPlayer{
 	 */
 	public void removePlayer() {
 		this.player = null;
-		isOnlinePlayer=false;
+		isOnlinePlayer = false;
 	}
 	
 	/**
@@ -133,8 +126,8 @@ public class SagaPlayer{
 	 */
 	public void drainStamina(Double drainAmount) {
 
-		stamina-=drainAmount;
-		sendMessage(Messages.staminaUsed(drainAmount, getStamina(), getMaximumStamina()));
+		stamina -= drainAmount;
+		this.info(Messages.staminaUsed(drainAmount, getStamina(), getMaximumStamina()));
 		
 	}
 	
@@ -177,11 +170,9 @@ public class SagaPlayer{
 	 */
 	public void sendMessage(String message) {
 		
-		
-		if(isOnlinePlayer()){
-			player.sendMessage(message);
-		}
-		
+            if(isOnlinePlayer()){
+                    player.sendMessage(message);
+            }
 
 	}
 	
@@ -193,8 +184,6 @@ public class SagaPlayer{
 	 */
 	public void gotDamagedByLivingEntityEvent(EntityDamageByEntityEvent pEvent) {
 
-
-
 	}
 
 	/**
@@ -204,8 +193,6 @@ public class SagaPlayer{
 	 */
 	public void damagedLivingEntityEvent(EntityDamageByEntityEvent pEvent) {
 
-
-
 	}
 
 	/**
@@ -214,8 +201,8 @@ public class SagaPlayer{
 	 * @param pEvent event
 	 */
 	public void leftClickInteractEvent(PlayerInteractEvent pEvent) {
-		// Forward to wrapped professions:
-		professions.leftClickInteractEvent(pEvent);
+            // Forward to wrapped professions:
+            professions.leftClickInteractEvent(pEvent);
 	}
 
 	/**
@@ -224,8 +211,8 @@ public class SagaPlayer{
 	 * @param pEvent event
 	 */
 	public void rightClickInteractEvent(PlayerInteractEvent pEvent) {
-		// Forward to wrapped professions:
-		professions.rightClickInteractEvent(pEvent);
+            // Forward to wrapped professions:
+            professions.rightClickInteractEvent(pEvent);
 	}
 
 	/**
@@ -234,8 +221,8 @@ public class SagaPlayer{
 	 * @param pEvent event
 	 */
 	public void placedBlockEvent(BlockPlaceEvent pEvent) {
-		// Forward to wrapped professions:
-		professions.placedBlockEvent(pEvent);
+            // Forward to wrapped professions:
+            professions.placedBlockEvent(pEvent);
 	}
 
 	/**
@@ -244,10 +231,8 @@ public class SagaPlayer{
 	 * @param pEvent event
 	 */
 	public void brokeBlockEvent(BlockBreakEvent pEvent) {
-
             // Forward to wrapped professions:
             professions.brokeBlockEvent(pEvent);
-
 	}
 
 	/**
@@ -256,8 +241,8 @@ public class SagaPlayer{
 	 * @param pTick tick number
 	 */
 	public void clockTickEvent(int pTick) {
-		// Forward to wrapped professions:
-		professions.clockTickEvent(pTick);
+            // Forward to wrapped professions:
+            professions.clockTickEvent(pTick);
 	}
 
 	
@@ -275,45 +260,44 @@ public class SagaPlayer{
 
 	public static SagaPlayer load(String playerName){
 		
-		// Try loading:
-		SagaPlayer sagaPlayer;
+            // Try loading:
+            SagaPlayer sagaPlayer;
 
-                // Try loading:
-		try {
+            // Try loading:
+            try {
 
-                    sagaPlayer = WriterReader.readPlayerInformation(playerName);
+                sagaPlayer = WriterReader.readPlayerInformation(playerName);
 
-		} catch (FileNotFoundException e) {
+            } catch (FileNotFoundException e) {
 
-                    Saga.info("Player information file not found. Loading default information.", playerName);
-                    sagaPlayer = new SagaPlayer();
-                    sagaPlayer.checkIntegrity(new Vector<String>());
+                Saga.info("Player information file not found. Loading default information.", playerName);
+                sagaPlayer = new SagaPlayer();
+                sagaPlayer.checkIntegrity();
 
-		} catch (IOException e) {
+            } catch (IOException e) {
 
-			Saga.severe("Player information file not found. Loading default and disabling saving.", playerName);
-			sagaPlayer= new SagaPlayer();
-			sagaPlayer.setSavingEnabled(false);
-			sagaPlayer.checkIntegrity(new Vector<String>());
-		} catch (JsonParseException e) {
-			Saga.severe("Player information file parse failure. Loading default information and disabling saving.", playerName);
-			sagaPlayer= new SagaPlayer();
-			sagaPlayer.setSavingEnabled(false);
-			sagaPlayer.checkIntegrity(new Vector<String>());
-//			if(player!=null){
-//				player.sendMessage(Messages.PLAYER_ERROR_MESSAGE);
-//				player.sendMessage("Can't read player information. Your progress will not be saved for this session!");
-//				}
-			Saga.severe("Can't read player information. Loading default and disabling saving.", playerName);
-			// TODO Rename user information file to recover the corrupt data
-		}
-		
-		// Set name:
-		sagaPlayer.setName(playerName);
-		
-		// Add access:
-		
-		return sagaPlayer;
+                Saga.severe("Player information file not found. Loading default and disabling saving.", playerName);
+                sagaPlayer= new SagaPlayer();
+                sagaPlayer.setSavingEnabled(false);
+                sagaPlayer.checkIntegrity();
+
+            } catch (JsonParseException e) {
+
+                Saga.severe("Player information file parse failure. Loading default information and disabling saving.", playerName);
+                sagaPlayer= new SagaPlayer();
+                sagaPlayer.setSavingEnabled(false);
+                sagaPlayer.checkIntegrity();
+                Saga.severe("Can't read player information. Loading default and disabling saving.", playerName);
+                // TODO Rename user information file to recover the corrupt data
+
+            }
+
+            // Set name:
+            sagaPlayer.setName(playerName);
+
+            // Add access:
+
+            return sagaPlayer;
 				
 
 	}
@@ -324,15 +308,17 @@ public class SagaPlayer{
 	public void save() {
 		
 		
-		if(isSavingEnabled()){
-			try {
-				WriterReader.writePlayerInformation(getName(), this);
-			} catch (Exception e) {
-				Saga.severe("Player information save failure.", getName());
-			}
-		}else{
-			Saga.info("Player information saving denied.", getName());
-		}
+            if( isSavingEnabled() ) {
+
+                try {
+                    WriterReader.writePlayerInformation(getName(), this);
+                } catch (Exception e) {
+                    Saga.severe("Player information save failure.", getName());
+                }
+
+            } else {
+                Saga.info("Player information saving denied.", getName());
+            }
 
 		
 	}
@@ -346,34 +332,53 @@ public class SagaPlayer{
 	 * @param problematicFields Vector containing all problematic field names.
 	 * @return true, if everything is ok
 	 */
-	public Boolean checkIntegrity(Vector<String> problematicFields) {
+	public boolean checkIntegrity(ArrayList<String> problematicFields) {
 		
 		
 		// Professions field:
-		if(professions==null){
-			professions= new ProfessionHolder();
-			problematicFields.add("professions");
-			professions.checkIntegrity(new Vector<String>());
+		if( professions == null ) {
+                    professions= new ProfessionHolder();
+                    problematicFields.add("professions");
+                    professions.checkIntegrity(new ArrayList<String>());
 		}
 		
 		// Professions:
 		professions.checkIntegrity(problematicFields);
 		
 		// All fields:
-		if(name==null){
-			name= PlayerDefaults.name;
-			problematicFields.add("name");
+		if( name == null ){
+                    name = PlayerDefaults.name;
+                    problematicFields.add("name");
 		}
-		if(stamina==null){
-			stamina= PlayerDefaults.stamina;
-			problematicFields.add("stamina");
+
+		if( stamina == null ){
+                    stamina = PlayerDefaults.stamina;
+                    problematicFields.add("stamina");
 		}
 		
 		
-		return problematicFields.size()==0;
+		return problematicFields.isEmpty();
 
 		
 	}
+
+        public boolean checkIntegrity() {
+
+            ArrayList<String> problematicFields = new ArrayList<String>();
+
+            if ( this.checkIntegrity(problematicFields) == true) {
+                return true;
+            }
+
+            for ( String field : problematicFields ) {
+
+                Saga.warning(field + " data invalid! Loaded default.", this.name);
+
+            }
+
+            return false;
+
+        }
 	
 	
 	// Control:
@@ -383,7 +388,7 @@ public class SagaPlayer{
 	 * @return true if the player is online
 	 */
 	public boolean isOnlinePlayer() {
-		return isOnlinePlayer;
+            return isOnlinePlayer;
 	}
 	
 	/**
@@ -392,7 +397,7 @@ public class SagaPlayer{
 	 * @return true if player information should be saved
 	 */
 	public boolean isSavingEnabled() {
-		return isSavingEnabled;
+            return isSavingEnabled;
 	}
 	
 	/**
@@ -401,7 +406,31 @@ public class SagaPlayer{
 	 * @param savingDisabled true if player information should be disabled 
 	 */
 	public void setSavingEnabled(boolean savingDisabled) {
-		this.isSavingEnabled = savingDisabled;
+            this.isSavingEnabled = savingDisabled;
 	}
-	
+
+        public void info(String message) {
+
+            if ( isOnlinePlayer() ) {
+                this.player.sendMessage(Config.infoColor + message);
+            }
+
+        }
+
+        public void warning(String message) {
+
+            if ( isOnlinePlayer() ) {
+                this.player.sendMessage(Config.warningColor + message);
+            }
+
+        }
+
+        public void severe(String message) {
+
+            if ( isOnlinePlayer() ) {
+                this.player.sendMessage(Config.warningColor + message);
+            }
+
+        }
+
 }

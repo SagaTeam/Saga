@@ -1,6 +1,6 @@
 package org.saga.abilities;
 
-import java.util.Vector;
+import java.util.*;
 
 public abstract class Ability {
 
@@ -75,7 +75,7 @@ public abstract class Ability {
 	 */
 	public boolean levelHighEnough(Short level) {
 
-		return levelStaminaFunctionX1>=level;
+            return levelStaminaFunctionX1 >= level;
 		
 	}
 	
@@ -87,36 +87,38 @@ public abstract class Ability {
 	 * @param problematicFields Vector containing all problematic field names.
 	 * @return true, if everything is ok
 	 */
-	public boolean checkIntegrity(Vector<String> problematicFields) {
-		
-		
-		// Fields:
-		if(abilityName==null){
-			abilityName= "null";
-			problematicFields.add("abilityName");
-		}
-		if(levelStaminaFunctionX1==null){
-			levelStaminaFunctionX1= 100;
-			problematicFields.add("levelStaminaFunctionX1");
-		}
-		if(levelStaminaFunctionY1==null){
-			levelStaminaFunctionY1= 100.0;
-			problematicFields.add("levelStaminaFunctionY1");
-		}
-		if(levelStaminaFunctionX2==null){
-			levelStaminaFunctionX2= 100;
-			problematicFields.add("levelStaminaFunctionX2");
-		}
-		if(levelStaminaFunctionY2==null){
-			levelStaminaFunctionY2= 100.0;
-			problematicFields.add("levelStaminaFunctionY2");
-		}
-		
-		// Check extension:
-		checkExtensionIntegrity(problematicFields);
-		
-		return problematicFields.size()!=0;
+	public boolean checkIntegrity(ArrayList<String> problematicFields) {
 
+            // Fields:
+            if( abilityName == null ){
+                abilityName = "null";
+                problematicFields.add("abilityName");
+            }
+
+            if( levelStaminaFunctionX1 == null ) {
+                levelStaminaFunctionX1 = 100;
+                problematicFields.add("levelStaminaFunctionX1");
+            }
+
+            if( levelStaminaFunctionY1 == null ){
+                levelStaminaFunctionY1 = 100.0;
+                problematicFields.add("levelStaminaFunctionY1");
+            }
+
+            if( levelStaminaFunctionX2 == null ){
+                levelStaminaFunctionX2 = 100;
+                problematicFields.add("levelStaminaFunctionX2");
+            }
+
+            if( levelStaminaFunctionY2 == null ){
+                levelStaminaFunctionY2 = 100.0;
+                problematicFields.add("levelStaminaFunctionY2");
+            }
+
+            // Check extension:
+            checkExtensionIntegrity(problematicFields);
+
+            return problematicFields.isEmpty();
 		
 	}
 	
@@ -127,7 +129,7 @@ public abstract class Ability {
 	 * @param problematicFields Vector containing all problematic field names.
 	 * @return true, if everything is ok
 	 */
-	protected abstract boolean checkExtensionIntegrity(Vector<String> problematicFields);
+	protected abstract boolean checkExtensionIntegrity(ArrayList<String> problematicFields);
 	
 	
 	

@@ -11,6 +11,7 @@ import com.google.gson.Gson;
 import com.google.gson.InstanceCreator;
 import com.google.gson.JsonParseException;
 import com.google.gson.JsonSyntaxException;
+import org.saga.defaults.*;
 
 public class WriterReader {
 
@@ -23,7 +24,7 @@ public class WriterReader {
 	 * Player information directory.
 	 */
 //	private static String PLAYER_INFORMATION_DIRECTORY="/home/andf/data/java/minecraft/plugins/SagaPlayer/players/";
-	private static String PLAYER_INFORMATION_DIRECTORY=MAIN_DIRECTORY+File.separator+"players"+File.separator;
+	private static String PLAYER_INFORMATION_DIRECTORY = Constants.PLAYER_DIRECTORY;
 	
 	/**
 	 * Balance information location.
@@ -49,7 +50,7 @@ public class WriterReader {
 	 */
 	public static SagaPlayer readPlayerInformation(String pPlayerName) throws FileNotFoundException,IOException,JsonParseException {
 
-            String directory= PLAYER_INFORMATION_DIRECTORY+pPlayerName+".json";
+            String directory = Constants.PLAYER_DIRECTORY + pPlayerName + ".json";
         
             File file = new File(directory);
             int ch;
@@ -57,12 +58,11 @@ public class WriterReader {
             FileInputStream fin = null;
             fin = new FileInputStream(file);
             while ((ch = fin.read()) != -1){
-                    strContent.append((char) ch);
+                strContent.append((char) ch);
             }
             fin.close();
-        //        System.out.println(strContent);
 
-            Gson gson= new Gson();
+            Gson gson = new Gson();
             return gson.fromJson(strContent.toString(), SagaPlayer.class);
 		
 		
@@ -81,20 +81,20 @@ public class WriterReader {
 	 */
 	public static void writePlayerInformation(String playerName, SagaPlayer playerInfo) throws IOException {
 		
-            File directory = new File(PLAYER_INFORMATION_DIRECTORY);
-            File file = new File(PLAYER_INFORMATION_DIRECTORY+playerName+".json");
+            File directory = new File(Constants.PLAYER_DIRECTORY);
+            File file = new File(Constants.PLAYER_DIRECTORY + playerName + ".json");
 
             if( !directory.exists() ) {
                 directory.mkdirs();
                 Saga.info("Creating "+directory+" directory.");
             }
 
-            if(!file.exists()){
+            if( !file.exists() ) {
             	file.createNewFile();
             	Saga.info("Creating "+file+" file.");
             }
             
-            Gson gson= new Gson();
+            Gson gson = new Gson();
             
             BufferedWriter out = new BufferedWriter(new FileWriter(file));
             out.write(gson.toJson(playerInfo));
@@ -111,7 +111,7 @@ public class WriterReader {
 	 */
 	public static BalanceInformation readBalanceInformation() throws IOException, JsonParseException{
 
-            String fileDirectory= BALANCE_INFORMATION_DIRECTORY+BALANCE_INFORMATION_FILENAME;
+            String fileDirectory = BALANCE_INFORMATION_DIRECTORY+BALANCE_INFORMATION_FILENAME;
 		
             File file = new File(fileDirectory);
             int ch;
@@ -164,41 +164,37 @@ public class WriterReader {
 	}
 	
 	
-	
+	/*
 	public static void main(String[] args) {
 		
-		SagaPlayer defaultPlayer = new SagaPlayer();
-		defaultPlayer.checkIntegrity(new Vector<String>());
-		
-		
-		try {
-//			writePlayerInformation("oiman", defaultPlayer);
-			SagaPlayer oiMain= readPlayerInformation("oiman");
-			Vector<String> intch= new Vector<String>();
-			System.out.println(oiMain.checkIntegrity(intch));
-			for (int i = 0; i < intch.size(); i++) {
-				System.out.println(intch.get(i));
-			}
-			System.out.println("------------------");
-			intch= new Vector<String>();
-			BalanceInformation balancInfDef= new BalanceInformation();
-			balancInfDef.checkIntegrity(intch);
-			for (int i = 0; i < intch.size(); i++) {
-				System.out.println(intch.get(i));
-			}
-			writeBalanceInformation(balancInfDef);
-			
-			
-			
-			
-			
-		} catch (IOException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
+            SagaPlayer defaultPlayer = new SagaPlayer();
+            defaultPlayer.checkIntegrity(new ArrayList<String>());
+
+
+            try {
+    //			writePlayerInformation("oiman", defaultPlayer);
+                SagaPlayer oiMain = readPlayerInformation("oiman");
+                ArrayList<String> intch = new ArrayList<String>();
+                System.out.println(oiMain.checkIntegrity(intch));
+                for (int i = 0; i < intch.size(); i++) {
+                        System.out.println(intch.get(i));
+                }
+                System.out.println("------------------");
+                intch= new Vector<String>();
+                BalanceInformation balancInfDef= new BalanceInformation();
+                balancInfDef.checkIntegrity(intch);
+                for (int i = 0; i < intch.size(); i++) {
+                        System.out.println(intch.get(i));
+                }
+                writeBalanceInformation(balancInfDef);
+
+            } catch (IOException e) {
+                    // TODO Auto-generated catch block
+                    e.printStackTrace();
+            }
 		
 		
 		
-	}
+	}*/
 	
 }
