@@ -2,6 +2,8 @@ package org.saga.abilities;
 
 import java.util.*;
 
+import org.saga.Saga;
+
 public abstract class Ability {
 
 	
@@ -66,6 +68,57 @@ public abstract class Ability {
 		// TODO Auto-generated constructor stub
 	}
 	
+	/**
+	 * Goes trough all the fields and makes sure everything has been set after gson load.
+	 * If not, it fills the field with defaults.
+	 * 
+	 * @return true if everything was correct.
+	 */
+	public boolean complete() {
+		
+		
+		boolean integrity = true;
+		
+		// Fields:
+		if(levelStaminaFunctionX1==null){
+			levelStaminaFunctionX1 = 100;
+			Saga.info("Setting default value for ability levelStaminaFunctionX1.");
+			integrity = false;
+		}
+		if(levelStaminaFunctionY1==null){
+			levelStaminaFunctionY1 = 1000.0;
+			Saga.info("Setting default value for ability levelStaminaFunctionY1.");
+			integrity = false;
+		}
+		if(levelStaminaFunctionX2==null){
+			levelStaminaFunctionX2 = 100;
+			Saga.info("Setting default value for ability levelStaminaFunctionX2.");
+			integrity = false;
+		}
+		if(levelStaminaFunctionY2==null){
+			levelStaminaFunctionY2 = 1000.0;
+			Saga.info("Setting default value for ability levelStaminaFunctionY2.");
+			integrity = false;
+		}
+		
+		// Inheriting class:
+		if(!completeInheriting()){
+			integrity = false;
+		}
+		
+		return integrity;
+		
+
+	}
+	
+	/**
+	 * Does a complete for all inheriting classes.
+	 * 
+	 * @return true if everything was correct.
+	 */
+	public abstract boolean completeInheriting();
+	
+	
 	
 	// Interaction:
 	/**
@@ -100,7 +153,6 @@ public abstract class Ability {
             return levelStaminaFunctionX1 >= level;
 		
 	}
-	
 	
 	
 }

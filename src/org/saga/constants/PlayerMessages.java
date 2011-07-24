@@ -33,7 +33,13 @@ public class PlayerMessages {
 	/**
 	 * First line of the error report to the player.
 	 */
-	public static String playerErrorMessage=errorColor+"Enouctered a problem, please contact the owner!";
+	public static String playerErrorMessage=errorColor+"Enouctered an error, please contact the owner!";
+	
+	/**
+	 * Information will not be saved.
+	 */
+	public static String yourIformationWillNotBeSaved=errorColor+"Your player information will not be saved during this session.";
+	
 	
 	
 	/**

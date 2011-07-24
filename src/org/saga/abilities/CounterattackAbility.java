@@ -9,13 +9,20 @@ public class CounterattackAbility extends Ability{
 	/**
 	 * Ability name.
 	 */
-	private static final transient String ABILITY_NAME= "counterattack";
+	public static final transient String ABILITY_NAME= "counterattack";
 	
 	
 	public CounterattackAbility() {
 		
             super(ABILITY_NAME, CounterattackAbility.class.getName());
 		
+	}
+
+
+	@Override
+	public boolean completeInheriting() {
+		// TODO Auto-generated method stub
+		return true;
 	}
 
 	

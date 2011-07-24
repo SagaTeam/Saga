@@ -8,6 +8,7 @@ package org.saga;
 import org.bukkit.event.block.Action;
 import org.bukkit.event.Event;
 import org.bukkit.event.player.*;
+import org.saga.exceptions.SagaPlayerNotLoadedException;
 
 /**
  *
@@ -59,22 +60,28 @@ public class SagaPlayerListener extends PlayerListener {
 
     @Override
     public void onPlayerTeleport(PlayerTeleportEvent event) {
-
+    	
+    	
 
     }
 
     @Override
     public void onPlayerInteract(PlayerInteractEvent event) {
 
-//		//Left click:
-//		if(event.getAction().equals(Action.LEFT_CLICK_AIR) || event.getAction().equals(Action.LEFT_CLICK_BLOCK)){
-//			Saga.plugin().abilityUseEvent(event.getPlayer().getName(), event);
-//		}
-//		
-//		//Right click:
-//		else if(event.getAction().equals(Action.RIGHT_CLICK_AIR) || event.getAction().equals(Action.RIGHT_CLICK_BLOCK)){
-//			Saga.plugin().abilityScrollEvent(event.getPlayer().getName(), event);
-//		}
+    	
+    	try {
+			SagaPlayer sagaPlayer = Saga.plugin().getPlayer(event.getPlayer().getName());
+			//Left click:
+			if(event.getAction().equals(Action.LEFT_CLICK_AIR) || event.getAction().equals(Action.LEFT_CLICK_BLOCK)){
+				sagaPlayer.leftClickInteractEvent(event);
+			}
+			//Right click:
+			else if(event.getAction().equals(Action.RIGHT_CLICK_AIR) || event.getAction().equals(Action.RIGHT_CLICK_BLOCK)){
+				sagaPlayer.rightClickInteractEvent(event);
+			}
+		} catch (SagaPlayerNotLoadedException e) {
+			Saga.severe("Tried to send interact event to a not loaded player. Send canceled.", event.getPlayer().getName());
+		}
 		
     	
     }

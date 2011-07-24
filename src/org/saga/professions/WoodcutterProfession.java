@@ -2,6 +2,7 @@ package org.saga.professions;
 
 import java.util.*;
 
+import org.bukkit.Material;
 import org.saga.abilities.Ability;
 
 public class WoodcutterProfession extends Profession {
@@ -14,7 +15,7 @@ public class WoodcutterProfession extends Profession {
 	
 	public WoodcutterProfession() {
 		
-		super(PROFESSION_NAME, WoodcutterProfession.class.getName());
+		super(PROFESSION_NAME);
 		
 	}
 	
@@ -31,7 +32,21 @@ public class WoodcutterProfession extends Profession {
 	@Override
 	protected Ability[] getAbilities() {
 		// TODO Auto-generated method stub
-		return null;
+		return new Ability[0];
+	}
+
+
+	@Override
+	protected Material[] getAbilityScrollMaterials() {
+		// TODO Auto-generated method stub
+		return new Material[0];
+	}
+
+
+	@Override
+	public void completeInheriting() {
+		// TODO Auto-generated method stub
+		
 	}
 	
 }

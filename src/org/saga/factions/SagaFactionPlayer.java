@@ -6,6 +6,7 @@
 package org.saga.factions;
 
 import org.saga.*;
+import org.saga.exceptions.SagaPlayerNotLoadedException;
 
 import java.util.*;
 import org.bukkit.entity.*;
@@ -30,7 +31,7 @@ public class SagaFactionPlayer {
         return Saga.plugin().getServer().getPlayer(this.name);
     }
 
-    public SagaPlayer getSagaPlayer() {
+    public SagaPlayer getSagaPlayer() throws SagaPlayerNotLoadedException {
         return Saga.plugin().getPlayer(name);
     }
 

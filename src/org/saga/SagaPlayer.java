@@ -1,6 +1,7 @@
 package org.saga;
 
 import java.io.*;
+import java.util.Hashtable;
 
 import org.bukkit.entity.Player;
 import org.bukkit.event.block.*;
@@ -26,7 +27,7 @@ public class SagaPlayer{
 	/**
 	 * Name.
 	 */
-	private String name = null;
+	private String name;
 	
 	/**
 	 * Stamina.
@@ -62,21 +63,61 @@ public class SagaPlayer{
 	 */
 	public SagaPlayer() {
 		
-		// Sets to offline by default.
-		isOnlinePlayer = false;
-		
-		// Set defaults:
-		name = PlayerDefaults.name;
-		stamina = PlayerDefaults.stamina;
-		professions = PlayerDefaults.allProfessions;
-		selectedProfessions = new Boolean[professions.length];
-		for (int i = 0; i < selectedProfessions.length; i++) {
-			selectedProfessions[i] = true; // TODO Need a profession selection filter
-		}
 		
 		
 	}
 	
+	/**
+	 * Goes trough all the fields and makes sure everything has been set after gson load.
+	 * If not, it fills the field with defaults.
+	 */
+	public void complete() {
+
+		
+		// Sets to offline by default.
+		isOnlinePlayer = false;
+		
+		// Fields:
+		if(name == null){
+			name = PlayerDefaults.name;
+			Saga.info("Setting default value for player name.", name);
+		}
+		if(stamina == null){
+			stamina = PlayerDefaults.stamina;
+			Saga.info("Setting default value for player stamina.", name);
+		}
+		
+		// Professions field is null:
+		Profession[] allProfessions = Saga.balanceInformation().getAllProfessions();
+		if(professions == null){
+			Saga.info("Initializing new player professions field.", name);
+			professions = allProfessions;
+		}
+		
+		// Professions field wrong length:
+		if(professions.length != allProfessions.length){
+			Saga.info("Initializing new player professions field.", name);
+			Profession[] professionsCorected = new Profession[allProfessions.length];
+			for (int i = 0; i < professionsCorected.length; i++) {
+				professionsCorected[i] = professions[i];
+			}
+		}
+		
+		// All professions:
+		for (int i = 0; i < allProfessions.length; i++) {
+			Profession profession = professions[i];
+			if(profession == null || (!profession.getClass().equals(allProfessions[i].getClass()))){
+				professions[i]= allProfessions[i];
+				Saga.info("Adding "+profession.getClass().getSimpleName() + " player profession and setting default values.", name);
+			}
+			profession.setAccess(this);
+			profession.complete();
+			
+			
+		}
+		
+		
+	}
 	
 	// Interaction:
 	/**
@@ -108,6 +149,7 @@ public class SagaPlayer{
 
 	/**
 	 * Sets the player and changes status to online.
+	 * Marks the saga player a existant player.
 	 * 
 	 * @param player player
 	 */
@@ -265,7 +307,6 @@ public class SagaPlayer{
 	// Saving and loading:
 	/**
 	 * Loads a offline saga player.
-	 * Needs an integrity check.
 	 * 
 	 * @param playerName player name
 	 * @param player minecraft player
@@ -273,7 +314,6 @@ public class SagaPlayer{
 	 * @param balanceInformation balance information
 	 * @return saga player
 	 */
-
 	public static SagaPlayer load(String playerName){
 		
             // Try loading:
@@ -308,7 +348,8 @@ public class SagaPlayer{
             // Set name:
             sagaPlayer.setName(playerName);
 
-            // Add access:
+            // Complete:
+            sagaPlayer.complete();
 
             return sagaPlayer;
 				

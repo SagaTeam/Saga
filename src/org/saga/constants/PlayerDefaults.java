@@ -30,18 +30,5 @@ public class PlayerDefaults {
 	 * Experience for the current level.
 	 */
 	public static Integer levelExperience=0;
-
-	
-	/**
-	 * Returns all professions
-	 * 
-	 * @return all professions
-	 */
-	public static Profession[] allProfessions() {
-
-		return new Profession[] {new FighterProfession(), new WoodcutterProfession()};
-		
-	}
-	
 	
 }

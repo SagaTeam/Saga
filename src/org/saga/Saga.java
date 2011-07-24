@@ -11,6 +11,7 @@ import java.util.logging.*;
 import org.sk89q.*;
 import org.saga.utility.*;
 import org.saga.constants.PlayerMessages;
+import org.saga.exceptions.SagaPlayerNotLoadedException;
 
 //External Imports
 import java.util.*;
@@ -31,6 +32,8 @@ import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.entity.*;
 import org.bukkit.plugin.*;
 import org.bukkit.plugin.java.*;
+
+import com.google.gson.JsonParseException;
 
 
 /**
@@ -92,16 +95,10 @@ public class Saga extends JavaPlugin {
         //Allocate Instance Variables
         loadedPlayers = new HashMap<String,SagaPlayer>();
 
-        // Add all already online players:
-        Player[] onlinePlayers = getServer().getOnlinePlayers();
-        for (int i = 0; i < onlinePlayers.length; i++) {
-            addPlayer(onlinePlayers[i]);
-        }
         
+        //Test for specific plugins
         PluginManager pluginManager = getServer().getPluginManager();
         Plugin test = null;
-
-        //Test for specific plugins
         test = pluginManager.getPlugin("GroupManager");
         if ( test != null ) {
             Saga.info("Saga found Group Manager plugin!");
@@ -129,52 +126,72 @@ public class Saga extends JavaPlugin {
 
         // Read balance information:
         BalanceInformation balanceInformation;
+        boolean writeDefaultBalanceInfo = false;
         try {
 
             balanceInformation = WriterReader.readBalanceInformation();
 
         } catch (FileNotFoundException e) {
 
-            Saga.severe("Missing balance information. Loading defaults and generating default balance information file.");
+            Saga.severe("Missing balance information. Loading defaults.");
 
             balanceInformation = new BalanceInformation();
-
-            // Write a new one:
-            try {
-                WriterReader.writeBalanceInformation(balanceInformation);
-            } catch (Exception e2) {
-                Saga.severe("Balance information file save failure.");
-            }
-
+            writeDefaultBalanceInfo = true;
+            
         }catch (IOException e) {
 
             Saga.exception("Balance information load failure. Loading defaults.",e);
             balanceInformation = new BalanceInformation();
+            writeDefaultBalanceInfo = true;
+
+        }catch (JsonParseException e) {
+        	
+        	Saga.exception("Balance information parse failure. Loading defaults.",e);
+            balanceInformation = new BalanceInformation();
+            writeDefaultBalanceInfo = true;
+
+        }
+        
+        // Complete balance information:
+        if(!balanceInformation.complete()){
+        	Saga.severe("Balance information integrity check failed. Update balance information file.");
+        	writeDefaultBalanceInfo = true;
+        }
+        
+        // Generate default balance information:
+        if(writeDefaultBalanceInfo){
+            try {
+            	Saga.info("Generating default balance information file. Edit and rename to use it.");
+                WriterReader.writeBalanceInformation(balanceInformation, WriterReader.SUFFIX_DEFAULT);
+            } catch (Exception e2) {
+                Saga.severe("Balance information file generation failure.");
+            }
 
         }
         
         // Set global balance information:
         Saga.balanceInformation = balanceInformation;
 
+        // Add all already online players:
+        Player[] onlinePlayers = getServer().getOnlinePlayers();
+        for (int i = 0; i < onlinePlayers.length; i++) {
+            addPlayer(onlinePlayers[i]);
+        }
+        
         //Create listeners
         playerListener = new SagaPlayerListener(this);
 
         // Register events
         pluginManager.registerEvent(Event.Type.PLAYER_JOIN, playerListener, Priority.Normal, this);
         pluginManager.registerEvent(Event.Type.PLAYER_QUIT, playerListener, Priority.Normal, this);
+        pluginManager.registerEvent(Event.Type.PLAYER_INTERACT, playerListener, Priority.Normal, this);
 
         //Register Command Classes to the command map
         commandMap.register(SagaCommands.class);
 
+        
     }
 
-    public SagaPlayer getPlayer(String name) {
-        return loadedPlayers.get(name);
-    }
-
-    public SagaPlayer getPlayer(Player player) {
-        return getPlayer(player.getName());
-    }
     
     // Adding and removing:
     /**
@@ -205,7 +222,7 @@ public class Saga extends JavaPlugin {
     	// Notify if saving is disabled:
     	if( !sagaPlayer.isSavingEnabled() ) {
             player.sendMessage(PlayerMessages.playerErrorMessage);
-            player.sendMessage("You player information will not be saved during this session!");
+            player.sendMessage(PlayerMessages.yourIformationWillNotBeSaved);
         }
     	
     	// Check if online:
@@ -224,7 +241,7 @@ public class Saga extends JavaPlugin {
      * 
      * @param name player name
      */
-    private void loadSagaPlayer(String name) {
+    public void loadSagaPlayer(String name) {
     	
     	SagaPlayer sagaPlayer;
     	
@@ -309,6 +326,30 @@ public class Saga extends JavaPlugin {
         //Empty the table
         loadedPlayers.clear();
 
+    }
+    
+    /**
+     * Gets the saga player.
+     * The player must be in the loaded list, before you can use this method.
+     * 
+     * @param player player
+     * @return saga player
+     * @throws SagaPlayerNotLoadedException  if saga player is not loaded
+     */
+    public SagaPlayer getPlayer(String name) throws SagaPlayerNotLoadedException {
+    	
+    	
+    	// Search from loaded list:
+    	SagaPlayer sagaPlayer = loadedPlayers.get(name);
+    	
+    	// Throw an exception if player not loaded:
+    	if(sagaPlayer == null){
+    		throw new SagaPlayerNotLoadedException(name);
+    	}
+    	
+        return sagaPlayer;
+        
+        
     }
     
     

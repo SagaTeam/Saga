@@ -14,7 +14,7 @@ import java.io.File;
  */
 public class General {
 
-    public static final String PLUGIN_DIRECTORY = "Saga"+File.separator;
+    public static final String PLUGIN_DIRECTORY = "plugins"+File.separator+"Saga"+File.separator;
     public static final String PLAYER_DIRECTORY = PLUGIN_DIRECTORY+"players"+File.separator;
 
     public static final String WILDERNESS_STRING = "~Wilderness~";

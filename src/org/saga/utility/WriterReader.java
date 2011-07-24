@@ -40,6 +40,17 @@ public class WriterReader {
 	 */
 	private static String BALANCE_INFORMATION_FILENAME="balanceinformation.json";
 	
+	/**
+	 * Suffix for default.
+	 */
+	public static String SUFFIX_DEFAULT=".default";
+	
+	/**
+	 * Suffix for none.
+	 */
+	public static String SUFFIX_NO="";
+	
+	
 	
 	/**
 	 * Reads the users player information.
@@ -108,6 +119,18 @@ public class WriterReader {
 	}
 	
 	/**
+	 * Returns if the player exists.
+	 * 
+	 * @param playerName player name.
+	 * @return true, if the player exists.
+	 */
+	public static boolean playerExists(String playerName){
+		
+		return (new File(General.PLAYER_DIRECTORY+playerName+".json")).exists();
+		
+	}
+	
+	/**
 	 * Reads balance information
 	 * 
 	 * @return Balance information
@@ -143,13 +166,14 @@ public class WriterReader {
 	 * @param balanceInfo Player information
 	 * 
 	 * @return Player information
+	 * @param suffix suffix that will be added to the file name
 	 * 
 	 * @throws IOException If an error occurred while writing.
 	 */
-	public static void writeBalanceInformation(BalanceInformation balanceInfo) throws IOException {
+	public static void writeBalanceInformation(BalanceInformation balanceInfo, String suffix) throws IOException {
 
             File directory = new File(General.PLUGIN_DIRECTORY);
-            File file = new File(General.PLUGIN_DIRECTORY+BALANCE_INFORMATION_FILENAME);
+            File file = new File(General.PLUGIN_DIRECTORY+BALANCE_INFORMATION_FILENAME+suffix);
 
 			if(!directory.exists()){
 				directory.mkdirs();

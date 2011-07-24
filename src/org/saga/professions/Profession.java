@@ -2,10 +2,12 @@ package org.saga.professions;
 
 import java.util.*;
 
+import org.bukkit.Material;
 import org.bukkit.event.block.BlockBreakEvent;
 import org.bukkit.event.block.BlockPlaceEvent;
 import org.bukkit.event.entity.EntityDamageByEntityEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
+import org.saga.Saga;
 import org.saga.SagaPlayer;
 import org.saga.abilities.Ability;
 import org.saga.constants.PlayerDefaults;
@@ -48,16 +50,16 @@ public abstract class Profession {
 	
 	// Access:
 	/**
-	 * Minecraft player.
+	 * Saga player.
 	 */
-	transient private SagaPlayer sagaPlayer;
+	transient private SagaPlayer sagaPlayer= null;
 	
 	
 	// Main:
 	/**
 	 * Selected ability.
 	 */
-	transient short selectedAbility=0;
+	transient short selectedAbility=-1;
 	
 	/**
 	 * Activated abilities.
@@ -70,38 +72,60 @@ public abstract class Profession {
 	 * Sets all default values. All extending classes must set all default values in a non-parameter constructor.
 	 * 
 	 * @param professionName profession name
-	 * @param className class name
 	 */
-	public Profession(String professionName, String className) {
+	public Profession(String professionName) {
 	
 		
 		// Set class name:
-		_className = className;
+		_className = getClass().getName();
  		
 		
 		// Force all extending classes to provide a name:
 		this.professionName = professionName;
 		
-		// Set defaults:
-		level= PlayerDefaults.level;
-		levelExperience= PlayerDefaults.levelExperience;
 		
 		
 	}
 	
 	public Profession() {
-		// TODO Auto-generated constructor stub
 	}
+	
+	/**
+	 * Goes trough all the fields and makes sure everything has been set after gson load.
+	 * If not, it fills the field with defaults.
+	 */
+	public void complete() {
+		
+		// Fields:
+		if(level==null){
+			level = PlayerDefaults.level;
+			Saga.info("Setting default value for profession level.", sagaPlayer.getName());
+		}
+		if(levelExperience==null){
+			levelExperience = PlayerDefaults.levelExperience;
+			Saga.info("Setting default value for profession levelExperience.", sagaPlayer.getName());
+		}
+		
+		// Inheriting class:
+		completeInheriting();
+		
+
+	}
+	
+	/**
+	 * Does a complete for all inheriting classes.
+	 */
+	public abstract void completeInheriting();
+	
 	
 	/**
 	 * Wraps all required variables.
 	 * 
-	 * @param sagaPlayer saga player
+	 * @param s2agaPlayer saga player
 	 */
-	public void setAccess(SagaPlayer sagaPlayer) {
+	public void setAccess(SagaPlayer s2agaPlayer) {
 		
-		
-		this.sagaPlayer= sagaPlayer;
+		this.sagaPlayer= s2agaPlayer;
 		
 		
 	}
@@ -119,15 +143,31 @@ public abstract class Profession {
 		
 	}
 	
-	private void selectNextAbility() {
+	/**
+	 * Selects next available ability. 
+	 * 
+	 * @param materialInHand material of the item held
+	 */
+	private void selectNextAbility(Material materialInHand) {
 
+		
+		// Check if the material is correct:
+		Material[] scrollMaterials = getAbilityScrollMaterials();
+		for (int i = 0; i < scrollMaterials.length; i++) {
+			if(scrollMaterials[i].equals(materialInHand)){
+				break;
+			}
+			if(i == scrollMaterials.length-1){
+				return;
+			}
+		}
 		
 		Ability[] professionAbilities= getAbilities();
 		
-		short selectedNew= (short) (selectedAbility+1);
+		short selectedNew = (short) (selectedAbility+1);
 		while (true) {
 			if(selectedNew>=professionAbilities.length){
-				selectedNew= 0;
+				selectedNew= -1;
 				break;
 			}
 			if(professionAbilities[selectedNew].levelHighEnough(level)){
@@ -135,15 +175,19 @@ public abstract class Profession {
 			}
 			selectedNew++;
 		}
-		selectedAbility= selectedNew;
+		
 		
 		// Send message:
-		if(selectedNew==selectedAbility){
+		if(selectedNew==-1 && selectedAbility==-1){
 			sagaPlayer.sendMessage(PlayerMessages.noAbilitiesAvailable());
+		}else if(selectedNew==-1){
+			sagaPlayer.sendMessage(PlayerMessages.abilitySelectNone());
 		}else{
 			sagaPlayer.sendMessage(PlayerMessages.abilitySelect(professionAbilities[selectedNew]));
 		}
 		
+		// Set selected ability:
+		selectedAbility= selectedNew;
 		
 	}
 	
@@ -153,6 +197,13 @@ public abstract class Profession {
 	 * @return all abilities
 	 */
 	protected abstract Ability[] getAbilities();
+	
+	/**
+	 * Returns all ability scroll materials.
+	 * 
+	 * @return ability scroll materials
+	 */
+	protected abstract Material[] getAbilityScrollMaterials();
 	
 	
 	// Events:
@@ -185,7 +236,7 @@ public abstract class Profession {
 	 */
 	public void leftClickInteractEvent(PlayerInteractEvent pEvent) {
 
-
+		pEvent.getPlayer().sendMessage("LCLICK");
 
 	}
 
@@ -196,8 +247,11 @@ public abstract class Profession {
 	 */
 	public void rightClickInteractEvent(PlayerInteractEvent pEvent) {
 
+		
+		// Ability scroll:
+		selectNextAbility(pEvent.getPlayer().getItemInHand().getType());
 
-
+		
 	}
 
 	/**

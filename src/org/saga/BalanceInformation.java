@@ -3,6 +3,9 @@ package org.saga;
 import java.util.*;
 
 import org.saga.abilities.*;
+import org.saga.professions.FighterProfession;
+import org.saga.professions.Profession;
+import org.saga.professions.WoodcutterProfession;
 
 public class BalanceInformation {
 
@@ -36,29 +39,66 @@ public class BalanceInformation {
 	
 	
 	/**
-	 * Sets defaults by checking integrity and adds abilities.
+	 * Used by gson.
 	 */
 	public BalanceInformation() {
 		
 		
-		// Add all abilities:
-		Ability ability;
-		// Counterattack:
-		ability= new CounterattackAbility();
-		abilities.put(ability.getClass().getSimpleName(), ability);
-		
-		// Disarm:
-		ability= new DisarmAbility();
-		abilities.put(ability.getClass().getSimpleName(), ability);
-		
-		// Set fields:
-        maximumStamina= 100.0;
-        staminaPerSecond= 0.1;
-        staminaPerSecond= 0.1;
-
-		
 	}
 	
+	/**
+	 * Goes trough all the fields and makes sure everything has been set after gson load.
+	 * If not, it fills the field with defaults.
+	 * 
+	 * @return true if everything was correct.
+	 */
+	public boolean complete() {
+		
+		
+		// Fields:
+		boolean integrity=true;
+		if(maximumStamina == null){
+			Saga.warning("Setting default value for balance information maximumStamina.");
+			maximumStamina= 100.0;
+			integrity=false;
+		}
+		if(staminaPerSecond == null){
+			Saga.warning("Setting default value for balance information staminaPerSecond.");
+			staminaPerSecond= 0.1;
+			integrity=false;
+		}
+		if(experienceIntercept == null){
+			Saga.warning("Setting default value for balance information experienceIntercept.");
+			experienceIntercept= 10000;
+			integrity=false;
+		}
+		if(experienceSlope == null){
+			Saga.warning("Setting default value for balance information experienceSlope.");
+			experienceSlope= 10000;
+			integrity=false;
+		}
+		
+		
+		// Complete abilities:
+		Ability[] allAbilities = getAllAbilities();
+		for (int i = 0; i < allAbilities.length; i++) {
+			Ability ability = abilities.get(allAbilities[i].getClass().getSimpleName());
+			if(ability == null){
+				ability = allAbilities[i];
+				Saga.warning("Adding "+allAbilities[i].getClass().getSimpleName()+" ability to balance information and setting default values.");
+				abilities.put(ability.getClass().getSimpleName(), ability);
+				integrity=false;
+			}
+			if(!ability.complete()){
+				integrity = false;
+			}
+			
+		}
+		
+		return integrity;
+		
+	}
+
 	
 	// Calculations:
 	/**
@@ -72,5 +112,26 @@ public class BalanceInformation {
 
 	}
 	
+	/**
+	 * Returns all available professions.
+	 * 
+	 * @return all professions
+	 */
+	public Profession[] getAllProfessions() {
+		
+		return new Profession[]{new FighterProfession(), new WoodcutterProfession()};
+
+	}
+	
+	/**
+	 * Returns all abilities.
+	 * 
+	 * @return all abilities
+	 */
+	private Ability[] getAllAbilities() {
+
+		return new Ability[]{new HeavyHitAbility(), new CounterattackAbility(), new DisarmAbility()};
+		
+	}
 	
 }
