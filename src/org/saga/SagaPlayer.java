@@ -94,6 +94,15 @@ public class SagaPlayer{
 			professions = allProfessions;
 		}
 		
+		// Selected professions field is null:
+		if(selectedProfessions == null){
+			Saga.info("Initializing new player selected professions field.", name);
+			selectedProfessions = new Boolean[allProfessions.length];
+			for (int i = 0; i < selectedProfessions.length; i++) {
+				selectedProfessions[i] = true; // TODO Profession filter here
+			}
+		}
+		
 		// Professions field wrong length:
 		if(professions.length != allProfessions.length){
 			Saga.info("Initializing new player professions field.", name);
@@ -168,14 +177,24 @@ public class SagaPlayer{
 	}
 	
 	/**
-	 * Drains stamina and sends a message. Can go below zero.
+	 * Checks if there is enough stamina.
 	 * 
-	 * @param drainAmount drain amount
+	 * @param staminaSubs Stamina to be subtracted.
+	 * @return true if there is enough stamina
 	 */
-	public void drainStamina(Double drainAmount) {
+	public boolean enoughStamina(Double staminaSubtr) {
+		return stamina>=staminaSubtr;
+	}
+	
+	/**
+	 * Uses stamina and sends a message. Can go below zero.
+	 * 
+	 * @param useAmount use amount
+	 */
+	public void useStamina(Double useAmount) {
 
-		stamina -= drainAmount;
-		this.info(PlayerMessages.staminaUsed(drainAmount, getStamina(), getMaximumStamina()));
+		stamina -= useAmount;
+		sendMessage(PlayerMessages.staminaUsed(useAmount, getStamina(), getMaximumStamina()));
 		
 	}
 	
@@ -186,6 +205,21 @@ public class SagaPlayer{
 	 */
 	public Double getStamina() {
 		return stamina;
+	}
+	
+	/**
+	 * Returns player health.
+	 * 
+	 * @return player health, -1 if offline
+	 */
+	public Integer getHealth() {
+		
+		if(isOnlinePlayer){
+			return player.getHealth();
+		}else{
+			return -1;
+		}
+		
 	}
 	
 	/**
@@ -212,6 +246,25 @@ public class SagaPlayer{
 	}
 	
 	/**
+	 * Regenerates stamina.
+	 */
+	private void naturalStaminaRegenerate() {
+		
+		
+		if(stamina >= getMaximumStamina()){
+			return;
+		}
+		stamina += Saga.balanceInformation().staminaPerSecond;
+		if(stamina > getMaximumStamina()){
+			stamina = getMaximumStamina();
+		}
+		if(((int)(stamina - Saga.balanceInformation().staminaPerSecond)/10) != (int)(stamina/10)){
+			sendMessage(PlayerMessages.staminaRegeneration(stamina, getMaximumStamina()));
+		}
+
+	}
+	
+	/**
 	 * Sends the player a message if he is online.
 	 * 
 	 * @param message
@@ -219,9 +272,40 @@ public class SagaPlayer{
 	public void sendMessage(String message) {
 		
             if(isOnlinePlayer()){
-                    player.sendMessage(message);
+            	PlayerMessages.sendMultipleLines(message, player);
             }
 
+	}
+	
+	/**
+	 * Gets a profession.
+	 * 
+	 * @param profession profession index
+	 * @return profession
+	 * @throws IndexOutOfBoundsException if the give index is out of bounds.
+	 */
+	public Profession getProfessions(int profession) throws IndexOutOfBoundsException{
+		return professions[profession];
+	}
+	
+	/**
+	 * Gets a if the profession is selected.
+	 * 
+	 * @param profession profession index
+	 * @return true if the profession is selected
+	 * @throws IndexOutOfBoundsException if the give index is out of bounds.
+	 */
+	public boolean isProfessionSelected(int profession) throws IndexOutOfBoundsException{
+		return selectedProfessions[profession];
+	}
+	
+	/**
+	 * Returns the number of professions.
+	 * 
+	 * @return the number of professions
+	 */
+	public int getProfessionCount() {
+		return professions.length;
 	}
 	
 	// Events:
@@ -232,6 +316,12 @@ public class SagaPlayer{
 	 */
 	public void gotDamagedByLivingEntityEvent(EntityDamageByEntityEvent pEvent) {
 
+		// Forward to all professions:
+		for (int i = 0; i < professions.length; i++) {
+			professions[i].gotDamagedByLivingEntityEvent(pEvent);
+		}
+		sendMessage(PlayerMessages.gotDamagedByEntity(pEvent.getDamage(), pEvent.getDamager()));
+		
 	}
 
 	/**
@@ -240,7 +330,13 @@ public class SagaPlayer{
 	 * @param pEvent event
 	 */
 	public void damagedLivingEntityEvent(EntityDamageByEntityEvent pEvent) {
-
+		
+		// Forward to all professions:
+		for (int i = 0; i < professions.length; i++) {
+			professions[i].damagedLivingEntityEvent(pEvent);
+		}
+		sendMessage(PlayerMessages.damagedEntity(pEvent.getDamage(), pEvent.getEntity()));
+		
 	}
 
 	/**
@@ -297,6 +393,11 @@ public class SagaPlayer{
 	 * @param pTick tick number
 	 */
 	public void clockTickEvent(int pTick) {
+		
+		
+		// Stamina regeneration:
+		naturalStaminaRegenerate();
+		
 		// Forward to all professions:
 		for (int i = 0; i < professions.length; i++) {
 			professions[i].clockTickEvent(pTick);

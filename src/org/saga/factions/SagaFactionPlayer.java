@@ -32,7 +32,7 @@ public class SagaFactionPlayer {
     }
 
     public SagaPlayer getSagaPlayer() throws SagaPlayerNotLoadedException {
-        return Saga.plugin().getPlayer(name);
+        return Saga.plugin().getSagaPlayer(name);
     }
 
     public void setProperty(String property,String value) {

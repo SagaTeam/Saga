@@ -23,6 +23,11 @@ public class BalanceInformation {
 
 	// Profession general:
 	/**
+	 * Maximum level.
+	 */
+	public Short maximumLevel;
+	
+	/**
 	 * Experience Intercept.
 	 */
 	public Integer experienceIntercept;
@@ -56,6 +61,7 @@ public class BalanceInformation {
 		
 		
 		// Fields:
+		// Player general:
 		boolean integrity=true;
 		if(maximumStamina == null){
 			Saga.warning("Setting default value for balance information maximumStamina.");
@@ -65,6 +71,12 @@ public class BalanceInformation {
 		if(staminaPerSecond == null){
 			Saga.warning("Setting default value for balance information staminaPerSecond.");
 			staminaPerSecond= 0.1;
+			integrity=false;
+		}
+		// Profession general:
+		if(maximumLevel == null){
+			Saga.warning("Setting default value for balance information maximumLevel.");
+			maximumLevel= 1;
 			integrity=false;
 		}
 		if(experienceIntercept == null){

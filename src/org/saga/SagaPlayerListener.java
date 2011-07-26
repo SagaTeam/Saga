@@ -70,7 +70,7 @@ public class SagaPlayerListener extends PlayerListener {
 
     	
     	try {
-			SagaPlayer sagaPlayer = Saga.plugin().getPlayer(event.getPlayer().getName());
+			SagaPlayer sagaPlayer = Saga.plugin().getSagaPlayer(event.getPlayer().getName());
 			//Left click:
 			if(event.getAction().equals(Action.LEFT_CLICK_AIR) || event.getAction().equals(Action.LEFT_CLICK_BLOCK)){
 				sagaPlayer.leftClickInteractEvent(event);

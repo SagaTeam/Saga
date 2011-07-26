@@ -81,7 +81,7 @@ public abstract class Ability {
 		
 		// Fields:
 		if(levelStaminaFunctionX1==null){
-			levelStaminaFunctionX1 = 100;
+			levelStaminaFunctionX1 = 10;
 			Saga.info("Setting default value for ability levelStaminaFunctionX1.");
 			integrity = false;
 		}
@@ -118,6 +118,14 @@ public abstract class Ability {
 	 */
 	public abstract boolean completeInheriting();
 	
+	/**
+	 * Gets the minimum required level.
+	 * 
+	 * @return minimum level to use
+	 */
+	public Short minimumLevel() {
+		return levelStaminaFunctionX1;
+	}
 	
 	
 	// Interaction:
@@ -126,9 +134,14 @@ public abstract class Ability {
 	 * 
 	 * @param level level
 	 */
-	public void calculateStaminaDrain(int level) {
+	public Double calculateStaminaUse(Short level) {
 
-		// TODO Finish stamina drain calculation
+		if(level>levelStaminaFunctionX2){
+			level = levelStaminaFunctionX2;
+		}
+		double k= (levelStaminaFunctionY2-levelStaminaFunctionY1)/(levelStaminaFunctionX2-levelStaminaFunctionX1);
+		double b= levelStaminaFunctionY2 - k*levelStaminaFunctionX2;
+		return k * level + b;
 		
 	}
 	
@@ -142,6 +155,16 @@ public abstract class Ability {
 	}
 	
 	/**
+	 * Gets the level requirement for the ability.
+	 * 
+	 * 
+	 * @return level requirement
+	 */
+	public Short getLevelRequirement() {
+		return levelStaminaFunctionX1;
+	}
+	
+	/**
 	 * Checks if the level is high enough to use the ability.
 	 * 
 	 * @param level level.
@@ -149,9 +172,7 @@ public abstract class Ability {
 	 * @return true if the level is high enough
 	 */
 	public boolean levelHighEnough(Short level) {
-
-            return levelStaminaFunctionX1 >= level;
-		
+            return levelStaminaFunctionX1 <= level;
 	}
 	
 	

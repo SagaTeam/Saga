@@ -54,8 +54,9 @@ public class Saga extends JavaPlugin {
     private boolean playerInformationLoadingDisabled;
     private boolean playerInformationSavingDisabled;
 
-    private HashMap<String,SagaPlayer> loadedPlayers;
+    private Hashtable<String,SagaPlayer> loadedPlayers;
     private SagaPlayerListener playerListener;
+    private SagaEntityListener entityListener;
 
     static public Saga plugin() {
         return instance;
@@ -65,6 +66,10 @@ public class Saga extends JavaPlugin {
         return balanceInformation;
     }
 
+    public static boolean debuging() {
+    	return debugging;
+	}
+    
     @Override
     public void onDisable() {
 
@@ -93,7 +98,7 @@ public class Saga extends JavaPlugin {
         Saga.instance = this;
 
         //Allocate Instance Variables
-        loadedPlayers = new HashMap<String,SagaPlayer>();
+        loadedPlayers = new Hashtable<String, SagaPlayer>();
 
         
         //Test for specific plugins
@@ -178,13 +183,19 @@ public class Saga extends JavaPlugin {
             addPlayer(onlinePlayers[i]);
         }
         
+        //Add and activate clock:
+      	getServer().getScheduler().scheduleAsyncRepeatingTask(this, new Clock(), 200L, 20L);
+        
         //Create listeners
-        playerListener = new SagaPlayerListener(this);
+      	playerListener = new SagaPlayerListener(this);
+      	entityListener = new SagaEntityListener();
 
         // Register events
         pluginManager.registerEvent(Event.Type.PLAYER_JOIN, playerListener, Priority.Normal, this);
         pluginManager.registerEvent(Event.Type.PLAYER_QUIT, playerListener, Priority.Normal, this);
         pluginManager.registerEvent(Event.Type.PLAYER_INTERACT, playerListener, Priority.Normal, this);
+        pluginManager.registerEvent(Event.Type.PLAYER_COMMAND_PREPROCESS, playerListener, Priority.Normal, this);
+        pluginManager.registerEvent(Event.Type.ENTITY_DAMAGE, entityListener, Priority.Normal, this);
 
         //Register Command Classes to the command map
         commandMap.register(SagaCommands.class);
@@ -278,9 +289,6 @@ public class Saga extends JavaPlugin {
             sagaPlayer.removePlayer();
     	}
 
-        //Save player data:
-        sagaPlayer.save();
-        
         // Unload saga player:
         unloadSagaPlayer(name);
 
@@ -292,7 +300,7 @@ public class Saga extends JavaPlugin {
      * 
      * @param name player name
      */
-    private void unloadSagaPlayer(String name) {
+    public void unloadSagaPlayer(String name) {
     	
     	// Check if already unloaded:
     	if( loadedPlayers.get(name) == null ) {
@@ -306,7 +314,12 @@ public class Saga extends JavaPlugin {
             return;
     	}
     	
-    	loadedPlayers.remove(name);
+    	// Unload:
+    	SagaPlayer sagaPlayer = loadedPlayers.remove(name);
+    	
+    	//Save player data:
+        sagaPlayer.save();
+        
     	
     }
 
@@ -315,18 +328,40 @@ public class Saga extends JavaPlugin {
      */
     private void removeAllPlayers() {
 
-        Iterator<String> i = loadedPlayers.keySet().iterator();
+    	
+//        Iterator<String> i = loadedPlayers.keySet().iterator();
 
-        //Save All Players
-        while ( i.hasNext() ) {
-            String name = i.next();
-            removePlayer(name);
+        Enumeration<String> keys= loadedPlayers.keys();
+        
+        // Remove all Players
+        while ( keys.hasMoreElements() ) {
+            removePlayer(keys.nextElement());
         }
 
         //Empty the table
         loadedPlayers.clear();
 
     }
+    
+    /**
+     * Checks if the player is loaded.
+     * 
+     * @param name name
+     * @return true if loaded
+     */
+    public boolean isSagaPlayerLoaded(String name) {
+    	return loadedPlayers.get(name)!=null;
+	}
+    
+    /**
+     * Checks if the player exists by checking player information file.
+     * 
+     * @param playerName player name
+     * @return true if the player exists
+     */
+    public boolean isSagaPlayerExistant(String playerName) {
+    	return WriterReader.playerExists(playerName);
+	}
     
     /**
      * Gets the saga player.
@@ -336,7 +371,7 @@ public class Saga extends JavaPlugin {
      * @return saga player
      * @throws SagaPlayerNotLoadedException  if saga player is not loaded
      */
-    public SagaPlayer getPlayer(String name) throws SagaPlayerNotLoadedException {
+    public SagaPlayer getSagaPlayer(String name) throws SagaPlayerNotLoadedException {
     	
     	
     	// Search from loaded list:
@@ -428,13 +463,23 @@ public class Saga extends JavaPlugin {
 	 */
 	public void clockTickEvent(int pTick) {
 
-
+		
+		// Send to all online players:
+		for (SagaPlayer sagaPlayer : loadedPlayers.values()) {
+			if(sagaPlayer.isOnlinePlayer()){
+				sagaPlayer.clockTickEvent(pTick);
+			}
+		}
+		
+		
 	}
     
     
     //This code handles commands
     public boolean handleCommand(Player player, String[] split, String command) {
 
+    	System.out.println("handling command");
+    	
         try {
 
             split[0] = split[0].substring(1);
@@ -450,11 +495,12 @@ public class Saga extends JavaPlugin {
 
             // No command found!
             if (!commandMap.hasCommand(split[0])) {
+            	System.out.println("no command:"+split[0]);
                 return false;
             }
 
             try {
-                commandMap.execute(split, player, this);
+                commandMap.execute(split, player, this, getSagaPlayer(player.getName()));
                 String logString = "[Saga Command] " + player.getName() + ": " + command;
                 Saga.info(logString);
             } catch (CommandPermissionsException e) {

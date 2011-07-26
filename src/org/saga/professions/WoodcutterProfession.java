@@ -48,5 +48,18 @@ public class WoodcutterProfession extends Profession {
 		// TODO Auto-generated method stub
 		
 	}
+
+
+	@Override
+	protected void abilityActivateEvent(int ability) {
+		// TODO Auto-generated method stub
+		
+	}
+	
+	@Override
+	public boolean isAbilityActive(int ability) {
+		// TODO Auto-generated method stub
+		return false;
+	}
 	
 }

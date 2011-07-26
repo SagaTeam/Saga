@@ -17,17 +17,17 @@ import org.saga.*;
 public abstract class Profession {
 
 	
+	// General:
 	/**
 	 * Class name used by the loader
 	 */
 	private String _className;
 	
-	
-	// General:
 	/**
 	 * Profession name.
 	 */
 	transient private String professionName;
+
 	
 	// Player information:
 	/**
@@ -43,10 +43,9 @@ public abstract class Profession {
 	
 	// Calculated:
 	/**
-	 * Stamina drain for the current level.
+	 * Experience requirement for the next level.
 	 */
-	transient private Short[] staminaDrain;
-	
+	transient private Integer experienceRequirement;
 	
 	// Access:
 	/**
@@ -59,12 +58,12 @@ public abstract class Profession {
 	/**
 	 * Selected ability.
 	 */
-	transient short selectedAbility=-1;
+	transient private short selectedAbility=-1;
 	
 	/**
-	 * Activated abilities.
+	 * All abilities.
 	 */
-	transient private Boolean[] activeAbilities;
+	transient private Ability[] abilities;
 	
 	
 	// Initialization:
@@ -96,6 +95,7 @@ public abstract class Profession {
 	 */
 	public void complete() {
 		
+		
 		// Fields:
 		if(level==null){
 			level = PlayerDefaults.level;
@@ -108,6 +108,11 @@ public abstract class Profession {
 		
 		// Inheriting class:
 		completeInheriting();
+
+		
+		// Initialize dependent fields:
+		abilities = getAbilities();
+		experienceRequirement = calculateExperienceRequirement(level);
 		
 
 	}
@@ -121,11 +126,11 @@ public abstract class Profession {
 	/**
 	 * Wraps all required variables.
 	 * 
-	 * @param s2agaPlayer saga player
+	 * @param sagaPlayer saga player
 	 */
-	public void setAccess(SagaPlayer s2agaPlayer) {
+	public void setAccess(SagaPlayer sagaPlayer) {
 		
-		this.sagaPlayer= s2agaPlayer;
+		this.sagaPlayer= sagaPlayer;
 		
 		
 	}
@@ -146,31 +151,16 @@ public abstract class Profession {
 	/**
 	 * Selects next available ability. 
 	 * 
-	 * @param materialInHand material of the item held
 	 */
-	private void selectNextAbility(Material materialInHand) {
+	private void selectNextAbility() {
 
-		
-		// Check if the material is correct:
-		Material[] scrollMaterials = getAbilityScrollMaterials();
-		for (int i = 0; i < scrollMaterials.length; i++) {
-			if(scrollMaterials[i].equals(materialInHand)){
-				break;
-			}
-			if(i == scrollMaterials.length-1){
-				return;
-			}
-		}
-		
-		Ability[] professionAbilities= getAbilities();
-		
 		short selectedNew = (short) (selectedAbility+1);
 		while (true) {
-			if(selectedNew>=professionAbilities.length){
+			if(selectedNew>=abilities.length){
 				selectedNew= -1;
 				break;
 			}
-			if(professionAbilities[selectedNew].levelHighEnough(level)){
+			if(abilities[selectedNew].levelHighEnough(level)){
 				break;
 			}
 			selectedNew++;
@@ -183,12 +173,21 @@ public abstract class Profession {
 		}else if(selectedNew==-1){
 			sagaPlayer.sendMessage(PlayerMessages.abilitySelectNone());
 		}else{
-			sagaPlayer.sendMessage(PlayerMessages.abilitySelect(professionAbilities[selectedNew]));
+			sagaPlayer.sendMessage(PlayerMessages.abilitySelect(abilities[selectedNew]));
 		}
 		
 		// Set selected ability:
 		selectedAbility= selectedNew;
+		System.out.println("selected:"+selectedAbility);
 		
+	}
+	
+	/**
+	 * Resets the ability selection.
+	 */
+	private void resetAbilitySelection() {
+		selectedAbility = -1;
+		// Message here, if needed
 	}
 	
 	/**
@@ -199,12 +198,141 @@ public abstract class Profession {
 	protected abstract Ability[] getAbilities();
 	
 	/**
+	 * Return the ability name.
+	 * 
+	 * @param ability ability
+	 * @return ability name
+	 * @throws IndexOutOfBoundsException when the given ability index is out of bounds
+	 */
+	public String getAbilityName(int ability) throws IndexOutOfBoundsException{
+		return abilities[ability].getAbilityName();
+	}
+	
+	/**
+	 * Gets the level requirement for the ability.
+	 * 
+	 * @param ability ability
+	 * @return level requirement
+	 * @throws IndexOutOfBoundsException when the given ability index is out of bounds
+	 */
+	public Short getAbilityLevelRequirement(int ability) throws IndexOutOfBoundsException{
+		return abilities[ability].getLevelRequirement();
+	}
+	
+	/**
+	 * Gets the stamina use for the ability.
+	 * 
+	 * @param ability ability
+	 * @return stamina requirement
+	 * @throws IndexOutOfBoundsException when the given ability index is out of bounds
+	 */
+	public Double getAbilityStaminaUse(int ability) throws IndexOutOfBoundsException{
+		return abilities[ability].calculateStaminaUse(getLevel());
+	}
+	
+	
+	/**
+	 * Checks if the ability is already active.
+	 * 
+	 * @param ability ability
+	 * @return true, if active
+	 * @throws IndexOutOfBoundsException when the given ability index is out of bounds
+	 */
+	public abstract boolean isAbilityActive(int ability) throws IndexOutOfBoundsException;
+	
+	/**
+	 * Returns the ability count.
+	 * 
+	 * @return ability count
+	 */
+	public int getAbilityCount() {
+		return abilities.length;
+	}
+	
+	/**
 	 * Returns all ability scroll materials.
 	 * 
 	 * @return ability scroll materials
 	 */
 	protected abstract Material[] getAbilityScrollMaterials();
 	
+	/**
+	 * Adds experience
+	 * 
+	 * @param amount amount to add
+	 */
+	public void gainExperience(Integer amount) {
+		
+		levelExperience+=amount;
+		if(levelExperience >= experienceRequirement){
+			levelUp();
+		}
+		
+	}
+	
+	/**
+	 * Levels up the profession.
+	 * 
+	 */
+	public void levelUp() {
+		
+		setLevel((short) (level+1));
+		
+	}
+	
+	/**
+	 * Sets level.
+	 * 
+	 * @param level level to set
+	 */
+	public void setLevel(Short level) {
+
+
+		this.level = level;
+		levelExperience = 0;
+		experienceRequirement = calculateExperienceRequirement(level);
+		PlayerMessages.levelUp(this, level);
+		
+		
+	}
+	
+	/**
+	 * Calculates the required experience for level up experience.
+	 * 
+	 * @param level level
+	 */
+	private Integer calculateExperienceRequirement(Short level) {
+
+		return level*Saga.balanceInformation().experienceSlope * level + Saga.balanceInformation().experienceIntercept;
+
+	}
+	
+	/**
+	 * Returns the level.
+	 * 
+	 * @return level
+	 */
+	public Short getLevel() {
+		return level;
+	}
+	
+	/**
+	 * Returns profession experience.
+	 * 
+	 * @return level level
+	 */
+	public Integer getLevelExperience() {
+		return levelExperience;
+	}
+	
+	/**
+	 * Returns experience required for level up for this level.
+	 * 
+	 * @return level level
+	 */
+	public Integer getExperienceRequirement() {
+		return experienceRequirement;
+	}
 	
 	// Events:
 	/**
@@ -236,8 +364,32 @@ public abstract class Profession {
 	 */
 	public void leftClickInteractEvent(PlayerInteractEvent pEvent) {
 
-		pEvent.getPlayer().sendMessage("LCLICK");
+		
+		// Check if the material is correct for the ability activate:
+		Material[] scrollMaterials = getAbilityScrollMaterials();
+		for (int i = 0; i < scrollMaterials.length && selectedAbility!=-1; i++) {
+			if(scrollMaterials[i].equals(pEvent.getPlayer().getItemInHand().getType())){
+				// Check if there is enough stamina:
+				Double staminaUse = abilities[selectedAbility].calculateStaminaUse(level);
+				if(sagaPlayer.enoughStamina(staminaUse)){
+					// Check if already active:
+					if(!isAbilityActive(selectedAbility)){
+						abilityActivateEvent(selectedAbility);
+						sagaPlayer.useStamina(staminaUse);
+						sagaPlayer.sendMessage(PlayerMessages.abilityActivate(abilities[selectedAbility]));
+						resetAbilitySelection();
+					}else{
+						sagaPlayer.sendMessage(PlayerMessages.abilityAlreadyActive(abilities[selectedAbility]));
+					}
+					
+				}else{
+					sagaPlayer.sendMessage(PlayerMessages.notEnoughStamina(abilities[selectedAbility], sagaPlayer.getStamina(), sagaPlayer.getMaximumStamina(), staminaUse));
+				}
+				break;
+			}
+		}
 
+		
 	}
 
 	/**
@@ -248,9 +400,16 @@ public abstract class Profession {
 	public void rightClickInteractEvent(PlayerInteractEvent pEvent) {
 
 		
-		// Ability scroll:
-		selectNextAbility(pEvent.getPlayer().getItemInHand().getType());
-
+		// Check if the material is correct for an ability scroll:
+		Material[] scrollMaterials = getAbilityScrollMaterials();
+		for (int i = 0; i < scrollMaterials.length; i++) {
+			if(scrollMaterials[i].equals(pEvent.getPlayer().getItemInHand().getType())){
+				selectNextAbility();
+				break;
+			}
+		}
+		
+		
 		
 	}
 
@@ -286,4 +445,13 @@ public abstract class Profession {
 
 	}
 
+	/**
+	 * Activates an ability.
+	 * 
+	 * @param ability ability index
+	 * @throws IndexOutOfBoundsException when the given ability index is out of bounds
+	 */
+	protected abstract void abilityActivateEvent(int ability) throws IndexOutOfBoundsException;
+	
+	
 }
