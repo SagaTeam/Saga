@@ -1,7 +1,5 @@
 package org.saga.abilities;
 
-import java.util.*;
-
 import org.saga.Saga;
 
 public abstract class Ability {
@@ -10,7 +8,8 @@ public abstract class Ability {
 	/**
 	 * Class name used by the loader
 	 */
-	private String _className;
+	@SuppressWarnings("unused")
+	private final String _className;
 	
 	// General variables:
 	/**
@@ -21,22 +20,44 @@ public abstract class Ability {
 	/**
 	 * Stamina function x1.
 	 */
-	private Short levelStaminaFunctionX1;
+	private Short staminaFunctionX1;
 	
 	/**
 	 * Stamina function y1.
 	 */
-	private Double levelStaminaFunctionY1;
+	private Double staminaFunctionY1;
 	
 	/**
 	 * Stamina function x2.
 	 */
-	private Short levelStaminaFunctionX2;
+	private Short staminaFunctionX2;
 	
 	/**
-	 * Stamina function y2
+	 * Stamina function y2.
 	 */
-	private Double levelStaminaFunctionY2;
+	private Double staminaFunctionY2;
+	
+	
+	/**
+	 * Ability active for function x1.
+	 */
+	transient private Short activeForFunctionX1;
+	
+	/**
+	 * Ability active for function y1.
+	 */
+	private Short activeForFunctionY1;
+	
+	/**
+	 * Ability active for function x2.
+	 */
+	private Short activeForFunctionX2;
+	
+	/**
+	 * Ability active for function y2.
+	 */
+	private Short activeForFunctionY2;
+	
 	
 	
 	// Initialization:
@@ -45,28 +66,33 @@ public abstract class Ability {
 	 * 
 	 * @param abilityName ability name
 	 */
-	public Ability(String abilityName, String className) {
+	public Ability(String abilityName) {
 		
 		this.abilityName=abilityName;
 		
 		// Class name:
-		_className = className;
+		_className = getClass().getName();
 		
 		// Set defaults:
         abilityName = "null";
-        levelStaminaFunctionX1 = 100;
-        levelStaminaFunctionY1 = 100.0;
-        levelStaminaFunctionX2 = 100;
-        levelStaminaFunctionY2 = 100.0;
+        staminaFunctionX1 = 100;
+        staminaFunctionY1 = 100.0;
+        staminaFunctionX2 = 100;
+        staminaFunctionY2 = 100.0;
 		
         
         
 		
 	}
 	
+	/**
+	 * Used by gson.
+	 * 
+	 */
 	public Ability() {
-		// TODO Auto-generated constructor stub
+		_className = getClass().getName();
 	}
+	
 	
 	/**
 	 * Goes trough all the fields and makes sure everything has been set after gson load.
@@ -80,29 +106,49 @@ public abstract class Ability {
 		boolean integrity = true;
 		
 		// Fields:
-		if(levelStaminaFunctionX1==null){
-			levelStaminaFunctionX1 = 10;
-			Saga.info("Setting default value for ability levelStaminaFunctionX1.");
+		if(staminaFunctionX1==null){
+			staminaFunctionX1 = 10;
+			Saga.info("Setting default value for ability staminaFunctionX1.");
 			integrity = false;
 		}
-		if(levelStaminaFunctionY1==null){
-			levelStaminaFunctionY1 = 1000.0;
-			Saga.info("Setting default value for ability levelStaminaFunctionY1.");
+		if(staminaFunctionY1==null){
+			staminaFunctionY1 = 1000.0;
+			Saga.info("Setting default value for ability staminaFunctionY1.");
 			integrity = false;
 		}
-		if(levelStaminaFunctionX2==null){
-			levelStaminaFunctionX2 = 100;
-			Saga.info("Setting default value for ability levelStaminaFunctionX2.");
+		if(staminaFunctionX2==null){
+			staminaFunctionX2 = 100;
+			Saga.info("Setting default value for ability staminaFunctionX2.");
 			integrity = false;
 		}
-		if(levelStaminaFunctionY2==null){
-			levelStaminaFunctionY2 = 1000.0;
-			Saga.info("Setting default value for ability levelStaminaFunctionY2.");
+		if(staminaFunctionY2==null){
+			staminaFunctionY2 = 1000.0;
+			Saga.info("Setting default value for ability staminaFunctionY2.");
 			integrity = false;
 		}
 		
-		// Inheriting class:
-		if(!completeInheriting()){
+		activeForFunctionX1 = staminaFunctionX1;
+		
+		
+		if(activeForFunctionY1==null){
+			activeForFunctionY1 = 10;
+			Saga.info("Setting default value for ability activeForFunctionY1.");
+			integrity = false;
+		}
+		if(activeForFunctionX2==null){
+			activeForFunctionX2 = 1000;
+			Saga.info("Setting default value for ability activeForFunctionX2.");
+			integrity = false;
+		}
+		if(activeForFunctionY2==null){
+			activeForFunctionY2 = 10;
+			Saga.info("Setting default value for ability activeForFunctionY2.");
+			integrity = false;
+		}
+		
+		
+		// Extended class:
+		if(!completeExtended()){
 			integrity = false;
 		}
 		
@@ -112,11 +158,11 @@ public abstract class Ability {
 	}
 	
 	/**
-	 * Does a complete for all inheriting classes.
+	 * Does a complete for all extending classes.
 	 * 
 	 * @return true if everything was correct.
 	 */
-	public abstract boolean completeInheriting();
+	public abstract boolean completeExtended();
 	
 	/**
 	 * Gets the minimum required level.
@@ -124,7 +170,7 @@ public abstract class Ability {
 	 * @return minimum level to use
 	 */
 	public Short minimumLevel() {
-		return levelStaminaFunctionX1;
+		return staminaFunctionX1;
 	}
 	
 	
@@ -136,12 +182,29 @@ public abstract class Ability {
 	 */
 	public Double calculateStaminaUse(Short level) {
 
-		if(level>levelStaminaFunctionX2){
-			level = levelStaminaFunctionX2;
+		if(level>staminaFunctionX2){
+			level = staminaFunctionX2;
 		}
-		double k= (levelStaminaFunctionY2-levelStaminaFunctionY1)/(levelStaminaFunctionX2-levelStaminaFunctionX1);
-		double b= levelStaminaFunctionY2 - k*levelStaminaFunctionX2;
+		double k= (staminaFunctionY2-staminaFunctionY1)/(staminaFunctionX2-staminaFunctionX1);
+		double b= staminaFunctionY2 - k*staminaFunctionX2;
 		return k * level + b;
+		
+	}
+	
+	/**
+	 * Calculates the time the ability should be active for.
+	 * 
+	 * @param level level
+	 * @return ability active time
+	 */
+	public Short calculateAbilityActiveTime(Short level) {
+
+		if(level>activeForFunctionX2){
+			level = activeForFunctionX2;
+		}
+		double k= (activeForFunctionY2-activeForFunctionY1)/(activeForFunctionX2-activeForFunctionX1);
+		double b= activeForFunctionY2 - k*activeForFunctionX2;
+		return new Double(k * level + b).shortValue();
 		
 	}
 	
@@ -161,7 +224,7 @@ public abstract class Ability {
 	 * @return level requirement
 	 */
 	public Short getLevelRequirement() {
-		return levelStaminaFunctionX1;
+		return staminaFunctionX1;
 	}
 	
 	/**
@@ -172,7 +235,7 @@ public abstract class Ability {
 	 * @return true if the level is high enough
 	 */
 	public boolean levelHighEnough(Short level) {
-            return levelStaminaFunctionX1 <= level;
+            return staminaFunctionX1 <= level;
 	}
 	
 	

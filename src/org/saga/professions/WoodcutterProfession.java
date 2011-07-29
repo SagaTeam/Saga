@@ -44,7 +44,7 @@ public class WoodcutterProfession extends Profession {
 
 
 	@Override
-	public void completeInheriting() {
+	public void completeExtended() {
 		// TODO Auto-generated method stub
 		
 	}
@@ -55,6 +55,12 @@ public class WoodcutterProfession extends Profession {
 		// TODO Auto-generated method stub
 		
 	}
+	
+	@Override
+	protected void abilityDeactivateEvent(int ability) {
+		
+	}
+	
 	
 	@Override
 	public boolean isAbilityActive(int ability) {

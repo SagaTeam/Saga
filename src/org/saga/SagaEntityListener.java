@@ -4,10 +4,13 @@ import org.bukkit.event.entity.EntityListener;
 
 
 import org.bukkit.entity.Entity;
+import org.bukkit.entity.HumanEntity;
 import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Player;
+import org.bukkit.event.entity.EntityDamageByBlockEvent;
 import org.bukkit.event.entity.EntityDamageByEntityEvent;
 import org.bukkit.event.entity.EntityDamageEvent;
+import org.bukkit.event.entity.EntityDamageEvent.DamageCause;
 import org.saga.exceptions.SagaPlayerNotLoadedException;
 
 public class SagaEntityListener extends EntityListener{
@@ -31,7 +34,8 @@ public class SagaEntityListener extends EntityListener{
 	@Override
 	public void onEntityDamage(EntityDamageEvent pEvent) {
 		
-		// Send events to saga players if possible:
+		
+		// Damaged by another entity:
 		Entity damaged= pEvent.getEntity();
 		if(pEvent instanceof EntityDamageByEntityEvent && damaged instanceof LivingEntity && ((LivingEntity) damaged).getNoDamageTicks()<=((LivingEntity) damaged).getMaximumNoDamageTicks()/2F && ((LivingEntity) damaged).getHealth()>0){
 			Entity damager = ((EntityDamageByEntityEvent)pEvent).getDamager();
@@ -43,6 +47,8 @@ public class SagaEntityListener extends EntityListener{
 					} catch (SagaPlayerNotLoadedException e) {
 						e.printStackTrace();
 					}
+				}else{
+					Saga.warning("Can't send an event for a not loaded player. Ignoring event.", ((HumanEntity) damager).getName());
 				}
 			}
 			
@@ -53,15 +59,74 @@ public class SagaEntityListener extends EntityListener{
 					} catch (SagaPlayerNotLoadedException e) {
 						e.printStackTrace();
 					}
+				}else{
+					Saga.warning("Can't send an event for a not loaded player. Ignoring event.", ((HumanEntity) damaged).getName());
 				}
 			}
 			
 		}
-		super.onEntityDamage(pEvent);
 		
+//		((LivingEntity) damaged).setHealth(15);
+		
+		// Environment damage to the player:
+		if(!(pEvent instanceof EntityDamageByEntityEvent) && damaged instanceof Player ){
+			Player damagedPlayer = (Player)(damaged);
+			
+			
+			
+			// Fire exposure:
+			if(pEvent.getCause().equals(DamageCause.FIRE_TICK) && damagedPlayer.getFireTicks() <= damagedPlayer.getMaxFireTicks()/2F){
+				if(Saga.plugin().isSagaPlayerLoaded(damagedPlayer.getName())){
+					try {
+						Saga.plugin().getSagaPlayer(damagedPlayer.getName()).damagedByEnvironmentEvent(pEvent);
+					} catch (SagaPlayerNotLoadedException e) {
+						e.printStackTrace();
+					}
+				}else{
+					Saga.warning("Can't send an event for a not loaded player. Ignoring event.", ((HumanEntity) damaged).getName());
+				}
+			}
+			
+			// Lava (needs -1 to no damage ticks)	
+			else if(pEvent.getCause().equals(DamageCause.LAVA) && damagedPlayer.getNoDamageTicks()-1 <= damagedPlayer.getMaximumNoDamageTicks()/2F){
+				if(Saga.plugin().isSagaPlayerLoaded(damagedPlayer.getName())){
+					try {
+						Saga.plugin().getSagaPlayer(damagedPlayer.getName()).damagedByEnvironmentEvent(pEvent);
+					} catch (SagaPlayerNotLoadedException e) {
+						e.printStackTrace();
+					}
+				}else{
+					Saga.warning("Can't send an event for a not loaded player. Ignoring event.", ((HumanEntity) damaged).getName());
+				}	
+			}
+			
+			// Normal:
+			if(damagedPlayer.getNoDamageTicks() <= damagedPlayer.getMaximumNoDamageTicks()/2F){
+				if(Saga.plugin().isSagaPlayerLoaded(damagedPlayer.getName())){
+					try {
+						Saga.plugin().getSagaPlayer(damagedPlayer.getName()).damagedByEnvironmentEvent(pEvent);
+					} catch (SagaPlayerNotLoadedException e) {
+						e.printStackTrace();
+					}
+				}else{
+					Saga.warning("Can't send an event for a not loaded player. Ignoring event.", ((HumanEntity) damaged).getName());
+				}
+			}
+			
+			
+//			System.out.println(((LivingEntity) damaged).getNoDamageTicks()+" <= "+((LivingEntity) damaged).getMaximumNoDamageTicks()+ " "+ ((LivingEntity) damaged).getMaxFireTicks());
+			
+		}
+
 		
 	}
-
+	
+	
+	
+	
+	
+	
+	
 	
 	
 }

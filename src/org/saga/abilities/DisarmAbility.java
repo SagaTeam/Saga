@@ -4,6 +4,7 @@ import java.util.*;
 
 import org.bukkit.Material;
 import org.bukkit.entity.Entity;
+import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Player;
 import org.bukkit.event.entity.EntityDamageByEntityEvent;
 import org.bukkit.inventory.ItemStack;
@@ -35,7 +36,7 @@ public class DisarmAbility extends Ability{
 	
 	public DisarmAbility() {
 		
-            super(ABILITY_NAME, DisarmAbility.class.getName());
+            super(ABILITY_NAME);
 		
 	}
 
@@ -47,7 +48,7 @@ public class DisarmAbility extends Ability{
 		Entity damaged = event.getEntity();
 		
 		// Return if the damaged can't be disarmed:
-		if(!(damager instanceof Player)){
+		if(!(damaged instanceof Player)){
 			((Player) damager).sendMessage(PlayerMessages.cantUseAbilityOn(damaged, this));
 			return false;
 		}
@@ -77,8 +78,14 @@ public class DisarmAbility extends Ability{
 			inventory.clear(newSlot);
 		}
 		
+		if(damager instanceof Player){
+			((Player) damager).sendMessage(PlayerMessages.youUsedAbilityOnEntity(damaged, this));
+		}
+		if(damaged instanceof Player){
+			((Player) damaged ).sendMessage(PlayerMessages.entityUsedAbilityOnYou(damager, this));
+		}
 		
-		System.out.println("OK");
+		
 		return true;
 		
 		
@@ -96,7 +103,7 @@ public class DisarmAbility extends Ability{
 	}
 		
 	@Override
-	public boolean completeInheriting() {
+	public boolean completeExtended() {
 		return true;
 	}
 	

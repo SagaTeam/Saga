@@ -3,12 +3,17 @@ package org.saga;
 import java.io.*;
 import java.util.Hashtable;
 
+import org.bukkit.Location;
 import org.bukkit.entity.Player;
 import org.bukkit.event.block.*;
 import org.bukkit.event.entity.EntityDamageByEntityEvent;
+import org.bukkit.event.entity.EntityDamageEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
+import org.saga.pattern.SagaPatternElement;
+import org.saga.pattern.SagaPatternInitiator;
 import org.saga.professions.*;
 import org.saga.utility.WriterReader;
+import org.saga.abilities.Ability;
 import org.saga.constants.*;
 
 import com.google.gson.JsonParseException;
@@ -37,7 +42,7 @@ public class SagaPlayer{
 	/**
 	 * All professions.
 	 */
-	private Profession[] professions;
+	public Profession[] professions;
 	
 	/**
 	 * Professions that the player can interact with.
@@ -94,8 +99,8 @@ public class SagaPlayer{
 			professions = allProfessions;
 		}
 		
-		// Selected professions field is null:
-		if(selectedProfessions == null){
+		// Selected professions field is null or wrong length:
+		if(selectedProfessions == null || selectedProfessions.length!=allProfessions.length){
 			Saga.info("Initializing new player selected professions field.", name);
 			selectedProfessions = new Boolean[allProfessions.length];
 			for (int i = 0; i < selectedProfessions.length; i++) {
@@ -107,16 +112,18 @@ public class SagaPlayer{
 		if(professions.length != allProfessions.length){
 			Saga.info("Initializing new player professions field.", name);
 			Profession[] professionsCorected = new Profession[allProfessions.length];
-			for (int i = 0; i < professionsCorected.length; i++) {
+			for (int i = 0; i < professions.length; i++) {
 				professionsCorected[i] = professions[i];
 			}
+			professions = professionsCorected;
 		}
 		
 		// All professions:
 		for (int i = 0; i < allProfessions.length; i++) {
 			Profession profession = professions[i];
 			if(profession == null || (!profession.getClass().equals(allProfessions[i].getClass()))){
-				professions[i]= allProfessions[i];
+				profession = allProfessions[i];
+				professions[i] = profession;
 				Saga.info("Adding "+profession.getClass().getSimpleName() + " player profession and setting default values.", name);
 			}
 			profession.setAccess(this);
@@ -278,6 +285,72 @@ public class SagaPlayer{
 	}
 	
 	/**
+	 * Initiates a pattern.
+	 * 
+	 * @param patternElement pattern element
+	 * @param patternLevel pattern level
+	 * @param orthogonalFlip if true, then the pattern will have a flip orthogonal to where the player is facing
+	 */
+	public void initiatePattern(SagaPatternElement patternElement, Short patternLevel, boolean orthogonalFlip) {
+		
+
+		// Initiate only of the player is online:
+		if(isOnlinePlayer){
+			SagaPatternInitiator initiator = new SagaPatternInitiator(100, patternElement);
+			initiator.initiateForPlayer(player.getEyeLocation(), calculatePlayerDirection(player.getEyeLocation()), patternLevel, orthogonalFlip);
+		}
+		
+		
+	}
+	
+	/**
+	 * Checks the pattern for the player. false if the player isnt online.
+	 * 
+	 * @param patternElement pattern element
+	 * @param patternLevel pattern level
+	 * @param orthogonalFlip if true, then the pattern will have a flip orthogonal to where the player is facing
+	 * @return true if the check didn't hit any terminate elements. false if the player is offline
+	 */
+	public boolean checkPattern(SagaPatternElement patternElement, Short patternLevel, boolean orthogonalFlip) {
+		
+		
+		// Check only of the player is online:
+		if(isOnlinePlayer){
+			SagaPatternInitiator initiator = new SagaPatternInitiator(100, patternElement);
+			return initiator.checkForPlayer(player.getEyeLocation(), calculatePlayerDirection(player.getEyeLocation()), patternLevel, orthogonalFlip);
+		}
+		return false;
+		
+		
+	}
+	
+	/**
+	 * Calculates the player facing direction.
+	 * 
+	 * @param playerLocation player location
+	 * @return facing direction
+	 */
+	private static int calculatePlayerDirection(Location playerLocation){
+		
+		double yaw = playerLocation.getYaw();
+		System.out.println("yaw:"+yaw);
+		if( (yaw >= 315.0 && yaw <= 45.0) || (yaw >= -45.0 && yaw <= -315.0) ){
+			return 0;
+		}
+		if( (yaw >= 45.0 && yaw <= 135.0) || (yaw >= -315.0 && yaw <= -225.0) ){
+			return 1;
+		}
+		if( (yaw >= 135.0 && yaw <= 225.0) || (yaw >= -225.0 && yaw <= -135.0) ){
+			return 2;
+		}if( (yaw >= 225.0 && yaw <= 315.0) || (yaw >= -135.0 && yaw <= -45.0) ){
+			return 3;
+		}
+		return 0;
+
+		
+	}
+	
+	/**
 	 * Gets a profession.
 	 * 
 	 * @param profession profession index
@@ -307,6 +380,23 @@ public class SagaPlayer{
 	public int getProfessionCount() {
 		return professions.length;
 	}
+	
+	/**
+	 * Deactivates an ability if possible.
+	 * 
+	 * @param ability ability index
+	 */
+	public void deactivateAbility(Ability ability){
+		
+		
+		// Forward to all professions:
+		for (int i = 0; i < professions.length; i++) {
+			professions[i].deactivateAbility(ability);
+		}
+		
+		
+	}
+	
 	
 	// Events:
 	/**
@@ -338,6 +428,23 @@ public class SagaPlayer{
 		sendMessage(PlayerMessages.damagedEntity(pEvent.getDamage(), pEvent.getEntity()));
 		
 	}
+	
+	/**
+	 * Damaged by the environment.
+	 *
+	 * @param pEvent event
+	 */
+	public void damagedByEnvironmentEvent(EntityDamageEvent pEvent) {
+		
+		
+		// Forward to all professions:
+		for (int i = 0; i < professions.length; i++) {
+			professions[i].damagedByEnvironmentEvent(pEvent);
+		}
+		
+		
+	}
+	
 
 	/**
 	 * Left clicked.
@@ -384,6 +491,18 @@ public class SagaPlayer{
 		// Forward to all professions:
 		for (int i = 0; i < professions.length; i++) {
 			professions[i].brokeBlockEvent(pEvent);
+		}
+	}
+	
+	/**
+	 * Player damaged a block event.
+	 *
+	 * @param pEvent event
+	 */
+	public void damagedBlockEvent(BlockDamageEvent pEvent) {
+		// Forward to all professions:
+		for (int i = 0; i < professions.length; i++) {
+			professions[i].damagedBlockEvent(pEvent);
 		}
 	}
 

@@ -1,8 +1,7 @@
 package org.saga.professions;
 
-import java.util.*;
-
 import org.bukkit.Material;
+import org.bukkit.entity.Player;
 import org.bukkit.event.entity.EntityDamageByEntityEvent;
 import org.saga.Saga;
 import org.saga.abilities.Ability;
@@ -26,7 +25,7 @@ public class FighterProfession extends Profession {
 	/**
 	 * Ability scroll materials.
 	 */
-	transient private static Material[] ABILITY_SCROLL_MATERIALS = new Material[]{Material.WOOD_SWORD , Material.STONE_SWORD , Material.GOLD_SWORD , Material.DIAMOND_SWORD};
+	transient private static Material[] ABILITY_SCROLL_MATERIALS = new Material[]{Material.WOOD_SWORD , Material.STONE_SWORD , Material.IRON_SWORD , Material.GOLD_SWORD , Material.DIAMOND_SWORD};
 	
 	/**
 	 * Active abilities.
@@ -50,7 +49,7 @@ public class FighterProfession extends Profession {
 	 * @see org.saga.professions.Profession#completeInheriting()
 	 */
 	@Override
-	public void completeInheriting() {
+	public void completeExtended() {
 		
 		
 		// Initialize:
@@ -78,6 +77,11 @@ public class FighterProfession extends Profession {
     protected Material[] getAbilityScrollMaterials() {
     	return ABILITY_SCROLL_MATERIALS;
     }
+    
+    @Override
+    public boolean isAbilityActive(int ability) {
+    	return activeAbilities[ability];
+    }
 
 
 	// Events:
@@ -85,13 +89,12 @@ public class FighterProfession extends Profession {
 	protected void abilityActivateEvent(int ability) {
     	activeAbilities[ability] = true;
 	}
-	
-    @Override
-    public boolean isAbilityActive(int ability) {
-    	// TODO Auto-generated method stub
-    	return activeAbilities[ability];
-    }
     
+    @Override
+	protected void abilityDeactivateEvent(int ability) {
+    	activeAbilities[ability] = false;
+	}
+	
     @Override
     public void gotDamagedByLivingEntityEvent(EntityDamageByEntityEvent event) {
     	
@@ -115,12 +118,12 @@ public class FighterProfession extends Profession {
     	
     	
     	// Heavy hit:
-    	if(activeAbilities[0]){
+    	if(activeAbilities[0] && event.getEntity() instanceof Player && isMaterialCorrect(((Player) event.getEntity()).getItemInHand().getType())){
     		activeAbilities[0]=false;
     		if(((HeavyHitAbility)ABILITIES[0]).use(getLevel(), event));
     	}
     	// Disarm:
-    	if(activeAbilities[2]){
+    	if(activeAbilities[2] && event.getEntity() instanceof Player && isMaterialCorrect(((Player) event.getEntity()).getItemInHand().getType())){
     		activeAbilities[2]=false;
     		((DisarmAbility)ABILITIES[2]).use(getLevel(), event);
     	}

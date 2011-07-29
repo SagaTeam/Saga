@@ -4,8 +4,10 @@ import java.util.*;
 
 import org.bukkit.Material;
 import org.bukkit.event.block.BlockBreakEvent;
+import org.bukkit.event.block.BlockDamageEvent;
 import org.bukkit.event.block.BlockPlaceEvent;
 import org.bukkit.event.entity.EntityDamageByEntityEvent;
+import org.bukkit.event.entity.EntityDamageEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
 import org.saga.Saga;
 import org.saga.SagaPlayer;
@@ -51,7 +53,7 @@ public abstract class Profession {
 	/**
 	 * Saga player.
 	 */
-	transient private SagaPlayer sagaPlayer= null;
+	transient protected SagaPlayer sagaPlayer= null;
 	
 	
 	// Main:
@@ -65,6 +67,10 @@ public abstract class Profession {
 	 */
 	transient private Ability[] abilities;
 	
+	/**
+	 * Ability timers.
+	 */
+	transient private short[] abilityTimers;
 	
 	// Initialization:
 	/**
@@ -107,20 +113,20 @@ public abstract class Profession {
 		}
 		
 		// Inheriting class:
-		completeInheriting();
+		completeExtended();
 
 		
 		// Initialize dependent fields:
 		abilities = getAbilities();
 		experienceRequirement = calculateExperienceRequirement(level);
-		
+		abilityTimers = new short[abilities.length];
 
 	}
 	
 	/**
-	 * Does a complete for all inheriting classes.
+	 * Does a complete for an extended classes.
 	 */
-	public abstract void completeInheriting();
+	public abstract void completeExtended();
 	
 	
 	/**
@@ -178,7 +184,7 @@ public abstract class Profession {
 		
 		// Set selected ability:
 		selectedAbility= selectedNew;
-		System.out.println("selected:"+selectedAbility);
+		
 		
 	}
 	
@@ -255,6 +261,20 @@ public abstract class Profession {
 	 * @return ability scroll materials
 	 */
 	protected abstract Material[] getAbilityScrollMaterials();
+	
+	/**
+	 * Deactivates an ability if possible.
+	 * 
+	 * @param ability ability index
+	 */
+	public void deactivateAbility(Ability ability){
+		for (int i = 0; i < abilities.length; i++) {
+			if(abilities[i].equals(ability)){
+				abilityDeactivateEvent(i);
+				sagaPlayer.sendMessage(PlayerMessages.abilityDeactivate(abilities[i]));
+			}
+		}
+	}
 	
 	/**
 	 * Adds experience
@@ -334,6 +354,26 @@ public abstract class Profession {
 		return experienceRequirement;
 	}
 	
+	/**
+     * Check if the given material is correct.
+     * 
+     * @param material material
+     * @return true if correct
+     */
+    public boolean isMaterialCorrect(Material material) {
+
+    	
+    	Material[] abilityScrollMaterials = getAbilityScrollMaterials();
+    	for (int i = 0; i < abilityScrollMaterials.length; i++) {
+			if(abilityScrollMaterials[i].equals(material))
+				return true;
+		}
+    	return false;
+    	
+    	
+	}
+
+    
 	// Events:
 	/**
 	 * Got damaged by living entity event.
@@ -356,6 +396,17 @@ public abstract class Profession {
 
 
 	}
+	
+	/**
+	 * Damaged by the environment.
+	 *
+	 * @param pEvent event
+	 */
+	public void damagedByEnvironmentEvent(EntityDamageEvent pEvent) {
+		
+		
+		
+	}
 
 	/**
 	 * Left clicked.
@@ -365,9 +416,10 @@ public abstract class Profession {
 	public void leftClickInteractEvent(PlayerInteractEvent pEvent) {
 
 		
-		// Check if the material is correct for the ability activate:
+		// Check if the material is correct and try activating an ability:
 		Material[] scrollMaterials = getAbilityScrollMaterials();
 		for (int i = 0; i < scrollMaterials.length && selectedAbility!=-1; i++) {
+			
 			if(scrollMaterials[i].equals(pEvent.getPlayer().getItemInHand().getType())){
 				// Check if there is enough stamina:
 				Double staminaUse = abilities[selectedAbility].calculateStaminaUse(level);
@@ -375,18 +427,22 @@ public abstract class Profession {
 					// Check if already active:
 					if(!isAbilityActive(selectedAbility)){
 						abilityActivateEvent(selectedAbility);
+						abilityTimers[selectedAbility] = abilities[selectedAbility].calculateAbilityActiveTime(getLevel());
 						sagaPlayer.useStamina(staminaUse);
 						sagaPlayer.sendMessage(PlayerMessages.abilityActivate(abilities[selectedAbility]));
 						resetAbilitySelection();
 					}else{
 						sagaPlayer.sendMessage(PlayerMessages.abilityAlreadyActive(abilities[selectedAbility]));
+						resetAbilitySelection();
 					}
 					
 				}else{
 					sagaPlayer.sendMessage(PlayerMessages.notEnoughStamina(abilities[selectedAbility], sagaPlayer.getStamina(), sagaPlayer.getMaximumStamina(), staminaUse));
+					resetAbilitySelection();
 				}
 				break;
 			}
+			
 		}
 
 		
@@ -432,6 +488,15 @@ public abstract class Profession {
 	public void brokeBlockEvent(BlockBreakEvent pEvent) {
 
 
+	}
+	
+	/**
+	 * Player damaged a block event.
+	 *
+	 * @param pEvent event
+	 */
+	public void damagedBlockEvent(BlockDamageEvent pEvent) {
+
 
 	}
 
@@ -442,6 +507,18 @@ public abstract class Profession {
 	 */
 	public void clockTickEvent(int pTick) {
 
+		
+		// Ability deactivate timer:
+		for (int i = 0; i < abilities.length; i++) {
+			if(isAbilityActive(i)){
+				abilityTimers[i]--;
+				if(abilityTimers[i]<=0){
+					abilityDeactivateEvent(i);
+					deactivateAbility(abilities[i]);
+				}
+			}
+		}
+		
 
 	}
 
@@ -452,6 +529,16 @@ public abstract class Profession {
 	 * @throws IndexOutOfBoundsException when the given ability index is out of bounds
 	 */
 	protected abstract void abilityActivateEvent(int ability) throws IndexOutOfBoundsException;
+	
+	/**
+	 * Deactivates an ability.
+	 * 
+	 * @param ability ability index
+	 * @throws IndexOutOfBoundsException when the given ability index is out of bounds
+	 */
+	protected abstract void abilityDeactivateEvent(int ability) throws IndexOutOfBoundsException;
+	
+	
 	
 	
 }

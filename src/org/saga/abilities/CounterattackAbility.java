@@ -9,8 +9,9 @@ import org.bukkit.event.entity.EntityDamageByEntityEvent;
 import org.saga.Saga;
 import org.saga.constants.PlayerMessages;
 
-public class CounterattackAbility extends Ability{
+public class CounterattackAbility extends AbilityFunction{
 
+	
 	private final String TEST_FIELD="TESTGOESHERE";
 	
 	/**
@@ -18,58 +19,28 @@ public class CounterattackAbility extends Ability{
 	 */
 	public static final transient String ABILITY_NAME= "counterattack";
 	
-	/**
-	 * Multiplier function x1.
-	 */
-	transient private Short damageMultiplierFunctionX1;
-	
-	/**
-	 * Multiplier function y1.
-	 */
-	private Double damageMultiplierFunctionY1;
-	
-	/**
-	 * Multiplier function x2.
-	 */
-	private Short damageMultiplierFunctionX2;
-	
-	/**
-	 * Multiplier function y2
-	 */
-	private Double damageMultiplierFunctionY2;
-	
 	
 	// Initialization:
+	/**
+	 * Sets a name.
+	 * 
+	 */
 	public CounterattackAbility() {
 		
-            super(ABILITY_NAME, CounterattackAbility.class.getName());
+            super(ABILITY_NAME);
 		
 	}
 
+	/* 
+	 * (non-Javadoc)
+	 * 
+	 * @see org.saga.abilities.AbilityFunction#completeSecondExtended()
+	 */
 	@Override
-	public boolean completeInheriting() {
-		boolean integrity = true;
-		// Fields:
-		if(damageMultiplierFunctionY1==null){
-			damageMultiplierFunctionY1 = 1.0;
-			Saga.info("Setting default value for "+getAbilityName()+" ability damageMultiplierFunctionY1.");
-			integrity = false;
-		}
-		if(damageMultiplierFunctionX2==null){
-			damageMultiplierFunctionX2 = 1000;
-			Saga.info("Setting default value for "+getAbilityName()+" ability damageMultiplierFunctionX2.");
-			integrity = false;
-		}
-		if(damageMultiplierFunctionY2==null){
-			damageMultiplierFunctionY2 = 1.0;
-			Saga.info("Setting default value for "+getAbilityName()+" ability damageMultiplierFunctionY2.");
-			integrity = false;
-		}
-
-		// Set fields:
-		damageMultiplierFunctionX1 = minimumLevel();
+	public boolean completeSecondExtended() {
 		
-		return integrity;
+		return true;
+		
 	}
 
 	
@@ -85,9 +56,6 @@ public class CounterattackAbility extends Ability{
 	public boolean use(Short level, EntityDamageByEntityEvent event){
 		
 		
-		
-		
-		
 		Entity damager = event.getDamager();
 		Entity damaged = event.getEntity();
 		
@@ -97,36 +65,15 @@ public class CounterattackAbility extends Ability{
 		}
 		
 		if(damager instanceof Player){
-			((Player) damaged).sendMessage(PlayerMessages.entityUsedAbilityOn(damaged, this));
+			((Player) damager).sendMessage(PlayerMessages.entityUsedAbilityOnYou(damaged, this));
 		}
 		if(damaged instanceof Player){
-			((Player) damager ).sendMessage(PlayerMessages.usedAbilityOnEntity(damaged, this));
+			((Player) damaged ).sendMessage(PlayerMessages.youUsedAbilityOnEntity(damager, this));
 		}
 		
-		((LivingEntity) damager).damage(new Double(calculateDamageMultiplier(level) * event.getDamage()).intValue(), damaged);
+		((LivingEntity) damager).damage(new Double(calculateFunctionValue(level) * event.getDamage()).intValue(), damaged);
 		
 		return true;
-		
-		
-	}
-	
-	
-	
-	/**
-	 * Calculates the damage multiplier for the given level.
-	 * 
-	 * @param level level
-	 */
-	private Double calculateDamageMultiplier(Short level) {
-		System.out.println("level:"+level);
-		if(level>damageMultiplierFunctionX2){
-			level = damageMultiplierFunctionX2;
-		}
-		
-		double k= (damageMultiplierFunctionY2 - damageMultiplierFunctionY1)/(damageMultiplierFunctionX2-damageMultiplierFunctionX1);
-		double b= damageMultiplierFunctionY2 - k * damageMultiplierFunctionX2;
-		System.out.println("k:"+k+ " b:"+b);
-		return new Double(k * level + b);
 		
 		
 	}

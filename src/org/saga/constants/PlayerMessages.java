@@ -92,6 +92,18 @@ public class PlayerMessages {
 				
 	}
 	
+	public static String abilityUseFailure(Ability activatedAbility) {
+
+		return "Can't use "+activatedAbility.getAbilityName()+" ability.";
+				
+	}
+	
+	public static String abilityDeactivate(Ability activatedAbility) {
+
+		return "Deactivated "+activatedAbility.getAbilityName()+" ability.";
+				
+	}
+	
 	public static String abilitySelectNone() {
 
 		return "No ability selected.";
@@ -116,7 +128,7 @@ public class PlayerMessages {
 
 	}
 	
-	public static String usedAbilityOnEntity(Entity abilityUsedOn, Ability ability) {
+	public static String youUsedAbilityOnEntity(Entity abilityUsedOn, Ability ability) {
 		
 		
 		String usedOnName;
@@ -126,8 +138,28 @@ public class PlayerMessages {
 			usedOnName = abilityUsedOn.getClass().getSimpleName().replace("Craft", "");
 		}
 		
-		return "Used " + ability.getAbilityName()+ " on "+ usedOnName + ".";
+		return "You used " + ability.getAbilityName()+ " ability on "+ usedOnName + ".";
 		
+		
+	}
+	
+	public static String entityUsedAbilityOnYou(Entity abilityUser, Ability ability) {
+		
+		String userOnName;
+		if(abilityUser instanceof Player){
+			userOnName = ((Player)abilityUser).getName();
+		}else{
+			userOnName = capitalize(abilityUser.getClass().getSimpleName().replace("Craft", ""));
+		}
+		
+		return userOnName + " used " + ability.getAbilityName()+ " on you.";
+		
+		
+	}
+	
+	public static String usedAbility(Ability ability) {
+		
+		return "Used " + ability.getAbilityName()+ " ability.";
 		
 	}
 	
@@ -142,21 +174,6 @@ public class PlayerMessages {
 		}
 		
 		return "Failed to use " + ability.getAbilityName()+ " ability on "+ usedOnName + ".";
-		
-		
-	}
-	
-	public static String entityUsedAbilityOn(Entity abilityUser, Ability ability) {
-		
-		String userOnName;
-		if(abilityUser instanceof Player){
-			userOnName = ((Player)abilityUser).getName();
-		}else{
-			userOnName = abilityUser.getClass().getSimpleName().replace("Craft", "");
-		}
-		userOnName = userOnName.substring(0, 1).toUpperCase() + userOnName.substring(1);
-		
-		return userOnName + " used " + ability.getAbilityName()+ " on you.";
 		
 		
 	}
@@ -246,19 +263,18 @@ public class PlayerMessages {
 		int frameShift = 2;
 		rString = frameHorisontal.substring(0, frameShift) + rString + frameHorisontal.substring(frameShift + rString.length()-2);
 		
-		
-		
 		Short level = profession.getLevel();
 		rString += "\n"+"lvl" + level +" with " + profession.getLevelExperience() + "/" + profession.getExperienceRequirement() + "exp";
 		for (int i = 0; i < profession.getAbilityCount(); i++) {
-			rString += "\n";
 			
+			rString += "\n";
 			String profLine = profession.getAbilityName(i);
 			ChatColor activeColor = defaultColor;
 			
 			if(profession.isAbilityActive(i)){
 				activeColor = abilityActiveColor;
 			}
+			
 			
 			if(profession.getAbilityLevelRequirement(i) > level){
 				activeColor = levelNotHighEnoghColor;

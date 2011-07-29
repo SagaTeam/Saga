@@ -4,6 +4,7 @@ import java.util.*;
 
 import org.saga.abilities.*;
 import org.saga.professions.FighterProfession;
+import org.saga.professions.MinerProfession;
 import org.saga.professions.Profession;
 import org.saga.professions.WoodcutterProfession;
 
@@ -131,7 +132,7 @@ public class BalanceInformation {
 	 */
 	public Profession[] getAllProfessions() {
 		
-		return new Profession[]{new FighterProfession(), new WoodcutterProfession()};
+		return new Profession[]{new FighterProfession(), new WoodcutterProfession(), new MinerProfession()};
 
 	}
 	
@@ -142,7 +143,7 @@ public class BalanceInformation {
 	 */
 	private Ability[] getAllAbilities() {
 
-		return new Ability[]{new HeavyHitAbility(), new CounterattackAbility(), new DisarmAbility()};
+		return new Ability[]{new HeavyHitAbility(), new CounterattackAbility(), new DisarmAbility(), new PowerfulSwings(), new ResistLavaAbility(), new FocusedHitsAbility()};
 		
 	}
 	

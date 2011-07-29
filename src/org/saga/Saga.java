@@ -57,6 +57,7 @@ public class Saga extends JavaPlugin {
     private Hashtable<String,SagaPlayer> loadedPlayers;
     private SagaPlayerListener playerListener;
     private SagaEntityListener entityListener;
+    private SagaBlockListener blockListener;
 
     static public Saga plugin() {
         return instance;
@@ -166,7 +167,7 @@ public class Saga extends JavaPlugin {
         // Generate default balance information:
         if(writeDefaultBalanceInfo){
             try {
-            	Saga.info("Generating default balance information file. Edit and rename to use it.");
+            	Saga.info("Generating balance information file with new added default values. Edit and rename to use it.");
                 WriterReader.writeBalanceInformation(balanceInformation, WriterReader.SUFFIX_DEFAULT);
             } catch (Exception e2) {
                 Saga.severe("Balance information file generation failure.");
@@ -189,6 +190,7 @@ public class Saga extends JavaPlugin {
         //Create listeners
       	playerListener = new SagaPlayerListener(this);
       	entityListener = new SagaEntityListener();
+      	blockListener = new SagaBlockListener();
 
         // Register events
         pluginManager.registerEvent(Event.Type.PLAYER_JOIN, playerListener, Priority.Normal, this);
@@ -196,7 +198,10 @@ public class Saga extends JavaPlugin {
         pluginManager.registerEvent(Event.Type.PLAYER_INTERACT, playerListener, Priority.Normal, this);
         pluginManager.registerEvent(Event.Type.PLAYER_COMMAND_PREPROCESS, playerListener, Priority.Normal, this);
         pluginManager.registerEvent(Event.Type.ENTITY_DAMAGE, entityListener, Priority.Normal, this);
-
+        pluginManager.registerEvent(Event.Type.ENTITY_COMBUST, entityListener, Priority.Normal, this);
+        pluginManager.registerEvent(Event.Type.BLOCK_BREAK, blockListener, Priority.Normal, this);
+        pluginManager.registerEvent(Event.Type.BLOCK_DAMAGE, blockListener, Priority.Normal, this);
+        
         //Register Command Classes to the command map
         commandMap.register(SagaCommands.class);
 
