@@ -2,6 +2,7 @@ package org.saga.professions;
 
 import org.bukkit.Material;
 import org.bukkit.entity.Player;
+import org.bukkit.event.Event.Type;
 import org.bukkit.event.entity.EntityDamageByEntityEvent;
 import org.saga.Saga;
 import org.saga.abilities.Ability;
@@ -100,7 +101,7 @@ public class FighterProfession extends Profession {
     	
 
     	// Counterattack:
-    	if(activeAbilities[1]){
+    	if(activeAbilities[1] && !event.getType().equals(Type.PROJECTILE_HIT)){
     		activeAbilities[1]=false;
     		if(!((CounterattackAbility)ABILITIES[1]).use(getLevel(), event)){
     			// Activate again on failure:
@@ -118,12 +119,12 @@ public class FighterProfession extends Profession {
     	
     	
     	// Heavy hit:
-    	if(activeAbilities[0] && event.getEntity() instanceof Player && isMaterialCorrect(((Player) event.getEntity()).getItemInHand().getType())){
+    	if(activeAbilities[0] && event.getDamager() instanceof Player && isMaterialCorrect(((Player) event.getDamager()).getItemInHand().getType())){
     		activeAbilities[0]=false;
     		if(((HeavyHitAbility)ABILITIES[0]).use(getLevel(), event));
     	}
     	// Disarm:
-    	if(activeAbilities[2] && event.getEntity() instanceof Player && isMaterialCorrect(((Player) event.getEntity()).getItemInHand().getType())){
+    	if(activeAbilities[2] && event.getDamager() instanceof Player && isMaterialCorrect(((Player) event.getDamager()).getItemInHand().getType())){
     		activeAbilities[2]=false;
     		((DisarmAbility)ABILITIES[2]).use(getLevel(), event);
     	}

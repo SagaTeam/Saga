@@ -378,9 +378,9 @@ public abstract class Profession {
 	/**
 	 * Got damaged by living entity event.
 	 *
-	 * @param pEvent event
+	 * @param event event
 	 */
-	public void gotDamagedByLivingEntityEvent(EntityDamageByEntityEvent pEvent) {
+	public void gotDamagedByLivingEntityEvent(EntityDamageByEntityEvent event) {
 
 
 
@@ -389,9 +389,9 @@ public abstract class Profession {
 	/**
 	 * Damaged a living entity.
 	 *
-	 * @param pEvent event
+	 * @param event event
 	 */
-	public void damagedLivingEntityEvent(EntityDamageByEntityEvent pEvent) {
+	public void damagedLivingEntityEvent(EntityDamageByEntityEvent event) {
 
 
 
@@ -400,9 +400,9 @@ public abstract class Profession {
 	/**
 	 * Damaged by the environment.
 	 *
-	 * @param pEvent event
+	 * @param event event
 	 */
-	public void damagedByEnvironmentEvent(EntityDamageEvent pEvent) {
+	public void damagedByEnvironmentEvent(EntityDamageEvent event) {
 		
 		
 		
@@ -411,25 +411,25 @@ public abstract class Profession {
 	/**
 	 * Left clicked.
 	 *
-	 * @param pEvent event
+	 * @param event event
 	 */
-	public void leftClickInteractEvent(PlayerInteractEvent pEvent) {
+	public void leftClickInteractEvent(PlayerInteractEvent event) {
 
 		
 		// Check if the material is correct and try activating an ability:
 		Material[] scrollMaterials = getAbilityScrollMaterials();
 		for (int i = 0; i < scrollMaterials.length && selectedAbility!=-1; i++) {
 			
-			if(scrollMaterials[i].equals(pEvent.getPlayer().getItemInHand().getType())){
+			if(scrollMaterials[i].equals(event.getPlayer().getItemInHand().getType())){
 				// Check if there is enough stamina:
 				Double staminaUse = abilities[selectedAbility].calculateStaminaUse(level);
 				if(sagaPlayer.enoughStamina(staminaUse)){
 					// Check if already active:
 					if(!isAbilityActive(selectedAbility)){
+						sagaPlayer.sendMessage(PlayerMessages.abilityActivate(abilities[selectedAbility]));
 						abilityActivateEvent(selectedAbility);
 						abilityTimers[selectedAbility] = abilities[selectedAbility].calculateAbilityActiveTime(getLevel());
 						sagaPlayer.useStamina(staminaUse);
-						sagaPlayer.sendMessage(PlayerMessages.abilityActivate(abilities[selectedAbility]));
 						resetAbilitySelection();
 					}else{
 						sagaPlayer.sendMessage(PlayerMessages.abilityAlreadyActive(abilities[selectedAbility]));
@@ -451,15 +451,15 @@ public abstract class Profession {
 	/**
 	 * Right clicked.
 	 *
-	 * @param pEvent event
+	 * @param event event
 	 */
-	public void rightClickInteractEvent(PlayerInteractEvent pEvent) {
+	public void rightClickInteractEvent(PlayerInteractEvent event) {
 
 		
 		// Check if the material is correct for an ability scroll:
 		Material[] scrollMaterials = getAbilityScrollMaterials();
 		for (int i = 0; i < scrollMaterials.length; i++) {
-			if(scrollMaterials[i].equals(pEvent.getPlayer().getItemInHand().getType())){
+			if(scrollMaterials[i].equals(event.getPlayer().getItemInHand().getType())){
 				selectNextAbility();
 				break;
 			}
@@ -472,9 +472,9 @@ public abstract class Profession {
 	/**
 	 * Player placed a block event.
 	 *
-	 * @param pEvent event
+	 * @param event event
 	 */
-	public void placedBlockEvent(BlockPlaceEvent pEvent) {
+	public void placedBlockEvent(BlockPlaceEvent event) {
 
 
 
@@ -483,9 +483,9 @@ public abstract class Profession {
 	/**
 	 * Player broke a block event.
 	 *
-	 * @param pEvent event
+	 * @param event event
 	 */
-	public void brokeBlockEvent(BlockBreakEvent pEvent) {
+	public void brokeBlockEvent(BlockBreakEvent event) {
 
 
 	}
@@ -493,9 +493,9 @@ public abstract class Profession {
 	/**
 	 * Player damaged a block event.
 	 *
-	 * @param pEvent event
+	 * @param event event
 	 */
-	public void damagedBlockEvent(BlockDamageEvent pEvent) {
+	public void damagedBlockEvent(BlockDamageEvent event) {
 
 
 	}

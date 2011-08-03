@@ -38,7 +38,7 @@ public class MinerProfession extends Profession {
 	/**
 	 * Active abilities.
 	 */
-	transient Boolean[] activeAbilities;
+	transient private Boolean[] activeAbilities;
 	
 	
 	// Initialization:

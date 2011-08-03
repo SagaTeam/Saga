@@ -4,6 +4,7 @@ import java.io.*;
 import java.util.Hashtable;
 
 import org.bukkit.Location;
+import org.bukkit.block.Block;
 import org.bukkit.entity.Player;
 import org.bukkit.event.block.*;
 import org.bukkit.event.entity.EntityDamageByEntityEvent;
@@ -155,15 +156,6 @@ public class SagaPlayer{
 	}
 	
 	/**
-	 * Returns player name.
-	 * 
-	 * @return player name
-	 */
-	public Player getPlayer() {
-            return player;
-	}
-
-	/**
 	 * Sets the player and changes status to online.
 	 * Marks the saga player a existant player.
 	 * 
@@ -285,55 +277,90 @@ public class SagaPlayer{
 	}
 	
 	/**
-	 * Initiates a pattern.
+	 * Moves the player to the given location.
+	 * Must be used when the teleport is part of an ability.
+	 * 
+	 * @param location location
+	 */
+	public void moveTo(Location location) {
+
+		if(isOnlinePlayer()){
+        	player.teleport(location);
+        }
+		
+	}
+	
+	/**
+	 * Centers the location to the block and moves the player there.
+	 * Must be used when the teleport is part of an ability.
+	 * 
+	 * @param location location
+	 */
+	public void moveToCentered(Location location) {
+		System.out.println("pitch:"+ player.getLocation().getPitch());
+		moveTo(new Location(location.getWorld(), location.getX() + 0.5, location.getY(), location.getZ() + 0.5));
+		
+	}
+	
+	/**
+	 * Initiates a pattern. Location is set to player eye location.
 	 * 
 	 * @param patternElement pattern element
 	 * @param patternLevel pattern level
 	 * @param orthogonalFlip if true, then the pattern will have a flip orthogonal to where the player is facing
+	 * @param blockLimit block limit to not let things out of control
+	 * @return true if there is a termination
 	 */
-	public void initiatePattern(SagaPatternElement patternElement, Short patternLevel, boolean orthogonalFlip) {
+	public boolean initiatePattern(SagaPatternElement patternElement, Short patternLevel, boolean orthogonalFlip, int blockLimit) {
 		
 
 		// Initiate only of the player is online:
 		if(isOnlinePlayer){
-			SagaPatternInitiator initiator = new SagaPatternInitiator(100, patternElement);
-			initiator.initiateForPlayer(player.getEyeLocation(), calculatePlayerDirection(player.getEyeLocation()), patternLevel, orthogonalFlip);
+			SagaPatternInitiator initiator = new SagaPatternInitiator(blockLimit, patternElement);
+			return initiator.initiateForPlayer(player.getEyeLocation(), calculatePlayerHorizontalDirection(), patternLevel, orthogonalFlip);
 		}
-		
+		return true;
 		
 	}
 	
 	/**
-	 * Checks the pattern for the player. false if the player isnt online.
+	 * Initiates a pattern from a target block.
 	 * 
+	 * @param location target
 	 * @param patternElement pattern element
 	 * @param patternLevel pattern level
 	 * @param orthogonalFlip if true, then the pattern will have a flip orthogonal to where the player is facing
-	 * @return true if the check didn't hit any terminate elements. false if the player is offline
+	 * @param blockLimit block limit to not let things out of control
+	 * @return true if there is a termination
+	 * 
 	 */
-	public boolean checkPattern(SagaPatternElement patternElement, Short patternLevel, boolean orthogonalFlip) {
+	public boolean initiatePatternTarget(Location location, SagaPatternElement patternElement, Short patternLevel, boolean orthogonalFlip, int blockLimit) {
 		
-		
-		// Check only of the player is online:
+
+		// Initiate only of the player is online:
 		if(isOnlinePlayer){
-			SagaPatternInitiator initiator = new SagaPatternInitiator(100, patternElement);
-			return initiator.checkForPlayer(player.getEyeLocation(), calculatePlayerDirection(player.getEyeLocation()), patternLevel, orthogonalFlip);
+			SagaPatternInitiator initiator = new SagaPatternInitiator(blockLimit, patternElement);
+			return initiator.initiateForPlayer(location, 0*calculatePlayerHorizontalDirection(), patternLevel, orthogonalFlip);
 		}
-		return false;
+		return true;
 		
 		
 	}
 	
 	/**
-	 * Calculates the player facing direction.
+	 * Calculates the player horizontal facing direction.
 	 * 
-	 * @param playerLocation player location
-	 * @return facing direction
+	 * @return facing direction. 0 if not online
 	 */
-	private static int calculatePlayerDirection(Location playerLocation){
+	private int calculatePlayerHorizontalDirection(){
 		
+		
+		if(!isOnlinePlayer()){
+			return 0;
+		}
+		
+		Location playerLocation = player.getEyeLocation();
 		double yaw = playerLocation.getYaw();
-		System.out.println("yaw:"+yaw);
 		if( (yaw >= 315.0 && yaw <= 45.0) || (yaw >= -45.0 && yaw <= -315.0) ){
 			return 0;
 		}
@@ -347,6 +374,28 @@ public class SagaPlayer{
 		}
 		return 0;
 
+		
+	}
+	
+	/**
+	 * Calculates player vertical facing direction.
+	 * 
+	 * @return true if facing up or not online
+	 */
+	public boolean calculatePlayerVerticalDirection() {
+		
+		
+		if(!isOnlinePlayer()){
+			return true;
+		}
+		
+		float pitch = player.getLocation().getPitch();
+		if(pitch>0){
+			return false;
+		}else{
+			return true;
+		}
+		
 		
 	}
 	

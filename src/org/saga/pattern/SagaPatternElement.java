@@ -8,17 +8,17 @@ public abstract class SagaPatternElement {
 	/**
 	 * x offset.
 	 */
-	private final int xOffset;
+	private int xOffset;
 	
 	/**
 	 * y offset.
 	 */
-	private final int yOffset;
+	private int yOffset;
 	
 	/**
 	 * z offset.
 	 */
-	private final int zOffset;
+	private int zOffset;
 
 	/**
 	 * Minimum level to not be ignored.
@@ -29,8 +29,7 @@ public abstract class SagaPatternElement {
 	 * Maximum level to not be ignored.
 	 */
 	private final Short maximumLevel;
-	
-	
+
 	/**
 	 * Sets offsets and level.
 	 * 
@@ -63,11 +62,11 @@ public abstract class SagaPatternElement {
 	/**
 	 * Executes the pattern. Returns if no termination was encountered.
 	 * 
-	 * @param previousBlock previous block
+	 * @param anchorBlock block to check relative to
 	 * @param initiator initiator instance
-	 * @return true if a termination not encountered
+	 * @return true if a termination was encountered
 	 */
-	public abstract boolean execute(Block previousBlock , SagaPatternInitiator initiator);
+	public abstract boolean execute(Block anchorBlock , SagaPatternInitiator initiator);
 	
 	
 	/**
@@ -100,6 +99,7 @@ public abstract class SagaPatternElement {
 	 */
 	public final int getxOffset(SagaPatternInitiator initiator) {
 		
+		
 		int xOffset= this.xOffset;
 		if(initiator.isOrthogonalFlip()){
 			xOffset = -xOffset;
@@ -125,7 +125,11 @@ public abstract class SagaPatternElement {
 	 * @return y offset with rotation
 	 */
 	public final int getyOffset(SagaPatternInitiator initiator) {
+		
+		
 		return yOffset;
+		
+		
 	}
 	
 	/**
@@ -154,6 +158,23 @@ public abstract class SagaPatternElement {
 		
 		
 	}
+
+
+	/**
+	 * Gets a new anchor block. Used by special elements that need to move the anchor.
+	 * Others should return the same block.
+	 * 
+	 * @param oldAnchorBlock previous block
+	 * @param initiator initiator
+	 * @return
+	 */
+	public Block shiftAnchorBlock(Block oldAnchorBlock, SagaPatternInitiator initiator) {
+		
+		return oldAnchorBlock;
+		
+	}
+	
+	
 	
 
 	/**
@@ -161,8 +182,10 @@ public abstract class SagaPatternElement {
 	 * 
 	 * @return x offset
 	 */
-	public final int getxUnalteredOffset() {
+	protected final int getxUnalteredOffset() {
+		
 		return xOffset;
+		
 	}
 	
 	/**
@@ -170,8 +193,10 @@ public abstract class SagaPatternElement {
 	 * 
 	 * @return y offset
 	 */
-	public final int getyUnalteredOffset() {
+	protected final int getyUnalteredOffset() {
+		
 		return yOffset;
+		
 	}
 	
 	/**
@@ -179,24 +204,27 @@ public abstract class SagaPatternElement {
 	 * 
 	 * @return z offset
 	 */
-	public final int getzUnalteredOffset() {
+	protected final int getzUnalteredOffset() {
+		
 		return zOffset;
+		
 	}
-	
 	
 	
 	/**
-	 * Gets the block based on previous one.
+	 * Adds an offset. Used by list element.
 	 * 
-	 * @param previousBlock previous block
-	 * @param initiator initiator instance
-	 * @return this block
+	 * @param xOffset x offset
+	 * @param yOffset y offset
+	 * @param zOffset z offset
 	 */
-	public final Block getBlock(Block previousBlock , SagaPatternInitiator initiator){
-		return previousBlock.getRelative(getxOffset(initiator), getyOffset(initiator), getzOffset(initiator));
+	protected void addOffset(int xOffset, int yOffset, int zOffset) {
+
+		this.xOffset += xOffset;
+		this.yOffset += yOffset;
+		this.zOffset += zOffset;
+		
 	}
-	
-	
 	
 	
 	

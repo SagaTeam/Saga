@@ -84,7 +84,6 @@ public abstract class AbilityFunction extends Ability {
 	 * @param level level
 	 */
 	protected Double calculateFunctionValue(Short level) {
-		System.out.println("level:"+level);
 		if(level>functionX2){
 			level = functionX2;
 		}
@@ -96,7 +95,6 @@ public abstract class AbilityFunction extends Ability {
 		
 		double k= (functionY2 - functionY1)/(functionX2-functionX1);
 		double b= functionY1 - k * functionX1;
-		System.out.println("k:"+k+ " b:"+b);
 		return new Double(k * level + b);
 		
 		

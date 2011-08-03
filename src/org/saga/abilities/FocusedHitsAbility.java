@@ -1,5 +1,6 @@
 package org.saga.abilities;
 
+import org.bukkit.Material;
 import org.bukkit.event.block.BlockDamageEvent;
 import org.saga.SagaPlayer;
 
@@ -35,6 +36,9 @@ public class FocusedHitsAbility extends Ability {
 
 		
 		// Set one hit brake:
+		if(event.getBlock().getType().equals(Material.BEDROCK)){
+			return;
+		}
 		event.setInstaBreak(true);
 		
 		

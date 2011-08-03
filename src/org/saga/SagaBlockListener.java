@@ -9,7 +9,7 @@ import org.bukkit.event.block.BlockDamageEvent;
 import org.bukkit.event.block.BlockListener;
 import org.bukkit.event.entity.EntityDamageByEntityEvent;
 import org.saga.exceptions.SagaPlayerNotLoadedException;
-import org.saga.pattern.SagaPatternBrakeElement;
+import org.saga.pattern.SagaPatternBreakElement;
 import org.saga.pattern.SagaPatternInitiator;
 import org.saga.pattern.SagaPatternListElement;
 

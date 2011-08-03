@@ -40,12 +40,12 @@ public class SagaPatternForceSetElement extends SagaPatternElement {
 	
 	
 	@Override
-	public boolean execute(Block previousBlock, SagaPatternInitiator initiator) {
+	public boolean execute(Block anchorBlock, SagaPatternInitiator initiator) {
 		
 		
 		// Stop if the limit was reached:
 		if(!initiator.canModify()){
-			return true;
+			return false;
 		}
 		
 		// Tell that a block has been modified:
@@ -53,9 +53,9 @@ public class SagaPatternForceSetElement extends SagaPatternElement {
 		
 		// Force set block:
 		System.out.println("setting");
-		previousBlock.getRelative(getxOffset(initiator), getyOffset(initiator), getzOffset(initiator)).setType(setMaterial);
+		anchorBlock.getRelative(getxOffset(initiator), getyOffset(initiator), getzOffset(initiator)).setType(setMaterial);
 
-		return true;
+		return false;
 		
 		
 	}

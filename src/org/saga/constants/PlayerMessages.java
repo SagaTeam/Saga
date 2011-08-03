@@ -92,7 +92,7 @@ public class PlayerMessages {
 				
 	}
 	
-	public static String abilityUseFailure(Ability activatedAbility) {
+	public static String invalidAbilityUse(Ability activatedAbility) {
 
 		return "Can't use "+activatedAbility.getAbilityName()+" ability.";
 				

@@ -1,18 +1,15 @@
 package org.saga.abilities;
 
-import org.bukkit.Location;
 import org.bukkit.Material;
-import org.bukkit.entity.Player;
-import org.bukkit.event.entity.EntityDamageByEntityEvent;
 import org.bukkit.event.entity.EntityDamageEvent;
 import org.bukkit.event.entity.EntityDamageEvent.DamageCause;
 import org.saga.Saga;
 import org.saga.SagaPlayer;
 import org.saga.constants.PlayerMessages;
-import org.saga.pattern.SagaPatternCheckElement;
-import org.saga.pattern.SagaPatternCheckElement.CheckAction;
-import org.saga.pattern.SagaPatternElement;
 import org.saga.pattern.SagaPatternListElement;
+import org.saga.pattern.SagaPatternLogicElement;
+import org.saga.pattern.SagaPatternLogicElement.LogicAction;
+import org.saga.pattern.SagaPatternLogicElement.LogicType;
 
 public class ResistLavaAbility extends Ability {
 
@@ -25,7 +22,7 @@ public class ResistLavaAbility extends Ability {
 	/**
 	 * Activate check.
 	 */
-	transient private SagaPatternListElement ACTIVATE_CHECK_PATTERN = createActivateCheckPattern();;
+	transient private SagaPatternLogicElement ACTIVATE_CHECK_PATTERN = createActivateCheckPattern();;
 	
 	
 	/**
@@ -74,13 +71,12 @@ public class ResistLavaAbility extends Ability {
 	public void activate(Short level, SagaPlayer sagaPlayer) {
 		
 		
-		sagaPlayer.sendMessage(PlayerMessages.abilityActivate(this));
-		
 		// Deactivate if there is no lava:
-		if(!sagaPlayer.checkPattern(ACTIVATE_CHECK_PATTERN, (short)0, false)){
-			sagaPlayer.sendMessage(PlayerMessages.abilityUseFailure(this));
+		boolean termination = false;
+		termination = sagaPlayer.initiatePattern(ACTIVATE_CHECK_PATTERN, (short)0, false, 10);
+		if(termination){
+			sagaPlayer.sendMessage(PlayerMessages.invalidAbilityUse(this));
 			sagaPlayer.deactivateAbility(this);
-			return;
 		}
 		
 
@@ -107,12 +103,17 @@ public class ResistLavaAbility extends Ability {
 	 * 
 	 * @return Activate check pattern.
 	 */
-	private static SagaPatternListElement createActivateCheckPattern() {
+	private static SagaPatternLogicElement createActivateCheckPattern() {
 		
 		
-		SagaPatternCheckElement[] checks = new SagaPatternCheckElement[1];
-		checks[0] = new SagaPatternCheckElement(0, -2, 0, new Material[]{Material.LAVA}, CheckAction.TERMINATE);
-		return new SagaPatternListElement(checks);
+		SagaPatternLogicElement checks = new SagaPatternLogicElement(LogicAction.TERMINATE, LogicType.NOR);
+		checks.addElement(new SagaPatternLogicElement(0, -2, 0, new Material[]{Material.STATIONARY_LAVA}, LogicAction.NONE));
+		checks.addElement(new SagaPatternLogicElement(0, -1, 0, new Material[]{Material.STATIONARY_LAVA}, LogicAction.NONE));
+		checks.addElement(new SagaPatternLogicElement(0, 0, 0, new Material[]{Material.STATIONARY_LAVA}, LogicAction.NONE));
+		checks.addElement(new SagaPatternLogicElement(0, -2, 0, new Material[]{Material.LAVA}, LogicAction.NONE));
+		checks.addElement(new SagaPatternLogicElement(0, -1, 0, new Material[]{Material.LAVA}, LogicAction.NONE));
+		checks.addElement(new SagaPatternLogicElement(0, 0, 0, new Material[]{Material.LAVA}, LogicAction.NONE));
+		return checks;
 		
 
 	}

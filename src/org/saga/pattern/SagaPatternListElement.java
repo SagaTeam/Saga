@@ -3,7 +3,7 @@ package org.saga.pattern;
 import java.util.ArrayList;
 
 import org.bukkit.block.Block;
-import org.saga.pattern.SagaPatternCheckElement.CheckAction;
+import org.saga.pattern.SagaPatternLogicElement.LogicAction;
 
 public class SagaPatternListElement extends SagaPatternElement{
 
@@ -11,18 +11,29 @@ public class SagaPatternListElement extends SagaPatternElement{
 	/**
 	 * Element list
 	 */
-	private final SagaPatternElement[] elementList;
+	private final ArrayList<SagaPatternElement> elementList = new ArrayList<SagaPatternElement>();
 	
+	/**
+	 * Current anchor block.
+	 */
+	transient private Block currentAnchorBlock = null;
 	
+	/**
+	 * If true then shift anchor will give the shifted version
+	 */
+	private boolean anchorShiftEnabled = true;
+	
+	// Initialization:
 	/**
 	 * Sets elements.
 	 * 
 	 * @param elementList element array.
 	 */
 	public SagaPatternListElement(SagaPatternElement[] elementList) {
-		super(calculatexUnalteredOffset(elementList) , calculateyUnalteredOffset(elementList) , calculatezUnalteredOffset(elementList));
-		this.elementList = elementList;
-		
+		this();
+		for (int i = 0; i < elementList.length; i++) {
+			addElement(elementList[i]);
+		}
 	}
 	
 	/**
@@ -30,12 +41,20 @@ public class SagaPatternListElement extends SagaPatternElement{
 	 * 
 	 * @param elementList elements
 	 */
-	public SagaPatternListElement(ArrayList<SagaPatternElement> elementList) {
+	public SagaPatternListElement() {
 
-		this(elementList.toArray(new SagaPatternListElement[elementList.size()]));
+		super(0, 0, 0);
 	
 	}
 	
+	/**
+	 * Adds an element to the list.
+	 * 
+	 * @param element
+	 */
+	public void addElement(SagaPatternElement element) {
+		elementList.add(element);
+	}
 	
 	/* 
 	 * (non-Javadoc)
@@ -43,94 +62,81 @@ public class SagaPatternListElement extends SagaPatternElement{
 	 * @see org.saga.pattern.SagaPatternElement#execute(org.bukkit.block.Block, org.saga.pattern.SagaPatternInitiator)
 	 */
 	@Override
-	public boolean execute(Block previousBlock, SagaPatternInitiator initiator) {
+	public boolean execute(Block anchorBlock, SagaPatternInitiator initiator) {
 		
 		
 		// Loop trough all blocks to get the last one, even if can't edit.
-		Block currentBlock= previousBlock;
 		boolean skipNext = false;
-		for (int i = 0; i < elementList.length && initiator.canModify(); i++) {
+		currentAnchorBlock = anchorBlock;
+		for (int i = 0; i < elementList.size(); i++) {
 			// Skip if the check says so:
 			if(!skipNext){
-				// Do a check or a execution:
-				if(elementList[i] instanceof SagaPatternCheckElement){
-					if(((SagaPatternCheckElement) elementList[i]).check(currentBlock, initiator)){
-						if(((SagaPatternCheckElement) elementList[i]).getCheckAction().equals(CheckAction.BREAK)){
-							break;
-						}
-						if(((SagaPatternCheckElement) elementList[i]).getCheckAction().equals(CheckAction.IGNORE)){
-							skipNext = true;
-						}
-						if(((SagaPatternCheckElement) elementList[i]).getCheckAction().equals(CheckAction.TERMINATE)){
-							return false;
-						}
+				// Check element:
+				if(elementList.get(i) instanceof SagaPatternLogicElement){
+					LogicAction action = ((SagaPatternLogicElement) elementList.get(i)).findAction(currentAnchorBlock, initiator);
+					if(action.equals(LogicAction.IGNORE)){
+//						System.out.println("skip");
+						skipNext = true;
 					}
+					else if(action.equals(LogicAction.BREAK)){
+//						System.out.println("break");
+						break;
+					}
+					else if(action.equals(LogicAction.TERMINATE)){
+						System.out.println("terminate");
+						return true;
+					}
+				// Execution element:	
 				}else{
-					elementList[i].execute(currentBlock, initiator);
+					try {
+						boolean terminate = elementList.get(i).execute(currentAnchorBlock, initiator);
+						if(terminate){
+							System.out.println("execute terminate");
+							return true;
+						}
+					} catch (Throwable e) {
+//						System.out.println("EXCEPTION:"+e.getClass().getSimpleName());
+						return true;
+					}
+					
 				}
+				// Shift anchor block:
+				currentAnchorBlock = elementList.get(i).shiftAnchorBlock(currentAnchorBlock, initiator);
 			}else{
 				skipNext=false;
 			}
 			
-			if(!(elementList[i] instanceof SagaPatternCheckElement)){
-				currentBlock = elementList[i].getBlock(currentBlock, initiator);	
-			}
-			
-			
 		}
 		
-		return true;
+		return false;
 		
 		
 	}
 
 	
-	/**
-	 * Calculates unaltered x offset.
+	/* 
+	 * (non-Javadoc)
 	 * 
-	 * @param elements elements
-	 * @return offset
+	 * @see org.saga.pattern.SagaPatternElement#shiftAnchorBlock(org.bukkit.block.Block, org.saga.pattern.SagaPatternInitiator)
 	 */
-	private static int calculatexUnalteredOffset(SagaPatternElement[] elements){
+	@Override
+	public Block shiftAnchorBlock(Block oldAnchorBlock, SagaPatternInitiator initiator) {
 		
-		int xOffset = 0;
-		for (int i = 0; i < elements.length; i++) {
-			xOffset += elements[i].getxUnalteredOffset();
+		if(currentAnchorBlock == null || !anchorShiftEnabled){
+			return oldAnchorBlock;
 		}
-		return xOffset;
-		
+		return currentAnchorBlock;
 	}
-	
+
 	/**
-	 * Calculates unaltered y offset.
+	 * Disables anchor shift, so that other lists anchor will not be touched by this one.
 	 * 
-	 * @param elements elements
-	 * @return offset
+	 * @return this instance
 	 */
-	private static int calculateyUnalteredOffset(SagaPatternElement[] elements){
-		
-		int yOffset = 0;
-		for (int i = 0; i < elements.length; i++) {
-			yOffset += elements[i].getyUnalteredOffset();
-		}
-		return yOffset;
-		
+	public SagaPatternListElement disableAnchorShift() {
+		anchorShiftEnabled = false;
+		return this;
 	}
-	
-	/**
-	 * Calculates unaltered z offset.
-	 * 
-	 * @param elements elements
-	 * @return offset
-	 */
-	private static int calculatezUnalteredOffset(SagaPatternElement[] elements){
-		
-		int zOffset = 0;
-		for (int i = 0; i < elements.length; i++) {
-			zOffset += elements[i].getzUnalteredOffset();
-		}
-		return zOffset;
-		
-	}
-	
+
+
 }

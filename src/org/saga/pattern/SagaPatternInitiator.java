@@ -64,59 +64,40 @@ public class SagaPatternInitiator {
 	/**
 	 * Initiates the pattern. 
 	 * 
-	 * @param currentBlock current block
+	 * @param anchorBlock block to initiate the pattern relative to
 	 * @param direction direction
 	 * @param tangentialFlip true if there should be a tangential flip
+	 * @return true if there is a termination
 	 */
-	public void initiate(Block currentBlock, int direction, boolean tangentialFlip) {
+	public boolean initiate(Block anchorBlock, int direction, boolean tangentialFlip) {
+		
+		
 		this.direction = direction;
 		this.orthogonalFlip = tangentialFlip;
-		pattenElement.execute(currentBlock , this);
+		return pattenElement.execute(anchorBlock , this);
+		
+		
 	}
 	
 	/**
 	 * Initiates the pattern for a player.
 	 * 
-	 * @param playerEyeLocation player eye location
+	 * @param anchorLocation location to initiate relative to
 	 * @param direction direction
 	 * @param patternLevel level of the pattern
 	 * @param orthogonalFlip true if there should be a orthogonal flip
+	 * @return true if there is a termination
 	 */
-	public void initiateForPlayer(Location playerEyeLocation, int direction, int patternLevel, boolean orthogonalFlip) {
+	public boolean initiateForPlayer(Location anchorLocation, int direction, int patternLevel, boolean orthogonalFlip) {
 		
 		
 		this.direction = direction;
 		this.patternLevel = patternLevel;
 		this.orthogonalFlip = orthogonalFlip;
-		pattenElement.execute(playerEyeLocation.getBlock() , this);
-		
-		
+		return pattenElement.execute(anchorLocation.getBlock() , this);
+			
 	}
 	
-	/**
-	 * Checks the pattern for a player.
-	 * 
-	 * @param playerEyeLocation player eye location
-	 * @param direction direction
-	 * @param patternLevel level of the pattern
-	 * @param orthogonalFlip true if there should be a orthogonal flip
-	 */
-	public boolean checkForPlayer(Location playerEyeLocation, int direction, int patternLevel, boolean orthogonalFlip) {
-		
-		
-		this.direction = direction;
-		this.patternLevel = patternLevel;
-		this.orthogonalFlip = orthogonalFlip;
-		
-		// Do an execute without modify:
-		int oldBlockLimit=blocksLeft;
-		blocksLeft = 0;
-		boolean returnValue = pattenElement.execute(playerEyeLocation.getBlock() , this);
-		blocksLeft= oldBlockLimit;
-		return returnValue;
-		
-		
-	}
 	
 	/**
 	 * Should be called when a block is modified.
