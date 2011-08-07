@@ -1,11 +1,5 @@
 package org.saga.constants;
 
-import java.util.ArrayList;
-
-import org.saga.abilities.Ability;
-import org.saga.professions.FighterProfession;
-import org.saga.professions.Profession;
-import org.saga.professions.WoodcutterProfession;
 
 public class PlayerDefaults {
 
@@ -19,6 +13,12 @@ public class PlayerDefaults {
 	 * Stamina.
 	 */
 	public static Double stamina=60.0;
+	
+	/**
+	 * Player maximum health.
+	 */
+	public static int maximumHealth = 20;
+
 	
 	// Profession defaults:
 	/**

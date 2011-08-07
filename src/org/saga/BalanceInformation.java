@@ -43,6 +43,11 @@ public class BalanceInformation {
 	 */
 	public Hashtable<String, Ability> abilities = new Hashtable<String, Ability>();
 	
+	/**
+	 * Attribute information.
+	 */
+	private AttributeInformation attributeInformation;
+	
 	
 	/**
 	 * Used by gson.

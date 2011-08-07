@@ -15,30 +15,25 @@ import com.google.gson.JsonSyntaxException;
 
 import org.saga.abilities.Ability;
 import org.saga.abilities.AbilityDeserializer;
+import org.saga.attributes.Attribute;
+import org.saga.attributes.AttributeDeserializer;
 import org.saga.constants.*;
 import org.saga.professions.Profession;
 import org.saga.professions.ProfessionDeserializer;
 
 public class WriterReader {
 
-	/**
-	 * Main directory for plugin files.
-	 */
-//	private static String MAIN_DIRECTORY="plugins"+File.separator+"Saga";
-	
-	/**
-	 * Player information directory.
-	 */
-//	private static String PLAYER_INFORMATION_DIRECTORY="/home/andf/data/java/minecraft/plugins/SagaPlayer/players/";
-	
-	/**
-	 * Balance information location.
-	 */
 	
 	/**
 	 * File name for balance information.
 	 */
 	private static String BALANCE_INFORMATION_FILENAME="balanceinformation.json";
+	
+	/**
+	 * File name for attribute information.
+	 */
+	private static String ATTRIBUTE_INFORMATION_FILENAME="attributeinformation.json";
+	
 	
 	/**
 	 * Suffix for default.
@@ -48,7 +43,7 @@ public class WriterReader {
 	/**
 	 * Suffix for none.
 	 */
-	public static String SUFFIX_NO="";
+	public static String SUFFIX_NONE="";
 	
 	
 	
@@ -97,6 +92,7 @@ public class WriterReader {
 	 */
 	public static void writePlayerInformation(String playerName, SagaPlayer playerInfo) throws IOException {
 		
+		
             File directory = new File(General.PLAYER_DIRECTORY);
             File file = new File(General.PLAYER_DIRECTORY + playerName + ".json");
 
@@ -116,6 +112,7 @@ public class WriterReader {
             out.write(gson.toJson(playerInfo));
             out.close();
             
+            
 	}
 	
 	/**
@@ -131,9 +128,78 @@ public class WriterReader {
 	}
 	
 	/**
-	 * Reads balance information
+	 * Reads attribute information
 	 * 
-	 * @return Balance information
+	 * @return attribute information
+	 * @throws IOException if an error occurred while reading
+	 * @throws JsonParseException on parse failure
+	 */
+	public static AttributeInformation readAttributeInformation() throws IOException, JsonParseException{
+
+		
+            String fileDirectory = General.PLUGIN_DIRECTORY+ATTRIBUTE_INFORMATION_FILENAME;
+		
+            File file = new File(fileDirectory);
+            int ch;
+            StringBuffer strContent = new StringBuffer("");
+            FileInputStream fin = null;
+            fin = new FileInputStream(file);
+            while ((ch = fin.read()) != -1){
+                    strContent.append((char) ch);
+            }
+            fin.close();
+//            System.out.println(strContent);
+
+            GsonBuilder gsonBuilder= new GsonBuilder();
+            gsonBuilder.registerTypeAdapter(Attribute.class, new AttributeDeserializer());
+            Gson gson = gsonBuilder.create();
+            return gson.fromJson(strContent.toString(), AttributeInformation.class);
+        
+            
+	}
+	
+
+	/**
+	 * Writes the attribute information. Used to generate a default balance information file.
+	 * 
+	 * @param attributeInfo attribute information
+	 * 
+	 * @return Player information
+	 * @param suffix suffix that will be added to the file name
+	 * 
+	 * @throws IOException If an error occurred while writing.
+	 */
+	public static void writeAttributeInformation(AttributeInformation attributeInfo, String suffix) throws IOException {
+
+		
+            File directory = new File(General.PLUGIN_DIRECTORY);
+            File file = new File(General.PLUGIN_DIRECTORY+ATTRIBUTE_INFORMATION_FILENAME+suffix);
+
+			if(!directory.exists()){
+				directory.mkdirs();
+            	Saga.info("Creating "+directory+" directory.");
+            }
+			
+            if(!file.exists()){
+            	file.createNewFile();
+            	Saga.info("Creating "+file+" file.");
+            }
+            
+            Gson gson= new Gson();
+            
+            BufferedWriter out = new BufferedWriter(new FileWriter(file));
+            out.write(gson.toJson(attributeInfo));
+            out.close();
+		
+            
+	}
+	
+	
+
+	/**
+	 * Reads attribute information
+	 * 
+	 * @return attribute information information
 	 * @throws IOException if an error occurred while reading
 	 * @throws JsonParseException on parse failure
 	 */
@@ -193,6 +259,7 @@ public class WriterReader {
 		
             
 	}
+	
 	
 	
 }

@@ -9,6 +9,7 @@ import org.bukkit.entity.Player;
 import org.saga.Saga;
 import org.saga.SagaPlayer;
 import org.saga.abilities.Ability;
+import org.saga.attributes.Attribute;
 import org.saga.professions.Profession;
 
 public class PlayerMessages {
@@ -37,6 +38,13 @@ public class PlayerMessages {
 	 * Arena color.
 	 */
 	public static ChatColor arenaColor= ChatColor.RED;
+	
+	public static ChatColor normalColor = ChatColor.WHITE;
+	
+	public static ChatColor positiveHighlightColor = ChatColor.GREEN;
+	
+	public static ChatColor negativeHighlightColor = ChatColor.RED;
+	
 	
 	/**
 	 * First line of the error report to the player.
@@ -77,6 +85,17 @@ public class PlayerMessages {
 	public static String staminaRegeneration(Double playerStamina, Double playerMaximumStamina) {
 
 		return "Stamina regeneration. ("+playerStamina.intValue()+"/"+playerMaximumStamina.intValue()+")";
+		
+	}
+	
+	/**
+	 * Health gained in the artificial way.
+	 * 
+	 * @param amount amount
+	 */
+	public static String healthGain(int amount) {
+
+		return "Gained " + amount + " health.";
 		
 	}
 	
@@ -178,19 +197,22 @@ public class PlayerMessages {
 		
 	}
 	
-	public static String damagedEntity(int damage, Entity entity) {
-
-		String name;
-		if(entity instanceof Player){
-			name = ((Player) entity).getName();
-		}else{
-			name = entity.getClass().getSimpleName().toLowerCase().replace("craft", "");
-		}
-		return "You damaged " + name + " for " + new Double(new Double(damage)/2) + " damage.";
+	
+	public static String attributeIncreasedTo(String attributeRawName, Short increase){
+		
+		return capitalize(attributeRawName) + " attribute increased by " + increase + ".";
 		
 	}
 	
-	public static String gotDamagedByEntity(int damage, Entity entity) {
+	public static String attributeDecreasedTo(String attributeRawName, Short decrease){
+		
+		return capitalize(attributeRawName) + " attribute decreased by " + decrease + ".";
+		
+	}
+	
+	
+	
+	public static String meleeDamagedEntity(int damage, Entity entity) {
 
 		String name;
 		if(entity instanceof Player){
@@ -198,7 +220,43 @@ public class PlayerMessages {
 		}else{
 			name = entity.getClass().getSimpleName().toLowerCase().replace("craft", "");
 		}
-		return "You got damaged for " + new Double(new Double(damage)/2) + " by " + name + ".";
+		return "You melee damaged " + name + " for " + new Double(new Double(damage)/2) + " damage.";
+		
+	}
+	
+	public static String gotMeleeDamagedByEntity(int damage, Entity entity) {
+
+		String name;
+		if(entity instanceof Player){
+			name = ((Player) entity).getName();
+		}else{
+			name = entity.getClass().getSimpleName().toLowerCase().replace("craft", "");
+		}
+		return "You got melee damaged for " + new Double(new Double(damage)/2) + " by " + name + ".";
+		
+	}
+	
+	public static String projectileDamagedEntity(int damage, Entity entity) {
+
+		String name;
+		if(entity instanceof Player){
+			name = ((Player) entity).getName();
+		}else{
+			name = entity.getClass().getSimpleName().toLowerCase().replace("craft", "");
+		}
+		return "You projectile damaged " + name + " for " + new Double(new Double(damage)/2) + " damage.";
+		
+	}
+	
+	public static String gotProjectileDamagedByEntity(int damage, Entity entity) {
+
+		String name;
+		if(entity instanceof Player){
+			name = ((Player) entity).getName();
+		}else{
+			name = entity.getClass().getSimpleName().toLowerCase().replace("craft", "");
+		}
+		return "You got projectile damaged for " + new Double(new Double(damage)/2) + " by " + name + ".";
 		
 	}
 	
@@ -226,6 +284,7 @@ public class PlayerMessages {
 	
 	public static String playerStats(SagaPlayer sagaPlayer) {
 		
+		
 		ChatColor defaultColor = ChatColor.WHITE;
 		
 		String frameHorisontal = "--------------------------------";
@@ -243,6 +302,19 @@ public class PlayerMessages {
 				rString += "lvl" + sagaPlayer.getProfessions(i).getLevel() + " " + sagaPlayer.getProfessions(i).getProfessionName();
 			}
 		}
+		
+		String attackAattributes = attributeStats(sagaPlayer, Saga.attributeInformation().attackAttributes);
+		rString += "\n" + "Attack:";
+		if(attackAattributes.length() >0 ){
+			rString += attackAattributes;
+		}
+		
+		String defenceAattributes = attributeStats(sagaPlayer, Saga.attributeInformation().defenseAttributes);
+		rString += "\n" + "Defense:";
+		if(defenceAattributes.length() >0 ){
+			rString += defenceAattributes;
+		}
+		
 		rString += "\n" + frameHorisontal;
 		
 		return defaultColor + rString;
@@ -253,6 +325,7 @@ public class PlayerMessages {
 	
 	public static String professionStats(Profession profession) {
 
+		
 		ChatColor defaultColor = ChatColor.WHITE;
 		ChatColor levelNotHighEnoghColor = ChatColor.DARK_GRAY;
 		ChatColor abilityActiveColor = ChatColor.DARK_GREEN;
@@ -293,10 +366,57 @@ public class PlayerMessages {
 		
 	}
 	
+	public static String attributeStats(SagaPlayer sagaPlayer, Attribute[] attributes) {
+		
+		
+		String rString = "";
+		
+		for (int i = 0; i < attributes.length; i++) {
+			String attributeName = attributes[i].getName();
+			Short upgradeValue = sagaPlayer.getAttributeUpgrade(attributeName);
+			Short temporaryUpgradeValue = sagaPlayer.getAttributeTemporaryUpgrade(attributeName);
+			if( !(upgradeValue == 0 && temporaryUpgradeValue == 0) ){
+				if(rString.length() > 0){
+					rString += ", ";
+				}
+				ChatColor elementColor;
+				if(temporaryUpgradeValue > 0){
+					elementColor = positiveHighlightColor;
+				}else if(temporaryUpgradeValue < 0){
+					elementColor = negativeHighlightColor;
+				}else{
+					elementColor = normalColor;
+				}
+				rString += elementColor + attributes[i].getName(upgradeValue, temporaryUpgradeValue) + normalColor;
+			}
+			
+		}
+		
+		
+		return rString;
+	}
+	
 	public static String invalidProfession(String profession){
 		
 		return profession +" is not a valid profession.";
 		
+	}
+	
+	// Attributes:
+	public static String attackWasBlocked(){
+		return "Your attack was blocked.";
+	}
+	
+	public static String blockedAttack(){
+		return "You blocked an attack.";
+	}
+	
+	public static String attackWasDodged(){
+		return "Your attack was dodged.";
+	}
+	
+	public static String dodgedAttack(){
+		return "You dodged an attack.";
 	}
 	
 	// Administrator only:
@@ -334,6 +454,20 @@ public class PlayerMessages {
 	
 	public static String setLevelTo(String playerName, Profession profession , Short level){
 		return playerName + " "+ profession.getProfessionName() +" profession level set to " + level + ".";
+	}
+	
+	public static String levelLimitReached(Short level) {
+
+		
+		if(level >= Saga.balanceInformation().maximumLevel){
+			return "Maximum level reached. You can't go above "+Saga.balanceInformation().maximumLevel+".";
+		}
+		if(level <= 0){
+			return "Minimum level reached. You can't go below 0.";
+		}
+		return "Level is in the bounds. Invalid method call for levelLimitReached.";
+		
+		
 	}
 	
 	// Utility:

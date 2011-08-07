@@ -47,6 +47,7 @@ public class Saga extends JavaPlugin {
     private static boolean debugging = true;
     private static Saga instance;
     private static BalanceInformation balanceInformation;
+    private static AttributeInformation  attributeInformation;
 
     //Instance Members
     private static CommandsManager<Player> commandMap;
@@ -67,6 +68,10 @@ public class Saga extends JavaPlugin {
         return balanceInformation;
     }
 
+    static public AttributeInformation attributeInformation(){
+    	return attributeInformation;
+    }
+    
     public static boolean debuging() {
     	return debugging;
 	}
@@ -83,6 +88,7 @@ public class Saga extends JavaPlugin {
         //Remove global instances
         Saga.instance = null;
         Saga.balanceInformation = null;
+        Saga.attributeInformation = null;
         
     	//Say Goodbye
         Saga.info("Saga Goodbye!");
@@ -92,6 +98,7 @@ public class Saga extends JavaPlugin {
     @Override
     public void onEnable() {
         
+    	
         //Say Hello!
         Saga.info("Saga Hello!");
 
@@ -130,7 +137,51 @@ public class Saga extends JavaPlugin {
 
         };
 
-        // Read balance information:
+        // Load balance information:
+        loadBalanceInformation();
+
+        // Load attribute information:
+        loadAttributeInformation();
+
+        
+        // Add all already online players:
+        Player[] onlinePlayers = getServer().getOnlinePlayers();
+        for (int i = 0; i < onlinePlayers.length; i++) {
+            addPlayer(onlinePlayers[i]);
+        }
+        
+        //Add and activate clock:
+      	getServer().getScheduler().scheduleAsyncRepeatingTask(this, new Clock(), 200L, 20L);
+        
+        //Create listeners
+      	playerListener = new SagaPlayerListener(this);
+      	entityListener = new SagaEntityListener();
+      	blockListener = new SagaBlockListener();
+
+        // Register events
+        pluginManager.registerEvent(Event.Type.PLAYER_JOIN, playerListener, Priority.Normal, this);
+        pluginManager.registerEvent(Event.Type.PLAYER_QUIT, playerListener, Priority.Normal, this);
+        pluginManager.registerEvent(Event.Type.PLAYER_INTERACT, playerListener, Priority.Normal, this);
+        pluginManager.registerEvent(Event.Type.PLAYER_COMMAND_PREPROCESS, playerListener, Priority.Normal, this);
+        pluginManager.registerEvent(Event.Type.ENTITY_DAMAGE, entityListener, Priority.Normal, this);
+        pluginManager.registerEvent(Event.Type.ENTITY_COMBUST, entityListener, Priority.Normal, this);
+        pluginManager.registerEvent(Event.Type.BLOCK_BREAK, blockListener, Priority.Normal, this);
+        pluginManager.registerEvent(Event.Type.BLOCK_DAMAGE, blockListener, Priority.Normal, this);
+        
+        //Register Command Classes to the command map
+        commandMap.register(SagaCommands.class);
+
+        
+    }
+
+    /**
+     * Loads balance information to the static field.
+     * 
+     */
+    private void loadBalanceInformation(){
+    	
+    	
+    	// Read balance information:
         BalanceInformation balanceInformation;
         boolean writeDefaultBalanceInfo = false;
         try {
@@ -177,39 +228,70 @@ public class Saga extends JavaPlugin {
         
         // Set global balance information:
         Saga.balanceInformation = balanceInformation;
-
-        // Add all already online players:
-        Player[] onlinePlayers = getServer().getOnlinePlayers();
-        for (int i = 0; i < onlinePlayers.length; i++) {
-            addPlayer(onlinePlayers[i]);
-        }
-        
-        //Add and activate clock:
-      	getServer().getScheduler().scheduleAsyncRepeatingTask(this, new Clock(), 200L, 20L);
-        
-        //Create listeners
-      	playerListener = new SagaPlayerListener(this);
-      	entityListener = new SagaEntityListener();
-      	blockListener = new SagaBlockListener();
-
-        // Register events
-        pluginManager.registerEvent(Event.Type.PLAYER_JOIN, playerListener, Priority.Normal, this);
-        pluginManager.registerEvent(Event.Type.PLAYER_QUIT, playerListener, Priority.Normal, this);
-        pluginManager.registerEvent(Event.Type.PLAYER_INTERACT, playerListener, Priority.Normal, this);
-        pluginManager.registerEvent(Event.Type.PLAYER_COMMAND_PREPROCESS, playerListener, Priority.Normal, this);
-        pluginManager.registerEvent(Event.Type.ENTITY_DAMAGE, entityListener, Priority.Normal, this);
-        pluginManager.registerEvent(Event.Type.ENTITY_COMBUST, entityListener, Priority.Normal, this);
-        pluginManager.registerEvent(Event.Type.BLOCK_BREAK, blockListener, Priority.Normal, this);
-        pluginManager.registerEvent(Event.Type.BLOCK_DAMAGE, blockListener, Priority.Normal, this);
-        
-        //Register Command Classes to the command map
-        commandMap.register(SagaCommands.class);
-
-        
+    	
+    	
     }
 
+    /**
+     * Loads balance information to the static field.
+     * 
+     */
+    private void loadAttributeInformation(){
+    	
+    	
+    	// Read balance information:
+        AttributeInformation information;
+        boolean writeInfo = false;
+        try {
+
+            information = WriterReader.readAttributeInformation();
+
+        } catch (FileNotFoundException e) {
+
+            Saga.severe("Missing attribute information. Loading defaults.");
+
+            information = new AttributeInformation();
+            writeInfo = true;
+            
+        }catch (IOException e) {
+
+            Saga.exception("Attribute information load failure. Loading defaults.",e);
+            information = new AttributeInformation();
+            writeInfo = true;
+
+        }catch (JsonParseException e) {
+        	
+        	Saga.exception("Attribute information parse failure. Loading defaults.",e);
+            information = new AttributeInformation();
+            writeInfo = true;
+
+        }
+        
+        // Complete information:
+        if(!information.complete()){
+        	Saga.severe("Attribute information integrity check failed. Update attribute information file.");
+        	writeInfo = true;
+        }
+        
+        // Generate default information:
+        if(writeInfo){
+            try {
+            	Saga.info("Generating attribute information file with new added default values. Edit and rename to use it.");
+                WriterReader.writeAttributeInformation(information, WriterReader.SUFFIX_DEFAULT);
+            } catch (Exception e) {
+                Saga.severe("Attribute information file generation failure.");
+            }
+
+        }
+        
+        // Set global balance information:
+        Saga.attributeInformation = information;
+    	
+    	
+    }
     
-    // Adding and removing:
+    
+    // Player management:
     /**
      * Adds the player. Loads saga player if necessary.
 	 * If sagaPlayer is already set to online, then the add will be ignored.

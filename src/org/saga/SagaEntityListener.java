@@ -9,7 +9,9 @@ import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Player;
 import org.bukkit.event.entity.EntityDamageByBlockEvent;
 import org.bukkit.event.entity.EntityDamageByEntityEvent;
+import org.bukkit.event.entity.EntityDamageByProjectileEvent;
 import org.bukkit.event.entity.EntityDamageEvent;
+import org.bukkit.event.entity.ProjectileHitEvent;
 import org.bukkit.event.entity.EntityDamageEvent.DamageCause;
 import org.saga.exceptions.SagaPlayerNotLoadedException;
 
@@ -66,7 +68,6 @@ public class SagaEntityListener extends EntityListener{
 			
 		}
 		
-//		((LivingEntity) damaged).setHealth(15);
 		
 		// Environment damage to the player:
 		if(!(pEvent instanceof EntityDamageByEntityEvent) && damaged instanceof Player ){
@@ -122,7 +123,11 @@ public class SagaEntityListener extends EntityListener{
 	}
 	
 	
-	
+	@Override
+	public void onProjectileHit(ProjectileHitEvent event) {
+		// TODO Auto-generated method stub
+		super.onProjectileHit(event);
+	}
 	
 	
 	

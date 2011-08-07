@@ -1,6 +1,8 @@
 package org.saga.professions;
 
-import java.util.*;
+
+import java.util.Enumeration;
+import java.util.Hashtable;
 
 import org.bukkit.Material;
 import org.bukkit.event.block.BlockBreakEvent;
@@ -14,7 +16,6 @@ import org.saga.SagaPlayer;
 import org.saga.abilities.Ability;
 import org.saga.constants.PlayerDefaults;
 import org.saga.constants.PlayerMessages;
-import org.saga.*;
 
 public abstract class Profession {
 
@@ -23,6 +24,7 @@ public abstract class Profession {
 	/**
 	 * Class name used by the loader
 	 */
+	@SuppressWarnings("unused")
 	private String _className;
 	
 	/**
@@ -72,6 +74,12 @@ public abstract class Profession {
 	 */
 	transient private short[] abilityTimers;
 	
+	/**
+	 * Attribute upgrades. Keeps a list of upgrade levels for the current level.
+	 */
+	transient private Hashtable<String, Short> attributeUpgrades = new Hashtable<String, Short>();
+	
+	
 	// Initialization:
 	/**
 	 * Sets all default values. All extending classes must set all default values in a non-parameter constructor.
@@ -120,7 +128,11 @@ public abstract class Profession {
 		abilities = getAbilities();
 		experienceRequirement = calculateExperienceRequirement(level);
 		abilityTimers = new short[abilities.length];
-
+		
+		// Initiate attributes:
+		modifyAttributeUpgrades(getRawLevel());
+		
+		
 	}
 	
 	/**
@@ -308,14 +320,75 @@ public abstract class Profession {
 	public void setLevel(Short level) {
 
 
+		// Increase level:
 		this.level = level;
 		levelExperience = 0;
 		experienceRequirement = calculateExperienceRequirement(level);
 		PlayerMessages.levelUp(this, level);
 		
+		// Modify attributes:
+		modifyAttributeUpgrades(level);
+		
 		
 	}
 	
+	/**
+	 * Calculates the level for the given attribute based on the levels.
+	 * Negative attributeLevels decrease the level.
+	 * 
+	 * @param attributeUpgrades attribute upgrades
+	 * @param professionLevel profession level
+	 * @return attribute upgrade
+	 */
+	private Short calculateAttributeUpgrade(Short[] attributeUpgrades, Short professionLevel) {
+	
+		
+		Short attributeLevel = 0;
+		for (int i = 0; i < attributeUpgrades.length; i++) {
+			if(attributeUpgrades[i] >= 0 && attributeUpgrades[i] <= professionLevel){
+//				System.out.println(attributeUpgrades[i]);
+				attributeLevel++;
+			}else if(attributeUpgrades[i] <= 0 && attributeUpgrades[i] >= professionLevel){
+				attributeLevel--;
+			}
+		}
+		return attributeLevel;
+		
+		
+	}
+
+	
+	/**
+	 * Modifies the attribute upgrades so they match the given level.
+	 * 
+	 * @param newLevel level
+	 */
+	private void modifyAttributeUpgrades(Short newLevel) {
+		
+		
+		// Retrieve attribute upgrades for the profession:
+		Hashtable<String, Short[]> upgrades = Saga.attributeInformation().getAttributeUpgrades(getProfessionName());
+		
+		// Loop trough all retrieved attributes:
+		Enumeration<String> allAttributeNames= upgrades.keys();
+		while ( allAttributeNames.hasMoreElements() ) {
+            String attributeName = allAttributeNames.nextElement();
+            Short oldValue = attributeUpgrades.get(attributeName);
+            Short newValue = calculateAttributeUpgrade(upgrades.get(attributeName), newLevel);
+            if(oldValue == null){
+            	oldValue = 0;
+            }
+            Short delta = (short) (newValue - oldValue);
+            // Do a attribute modify if there is a difference between new and old value:
+            if(delta!=0){
+            	attributeUpgrades.put(attributeName, newValue);
+            	sagaPlayer.modifyAttributes(attributeName, delta);
+            }
+        }
+		
+		
+	}
+
 	/**
 	 * Calculates the required experience for level up experience.
 	 * 
@@ -325,6 +398,15 @@ public abstract class Profession {
 
 		return level*Saga.balanceInformation().experienceSlope * level + Saga.balanceInformation().experienceIntercept;
 
+	}
+	
+	/**
+	 * Returns the raw level.
+	 * 
+	 * @return level
+	 */
+	public Short getRawLevel() {
+		return level;
 	}
 	
 	/**
@@ -373,8 +455,7 @@ public abstract class Profession {
     	
 	}
 
-    
-	// Events:
+    // Events:
 	/**
 	 * Got damaged by living entity event.
 	 *

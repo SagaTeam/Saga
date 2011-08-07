@@ -73,15 +73,6 @@ public abstract class Ability {
 		// Class name:
 		_className = getClass().getName();
 		
-		// Set defaults:
-        abilityName = "null";
-        staminaFunctionX1 = 100;
-        staminaFunctionY1 = 100.0;
-        staminaFunctionX2 = 100;
-        staminaFunctionY2 = 100.0;
-		
-        
-        
 		
 	}
 	
@@ -107,7 +98,7 @@ public abstract class Ability {
 		
 		// Fields:
 		if(staminaFunctionX1==null){
-			staminaFunctionX1 = 10;
+			staminaFunctionX1 = 50;
 			Saga.info("Setting default value for ability staminaFunctionX1.");
 			integrity = false;
 		}
@@ -117,7 +108,7 @@ public abstract class Ability {
 			integrity = false;
 		}
 		if(staminaFunctionX2==null){
-			staminaFunctionX2 = 100;
+			staminaFunctionX2 = 51;
 			Saga.info("Setting default value for ability staminaFunctionX2.");
 			integrity = false;
 		}
@@ -136,7 +127,7 @@ public abstract class Ability {
 			integrity = false;
 		}
 		if(activeForFunctionX2==null){
-			activeForFunctionX2 = 1000;
+			activeForFunctionX2 = 51;
 			Saga.info("Setting default value for ability activeForFunctionX2.");
 			integrity = false;
 		}
@@ -146,6 +137,11 @@ public abstract class Ability {
 			integrity = false;
 		}
 		
+		if(abilityName==null){
+			abilityName = "null";
+			Saga.info("Setting default value for ability abilityName.");
+			integrity = false;
+		}
 		
 		// Extended class:
 		if(!completeExtended()){
@@ -185,6 +181,12 @@ public abstract class Ability {
 		if(level>staminaFunctionX2){
 			level = staminaFunctionX2;
 		}
+		
+		if(staminaFunctionX2-staminaFunctionX1==0){
+			Saga.severe(getAbilityName() + " ability has an undefined or infinite slope. Returning function value 1.0.");
+			return 1.0;
+		}
+		
 		double k= (staminaFunctionY2-staminaFunctionY1)/(staminaFunctionX2-staminaFunctionX1);
 		double b= staminaFunctionY2 - k*staminaFunctionX2;
 		return k * level + b;
@@ -202,6 +204,12 @@ public abstract class Ability {
 		if(level>activeForFunctionX2){
 			level = activeForFunctionX2;
 		}
+		
+		if(activeForFunctionX2-activeForFunctionX1==0){
+			Saga.severe(getAbilityName() + " ability has an undefined or infinite slope. Returning function value 1.0.");
+			return 1;
+		}
+		
 		double k= (activeForFunctionY2-activeForFunctionY1)/(activeForFunctionX2-activeForFunctionX1);
 		double b= activeForFunctionY2 - k*activeForFunctionX2;
 		return new Double(k * level + b).shortValue();

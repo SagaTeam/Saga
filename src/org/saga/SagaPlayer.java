@@ -1,10 +1,13 @@
 package org.saga;
 
 import java.io.*;
+import java.util.ArrayList;
 import java.util.Hashtable;
+import java.util.Random;
 
 import org.bukkit.Location;
 import org.bukkit.block.Block;
+import org.bukkit.block.BlockFace;
 import org.bukkit.entity.Player;
 import org.bukkit.event.block.*;
 import org.bukkit.event.entity.EntityDamageByEntityEvent;
@@ -15,6 +18,7 @@ import org.saga.pattern.SagaPatternInitiator;
 import org.saga.professions.*;
 import org.saga.utility.WriterReader;
 import org.saga.abilities.Ability;
+import org.saga.attributes.Attribute;
 import org.saga.constants.*;
 
 import com.google.gson.JsonParseException;
@@ -49,6 +53,28 @@ public class SagaPlayer{
 	 * Professions that the player can interact with.
 	 */
 	private Boolean[] selectedProfessions;
+	
+	
+	// Attributes:
+	/**
+	 * Attributes. Key is the attribute simple class name and the value is attribute upgrade.
+	 */
+	private transient Hashtable<String, Short> attributes= new Hashtable<String, Short>();
+	
+	/**
+	 * Temporary attribute raw names.
+	 */
+	transient private ArrayList<String> temporaryAttributeNames = new ArrayList<String>();
+	
+	/**
+	 * Temporary attribute increase levels.
+	 */
+	transient private ArrayList<Short> temporaryAttributeUpgrades = new ArrayList<Short>();
+	
+	/**
+	 * Temporary attribute increase times.
+	 */
+	transient private ArrayList<Integer> temporaryAttributeTimes = new ArrayList<Integer>();
 	
 	
 	// Control:
@@ -264,6 +290,54 @@ public class SagaPlayer{
 	}
 	
 	/**
+	 * Regenerates health. Doesen't send a message.
+	 * 
+	 * @param amount amount to regenerate
+	 */
+	public void gainHealth(int amount) {
+		
+		
+		if(!isOnlinePlayer()){
+			return;
+		}
+		int health = player.getHealth();
+		
+		if(health >= PlayerDefaults.maximumHealth){
+			return;
+		}
+		if(health +amount >  PlayerDefaults.maximumHealth){
+			amount = PlayerDefaults.maximumHealth - health;
+		}
+		sendMessage(PlayerMessages.healthGain(amount));
+
+		
+	}
+	
+	/**
+	 * Regenerates health. Sends a message.
+	 * 
+	 * @param amount amount to regenerate
+	 */
+	public void regenerateHealth(int amount) {
+		
+		
+		if(!isOnlinePlayer()){
+			return;
+		}
+		int health = player.getHealth();
+		
+		if(health >= PlayerDefaults.maximumHealth){
+			return;
+		}
+		health += amount;
+		if(health >  PlayerDefaults.maximumHealth){
+			health =  PlayerDefaults.maximumHealth;
+		}
+
+		
+	}
+	
+	/**
 	 * Sends the player a message if he is online.
 	 * 
 	 * @param message
@@ -292,14 +366,21 @@ public class SagaPlayer{
 	
 	/**
 	 * Centers the location to the block and moves the player there.
-	 * Must be used when the teleport is part of an ability.
 	 * 
 	 * @param location location
 	 */
 	public void moveToCentered(Location location) {
-		System.out.println("pitch:"+ player.getLocation().getPitch());
-		moveTo(new Location(location.getWorld(), location.getX() + 0.5, location.getY(), location.getZ() + 0.5));
 		
+		moveTo(location.add(0.5, 0, 0.5));
+	}
+	
+	/**
+	 * Puts a player on the given blocks center.
+	 * 
+	 * @param locationBlock block the player will be placed on
+	 */
+	public void moveToBlockCentered(Block locationBlock) {
+		moveToCentered(locationBlock.getRelative(BlockFace.UP).getLocation());
 	}
 	
 	/**
@@ -352,7 +433,7 @@ public class SagaPlayer{
 	 * 
 	 * @return facing direction. 0 if not online
 	 */
-	private int calculatePlayerHorizontalDirection(){
+	public int calculatePlayerHorizontalDirection(){
 		
 		
 		if(!isOnlinePlayer()){
@@ -446,35 +527,239 @@ public class SagaPlayer{
 		
 	}
 	
+	/**
+	 * Modifies an attribute. Should be only used for permanent modifications by professions.
+	 * 
+	 * @param attributeRawName attribute raw name
+	 * @param amount amount to modify
+	 */
+	public void modifyAttributes(String attributeRawName, Short amount){
+		
+		
+		Short oldValue = attributes.get(attributeRawName);
+		if(oldValue == null){
+			oldValue = 0;
+		}
+		attributes.put(attributeRawName, new Integer(oldValue+amount).shortValue());
+		
+		
+	}
+	
+	/**
+	 * Temporary modifies an attribute.
+	 * 
+	 * @param attributeRawName attribute raw name
+	 * @param amount amount to modify
+	 * @param time time to remain active
+	 */
+	public void modifyTemporaryAttribute(String attributeRawName, Short amount, Integer time) {
+
+		
+		// Modify the list:
+		modifyAttributes(attributeRawName, amount);
+		
+		// Add to temporary lists:
+		temporaryAttributeNames.add(attributeRawName);
+		temporaryAttributeUpgrades.add(amount);
+		temporaryAttributeTimes.add(time);
+		
+		
+		// Send message:
+		if(amount > 0){
+			sendMessage(PlayerMessages.attributeIncreasedTo(attributeRawName, amount));
+		}
+		else if(amount < 0){
+			sendMessage(PlayerMessages.attributeDecreasedTo(attributeRawName, amount));
+		}
+		
+		
+	}
+	
+	/**
+	 * Gets the upgrade level for the attribute.
+	 * 
+	 * @param attributeName attribute name
+	 * @return attribute upgrade, 0 if none
+	 */
+	public Short getAttributeUpgrade(String attributeName) {
+
+		
+		Short upgrade = attributes.get(attributeName);
+		if(upgrade == null){
+			upgrade = 0;
+		}
+		return upgrade;
+		
+		
+	}
+	
+	/**
+	 * Gets the temporary upgrade level for the attribute.
+	 * 
+	 * @param attributeName attribute name
+	 * @return attribute level, 0 if not found
+	 */
+	public Short getAttributeTemporaryUpgrade(String attributeName) {
+		
+		
+		Short upgradeSize = 0;
+		for (int i = 0; i < temporaryAttributeNames.size(); i++) {
+			if(temporaryAttributeNames.get(i).equals(attributeName)){
+				upgradeSize = (short) ( upgradeSize + temporaryAttributeUpgrades.get(i));
+			}
+		}
+		return upgradeSize;
+
+		
+	}
+	
+	/**
+	 * Tries to dodge.
+	 * 
+	 * @return true if dodge was a success.
+	 */
+	public boolean tryDodge() {
+
+		// Works, but is annoying.
+		if(!isOnlinePlayer()){
+			return false;
+		}
+		
+		int direction = calculatePlayerHorizontalDirection();
+		Random random= new Random();
+		System.out.println(player.getVelocity());
+		int firstCord;
+		int oppositeCord;
+		Block playerBlock = player.getLocation().getBlock().getRelative(BlockFace.DOWN);
+		float yaw = player.getLocation().getYaw();
+		float pitch = player.getLocation().getPitch();
+		
+		if(random.nextBoolean()){
+			firstCord = 1;
+			oppositeCord = -1;
+		}else{
+			firstCord = -1;
+			oppositeCord = 1;	
+		}
+		
+		if(direction == 0 || direction == 2){
+			
+			// First attempt:
+			if( player.getNearbyEntities(firstCord, 0, 0).size() == 0 && canJumpTo(playerBlock.getRelative(firstCord, 0, 0)) ){
+				Location newLocation = playerBlock.getRelative(BlockFace.UP).getRelative(firstCord, 0, 0).getLocation();
+				newLocation.setYaw(yaw);
+				newLocation.setPitch(pitch);
+				moveToCentered(newLocation);
+				return true;
+			}
+			// Second attempt:
+			if( player.getNearbyEntities(oppositeCord, 0, 0).size() == 0 && canJumpTo(playerBlock.getRelative(oppositeCord, 0, 0)) ){
+				Location newLocation = playerBlock.getRelative(BlockFace.UP).getRelative(oppositeCord, 0, 0).getLocation();
+				newLocation.setYaw(yaw);
+				newLocation.setPitch(pitch);
+				moveToCentered(newLocation);
+				return true;
+			}
+			return false;
+			
+		}
+		
+		if(direction == 1 || direction == 3){
+			
+			// First attempt:
+			if( player.getNearbyEntities(0, 0, firstCord).size() == 0 && canJumpTo(playerBlock.getRelative(0, 0, firstCord)) ){
+				Location newLocation = playerBlock.getRelative(BlockFace.UP).getRelative(0, 0, firstCord).getLocation();
+				newLocation.setYaw(yaw);
+				newLocation.setPitch(pitch);
+				moveToCentered(newLocation);
+				return true;
+			}
+			// Second attempt:
+			if( player.getNearbyEntities(0, 0, oppositeCord).size() == 0 && canJumpTo(playerBlock.getRelative(0, 0, oppositeCord)) ){
+				Location newLocation = playerBlock.getRelative(BlockFace.UP).getRelative(0, 0, oppositeCord).getLocation();
+				newLocation.setYaw(yaw);
+				newLocation.setPitch(pitch);
+				moveToCentered(newLocation);
+				return true;
+			}
+			return false;
+			
+		}
+		
+		return false;
+		
+		
+	}
+	
+	/**
+	 * Checks if the location can be jumped to. Requires a surface under feet.
+	 * 
+	 * @param block the player will be standing on
+	 * @return true if can be jumped
+	 */
+	private static boolean canJumpTo(Block block) {
+		
+		
+		if(BlockConstants.isTransparent(block.getType())){
+			return false;
+		}
+		if(!BlockConstants.isTransparent(block.getRelative(BlockFace.UP).getType())){
+			return false;
+		}
+		if(!BlockConstants.isTransparent(block.getRelative(BlockFace.UP).getRelative(BlockFace.UP).getType())){
+			return false;
+		}
+		return true;
+		
+		
+	}
 	
 	// Events:
 	/**
-	 * Got damaged by living entity event.
+	 * Got damaged by living entity event, using melee.
 	 *
-	 * @param pEvent event
+	 * @param event event
 	 */
-	public void gotDamagedByLivingEntityEvent(EntityDamageByEntityEvent pEvent) {
+	public void gotDamagedByLivingEntityEvent(EntityDamageByEntityEvent event) {
 
+		
+		// Attributes:
+		Attribute[] defenseAttributes = Saga.attributeInformation().defenseAttributes;
+		for (int i = 0; i < defenseAttributes.length; i++) {
+			String attributeName = defenseAttributes[i].getName();
+			defenseAttributes[i].use(getAttributeUpgrade(attributeName), this, event);
+		}
+		
 		// Forward to all professions:
 		for (int i = 0; i < professions.length; i++) {
-			professions[i].gotDamagedByLivingEntityEvent(pEvent);
+			professions[i].gotDamagedByLivingEntityEvent(event);
 		}
-		sendMessage(PlayerMessages.gotDamagedByEntity(pEvent.getDamage(), pEvent.getDamager()));
+		sendMessage(PlayerMessages.gotMeleeDamagedByEntity(event.getDamage(), event.getDamager()));
+		
 		
 	}
 
 	/**
-	 * Damaged a living entity.
+	 * Damaged a living entity, using melee.
 	 *
-	 * @param pEvent event
+	 * @param event event
 	 */
-	public void damagedLivingEntityEvent(EntityDamageByEntityEvent pEvent) {
+	public void damagedLivingEntityEvent(EntityDamageByEntityEvent event) {
+		
+		
+		// Attributes:
+		Attribute[] attackAtributes = Saga.attributeInformation().attackAttributes;
+		for (int i = 0; i < attackAtributes.length; i++) {
+			String attributeName = attackAtributes[i].getName();
+			attackAtributes[i].use(getAttributeUpgrade(attributeName), this, event);
+		}
 		
 		// Forward to all professions:
 		for (int i = 0; i < professions.length; i++) {
-			professions[i].damagedLivingEntityEvent(pEvent);
+			professions[i].damagedLivingEntityEvent(event);
 		}
-		sendMessage(PlayerMessages.damagedEntity(pEvent.getDamage(), pEvent.getEntity()));
+		sendMessage(PlayerMessages.meleeDamagedEntity(event.getDamage(), event.getEntity()));
+		
 		
 	}
 	
@@ -501,10 +786,14 @@ public class SagaPlayer{
 	 * @param pEvent event
 	 */
 	public void leftClickInteractEvent(PlayerInteractEvent pEvent) {
+		
+		
 		// Forward to all professions:
 		for (int i = 0; i < professions.length; i++) {
 			professions[i].leftClickInteractEvent(pEvent);
 		}
+		
+		
 	}
 
 	/**
@@ -566,10 +855,33 @@ public class SagaPlayer{
 		// Stamina regeneration:
 		naturalStaminaRegenerate();
 		
+		// Attribute temporary modification:
+		for (int i = 0; i < temporaryAttributeNames.size(); i++) {
+			Integer newTime = temporaryAttributeTimes.get(i) -1;
+			temporaryAttributeTimes.set(i, newTime);
+			// Remove if the time is up:
+			if(newTime <=0){
+				String removedName = temporaryAttributeNames.remove(i);
+				Short removedLevel = temporaryAttributeUpgrades.remove(i);
+				temporaryAttributeTimes.remove(i);
+				modifyAttributes(removedName, (short) -removedLevel);
+				// Send a message:
+				if(removedLevel > 0){
+					sendMessage(PlayerMessages.attributeIncreasedTo(removedName, removedLevel));
+				}
+				else if(removedLevel < 0){
+					sendMessage(PlayerMessages.attributeDecreasedTo(removedName, removedLevel));
+				}
+				
+			}
+		}
+		
 		// Forward to all professions:
 		for (int i = 0; i < professions.length; i++) {
 			professions[i].clockTickEvent(pTick);
 		}
+		
+		
 	}
 
 	

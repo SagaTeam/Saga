@@ -220,6 +220,68 @@ public class SagaCommands {
     	
     }
     
+    @Command(
+            aliases = {"levelup"},
+            usage = " profession",
+            flags = "",
+            desc = "Levels up a profession.",
+            min = 1,
+            max = 1
+        )
+    @CommandPermissions({"saga.admin.setlevel"})
+    public static void levelup(CommandContext args, Saga plugin, SagaPlayer sagaPlayer) {
+    	
+    	
+    	for (int i = 0; i < sagaPlayer.getProfessionCount(); i++) {
+			if(sagaPlayer.getProfessions(i).getProfessionName().equalsIgnoreCase(args.getString(0))){
+				Short level = (short) (sagaPlayer.getProfessions(i).getLevel() + 1);
+				if(level<0 || level>Saga.balanceInformation().maximumLevel){
+					sagaPlayer.sendMessage(PlayerMessages.levelLimitReached(level));
+					return;
+				}
+				sagaPlayer.getProfessions(i).setLevel(level);
+				sagaPlayer.sendMessage(PlayerMessages.setLevelTo(sagaPlayer.getName(), sagaPlayer.getProfessions(i), level));
+				Saga.info(PlayerMessages.setLevelTo(sagaPlayer.getName(), sagaPlayer.getProfessions(i), level) , sagaPlayer.getName());
+				break;
+			}
+			if(i==sagaPlayer.getProfessionCount()-1){
+				sagaPlayer.sendMessage(PlayerMessages.invalidProfession(args.getString(0)));
+			}
+		}
+    	
+
+	}
     
+    @Command(
+            aliases = {"leveldown"},
+            usage = " profession",
+            flags = "",
+            desc = "Levels down a profession.",
+            min = 1,
+            max = 1
+        )
+    @CommandPermissions({"saga.admin.setlevel"})
+    public static void leveldown(CommandContext args, Saga plugin, SagaPlayer sagaPlayer) {
+    	
+    	
+    	for (int i = 0; i < sagaPlayer.getProfessionCount(); i++) {
+			if(sagaPlayer.getProfessions(i).getProfessionName().equalsIgnoreCase(args.getString(0))){
+				Short level = (short) (sagaPlayer.getProfessions(i).getLevel() - 1);
+				if(level<0 || level>Saga.balanceInformation().maximumLevel){
+					sagaPlayer.sendMessage(PlayerMessages.levelLimitReached(level));
+					return;
+				}
+				sagaPlayer.getProfessions(i).setLevel(level);
+				sagaPlayer.sendMessage(PlayerMessages.setLevelTo(sagaPlayer.getName(), sagaPlayer.getProfessions(i), level));
+				Saga.info(PlayerMessages.setLevelTo(sagaPlayer.getName(), sagaPlayer.getProfessions(i), level) , sagaPlayer.getName());
+				break;
+			}
+			if(i==sagaPlayer.getProfessionCount()-1){
+				sagaPlayer.sendMessage(PlayerMessages.invalidProfession(args.getString(0)));
+			}
+		}
+    	
+
+	}
     
 }
