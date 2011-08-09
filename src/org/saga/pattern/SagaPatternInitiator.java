@@ -1,21 +1,13 @@
 package org.saga.pattern;
 
-import java.util.Hashtable;
 
 import org.bukkit.Location;
-import org.bukkit.Material;
 import org.bukkit.block.Block;
-import org.bukkit.inventory.ItemStack;
 import org.saga.Saga;
 
 
 public class SagaPatternInitiator {
 
-	/**
-	 * Materials that should not be dropped.
-	 * Key is the non-drop material, value is the material it shoud be replaced.
-	 */
-	private static Hashtable<Material, Material> NO_DROP_MATERIALS = addNoDropMaterials(new Hashtable<Material, Material>());
 	
 	/**
 	 * Blocks left that can be modified.
@@ -143,54 +135,6 @@ public class SagaPatternInitiator {
 		return patternLevel;
 	}
 	
-	
-	/**
-	 * Destroys a block and drops the items.
-	 * 
-	 * @param block block
-	 * @param amountMultiplier number of items multiplier
-	 */
-	public static void destroyBlock(Block block, int amountMultiplier) {
-		
-		
-		Material drop = block.getType();
-		Location location = block.getLocation();
-		
-		// Don't touch bedrock:
-		if(block.getType() == Material.BEDROCK){
-			return;
-		}
-		
-		// Remove:
-		block.setType(Material.AIR);
-		
-		// Drop:
-		Material replace;
-		if((replace = NO_DROP_MATERIALS.get(drop)) != null){
-			drop = replace;
-		}
-		if(!drop.equals(Material.AIR)){
-			block.getWorld().dropItemNaturally(location , new ItemStack(drop , amountMultiplier));
-		}
-		
-		
-	}
-	
-	/**
-	 * Used to add all the no drop materials.
-	 * 
-	 * @param noDrop no drop table
-	 * @return edited table
-	 */
-	private static Hashtable<Material, Material> addNoDropMaterials(Hashtable<Material, Material> noDrop) {
-		
-		noDrop.put(Material.FIRE, Material.AIR);
-		noDrop.put(Material.GRASS, Material.DIRT);
-		noDrop.put(Material.STONE, Material.COBBLESTONE);
-		return noDrop;
-		
-		
-	}
 	
 	
 	

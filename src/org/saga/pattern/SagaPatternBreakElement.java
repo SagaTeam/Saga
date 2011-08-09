@@ -1,6 +1,7 @@
 package org.saga.pattern;
 
 import org.bukkit.block.Block;
+import org.saga.constants.BlockConstants;
 
 public class SagaPatternBreakElement extends SagaPatternElement {
 
@@ -54,7 +55,7 @@ public class SagaPatternBreakElement extends SagaPatternElement {
 		// Edit only when the pattern level is correct:
 		if(isLevelCorrect(initiator)){
 //			System.out.println("destroyed block at ("+anchorBlock.getRelative(getxOffset(initiator), getyOffset(initiator), getzOffset(initiator)).getType()+" at ("+(anchorBlock.getX()+getxOffset(initiator))+", "+(anchorBlock.getY()+getyOffset(initiator))+", "+(anchorBlock.getZ()+getzOffset(initiator))+")");
-			SagaPatternInitiator.destroyBlock(currentBlock, 1);
+			BlockConstants.breakBlock(currentBlock, (short)1);
 			initiator.blockModified();
 		}
 		

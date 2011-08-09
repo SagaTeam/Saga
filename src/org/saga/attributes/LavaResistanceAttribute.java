@@ -1,0 +1,56 @@
+package org.saga.attributes;
+
+import org.bukkit.event.entity.EntityDamageEvent;
+import org.bukkit.event.entity.EntityDamageEvent.DamageCause;
+import org.saga.SagaPlayer;
+
+public class LavaResistanceAttribute extends Attribute {
+
+	
+	/**
+	 * Attribute name.
+	 */
+	transient private static String ATTRIBUTE_NAME = "lava resistance";
+	
+	/**
+	 * Sets the name.
+	 * 
+	 */
+	public LavaResistanceAttribute() {
+		super(ATTRIBUTE_NAME);
+	}
+	
+	/* 
+	 * (non-Javadoc)
+	 * 
+	 * @see org.saga.attributes.Attribute#completeExtended()
+	 */
+	@Override
+	protected boolean completeExtended() {
+		return true;
+	}
+
+	
+	/**
+	 * Uses the attribute.
+	 * 
+	 */
+	public void use(Short attributeLevel, SagaPlayer sagaPlayer, EntityDamageEvent event) {
+		
+		
+		if(!(event.getCause().equals(DamageCause.LAVA))){
+			return;
+		}
+		Integer damage = ceiling(event.getDamage()-calculateValue(attributeLevel));
+		if(damage<0){
+			damage = 0;
+		}
+		event.setDamage(damage);
+		System.out.println("!used "+ATTRIBUTE_NAME+" attribute!");
+		
+		
+	}
+	
+	
+	
+}

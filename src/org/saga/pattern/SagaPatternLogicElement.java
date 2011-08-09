@@ -19,12 +19,6 @@ public class SagaPatternLogicElement extends SagaPatternCheckElement{
 	private LogicAction logicAction;
 
 	/**
-	 * Current anchor block.
-	 */
-	transient private Block currentAnchorBlock = null;
-	
-	
-	/**
 	 * List of checks.
 	 */
 	private ArrayList<SagaPatternElement> componentList = new ArrayList<SagaPatternElement>();
