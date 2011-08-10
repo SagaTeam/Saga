@@ -3,6 +3,7 @@ package org.saga;
 import java.util.*;
 
 import org.saga.abilities.*;
+import org.saga.professions.FarmerProfession;
 import org.saga.professions.FighterProfession;
 import org.saga.professions.MinerProfession;
 import org.saga.professions.Profession;
@@ -42,11 +43,6 @@ public class BalanceInformation {
 	 * All abilities.
 	 */
 	public Hashtable<String, Ability> abilities = new Hashtable<String, Ability>();
-	
-	/**
-	 * Attribute information.
-	 */
-	private AttributeInformation attributeInformation;
 	
 	
 	/**
@@ -137,7 +133,7 @@ public class BalanceInformation {
 	 */
 	public Profession[] getAllProfessions() {
 		
-		return new Profession[]{new FighterProfession(), new WoodcutterProfession(), new MinerProfession()};
+		return new Profession[]{new FighterProfession(), new WoodcutterProfession(), new MinerProfession(), new FarmerProfession()};
 
 	}
 	
@@ -148,7 +144,7 @@ public class BalanceInformation {
 	 */
 	private Ability[] getAllAbilities() {
 
-		return new Ability[]{new HeavyHitAbility(), new CounterattackAbility(), new DisarmAbility(), new PowerfulSwings(), new ResistLavaAbility(), new FocusedHitsAbility(), new ChopDownAbility(), new TreeClimbAbility()};
+		return new Ability[]{new HeavyHitAbility(), new CounterattackAbility(), new DisarmAbility(), new PowerfulSwings(), new ResistLavaAbility(), new FocusedHitsAbility(), new ChopDownAbility(), new TreeClimbAbility(), new HarvestAbility()};
 		
 	}
 	
