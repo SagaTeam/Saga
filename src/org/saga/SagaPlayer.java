@@ -5,14 +5,17 @@ import java.util.ArrayList;
 import java.util.Hashtable;
 import java.util.Random;
 
+import org.bukkit.Effect;
 import org.bukkit.Location;
 import org.bukkit.block.Block;
 import org.bukkit.block.BlockFace;
+import org.bukkit.entity.Entity;
 import org.bukkit.entity.Player;
 import org.bukkit.event.block.*;
 import org.bukkit.event.entity.EntityDamageByEntityEvent;
 import org.bukkit.event.entity.EntityDamageEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
+import org.bukkit.util.Vector;
 import org.saga.pattern.SagaPatternElement;
 import org.saga.pattern.SagaPatternInitiator;
 import org.saga.professions.*;
@@ -692,6 +695,50 @@ public class SagaPlayer{
 	}
 	
 	/**
+	 * Pushed away an entity from the player
+	 * 
+	 * @param entity entity
+	 * @param speed speed
+	 */
+	public void pushAwayEntity(Entity entity, double speed) {
+
+		
+		// Ignore if the player isn't online:
+		if(!isOnlinePlayer()){
+			return;
+		}
+		
+		// Get velocity unit vector:
+		Vector unitVector = entity.getLocation().toVector().subtract(player.getLocation().toVector()).normalize();
+		
+		// Set speed and push entity:
+		entity.setVelocity(unitVector.multiply(speed));
+		
+		
+	}
+	
+	
+	/**
+	 * Plays an effect for the player.
+	 * 
+	 * @param effect effect
+	 * @param value effect value
+	 */
+	public void playEffect(Effect effect, int value) {
+
+		
+		// Ignore if the player isn't online:
+		if(!isOnlinePlayer()){
+			return;
+		}
+		
+		player.playEffect(player.getEyeLocation(), effect, value);
+		
+		
+	}
+	
+	
+	/**
 	 * Checks if the location can be jumped to. Requires a surface under feet.
 	 * 
 	 * @param block the player will be standing on
@@ -786,7 +833,6 @@ public class SagaPlayer{
 	 * @param pEvent event
 	 */
 	public void leftClickInteractEvent(PlayerInteractEvent pEvent) {
-		
 		
 		// Forward to all professions:
 		for (int i = 0; i < professions.length; i++) {
