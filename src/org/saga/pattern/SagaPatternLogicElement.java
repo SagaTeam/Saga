@@ -4,6 +4,7 @@ import java.util.ArrayList;
 
 import org.bukkit.Material;
 import org.bukkit.block.Block;
+import org.bukkit.material.MaterialData;
 
 public class SagaPatternLogicElement extends SagaPatternCheckElement{
 
@@ -49,15 +50,51 @@ public class SagaPatternLogicElement extends SagaPatternCheckElement{
 	}
 
 	/**
-	 * Adds a single check element.
+	 * Adds a single check element. Logic type is set to AND.
 	 * 
-	 * @param xOffset
-	 * @param yOffset
-	 * @param zOffset
-	 * @param minimumLevel
-	 * @param maximumLevel
-	 * @param materials
-	 * @param logicAction
+	 * @param xOffset x offset
+	 * @param yOffset y offset
+	 * @param zOffset z offset
+	 * @param minimumLevel minimum level
+	 * @param maximumLevel maximum level
+	 * @param materialData material metadata array
+	 * @param logicAction action taken
+	 */
+	public SagaPatternLogicElement(int xOffset , int yOffset , int zOffset, short minimumLevel, short maximumLevel, MaterialData[] materialData, LogicAction logicAction) {
+
+		this(logicAction, LogicType.AND);
+		addElement(new SagaPatternCheckElement(xOffset, yOffset, zOffset, minimumLevel, maximumLevel, materialData));
+	
+	}
+	
+	/**
+	 * Adds a single check element. Logic type is set to AND.
+	 * 
+	 * @param xOffset x offset
+	 * @param yOffset y offset
+	 * @param zOffset z offset
+	 * @param minimumLevel minimum level
+	 * @param maximumLevel maximum level
+	 * @param materialData material metadata
+	 * @param logicAction action taken
+	 */
+	public SagaPatternLogicElement(int xOffset , int yOffset , int zOffset, short minimumLevel, short maximumLevel, MaterialData materialData, LogicAction logicAction) {
+
+		this(logicAction, LogicType.AND);
+		addElement(new SagaPatternCheckElement(xOffset, yOffset, zOffset, minimumLevel, maximumLevel, new MaterialData[]{materialData}));
+	
+	}
+	
+	/**
+	 * Adds a single check element. Type is set to AND.
+	 * 
+	 * @param xOffset x offset
+	 * @param yOffset y offset
+	 * @param zOffset z offset
+	 * @param minimumLevel minimum level
+	 * @param maximumLevel maximum level
+	 * @param materials materials array
+	 * @param logicAction action taken
 	 */
 	public SagaPatternLogicElement(int xOffset , int yOffset , int zOffset, short minimumLevel, short maximumLevel, Material[] materials, LogicAction logicAction) {
 
@@ -65,6 +102,24 @@ public class SagaPatternLogicElement extends SagaPatternCheckElement{
 		addElement(new SagaPatternCheckElement(xOffset, yOffset, zOffset, minimumLevel, maximumLevel, materials));
 	
 	}
+	
+	/**
+	 * Adds a single check element. Type is set to AND.
+	 * 
+	 * @param xOffset x offset
+	 * @param yOffset y offset
+	 * @param zOffset z offset
+	 * @param minimumLevel minimum level
+	 * @param maximumLevel maximum level
+	 * @param material material
+	 * @param logicAction action taken
+	 */
+	public SagaPatternLogicElement(int xOffset , int yOffset , int zOffset, short minimumLevel, short maximumLevel, Material material, LogicAction logicAction) {
+
+		this(xOffset , yOffset , zOffset, minimumLevel, maximumLevel, new MaterialData(material), logicAction);
+	
+	}
+	
 	
 	/**
 	 * Adds a single element
@@ -212,8 +267,8 @@ public class SagaPatternLogicElement extends SagaPatternCheckElement{
 	public LogicType getLogicType() {
 		return logicType;
 	}
-	
 
+	
 	/**
 	 * Logic action.
 	 *
