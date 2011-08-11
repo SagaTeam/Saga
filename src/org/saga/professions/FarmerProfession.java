@@ -68,7 +68,7 @@ public class FarmerProfession extends Profession {
 	 * @see org.saga.professions.Profession#getAbilities()
 	 */
 	@Override
-	protected Ability[] getAbilities() {
+	public Ability[] getAbilities() {
 		return ABILITIES;
 	}
 
@@ -78,13 +78,16 @@ public class FarmerProfession extends Profession {
 	 * @see org.saga.professions.Profession#isAbilityActive(int)
 	 */
 	@Override
-	public boolean isAbilityActive(int ability) throws IndexOutOfBoundsException {
+	public boolean isAbilityActive(Ability ability) throws IndexOutOfBoundsException {
 
 		
-		if(ability == 0){
-			return false;
+		for (int i = 0; i < activeAbilities.length; i++) {
+			if(ABILITIES[i].equals(ability)){
+				return activeAbilities[i];
+			}
 		}
-		return activeAbilities[ability];
+		return false;
+		
 		
 	}
 
@@ -94,7 +97,7 @@ public class FarmerProfession extends Profession {
 	 * @see org.saga.professions.Profession#getAbilityScrollMaterials()
 	 */
 	@Override
-	protected Material[] getAbilityScrollMaterials() {
+	public Material[] getAbilityScrollMaterials() {
 		return ABILITY_SCROLL_MATERIALS;
 	}
 
@@ -106,17 +109,22 @@ public class FarmerProfession extends Profession {
 	 * @see org.saga.professions.Profession#abilityActivateEvent(int)
 	 */
 	@Override
-	protected void abilityActivateEvent(int ability) throws IndexOutOfBoundsException {
+	public void abilityActivateEvent(Ability ability) throws IndexOutOfBoundsException {
 
 		
-		// Heavy swings:
-		if(ability == 0){
+		// Harvest:
+		if(ability.equals(ABILITIES[0])){
 			((HarvestAbility)ABILITIES[0]).use(getLevel(), sagaPlayer);
 			return;
 		}
 		
 		// All others:
-		activeAbilities[ability] = true;
+		for (int i = 0; i < activeAbilities.length; i++) {
+			if(ABILITIES[i].equals(ability)){
+				activeAbilities[i] = true;
+				return;
+			}
+		}
 		
 		
 	}
@@ -127,12 +135,15 @@ public class FarmerProfession extends Profession {
 	 * @see org.saga.professions.Profession#abilityDeactivateEvent(int)
 	 */
 	@Override
-	protected void abilityDeactivateEvent(int ability) {
+	public void abilityDeactivateEvent(Ability ability) {
     	
 		
-		if(ability!=0){
-    		activeAbilities[ability] = false;
-    	}
+		for (int i = 0; i < activeAbilities.length; i++) {
+			if(ABILITIES[i].equals(ability)){
+				activeAbilities[i] = false;
+				return;
+			}
+		}
 		
 		
 	}

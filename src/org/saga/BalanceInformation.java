@@ -44,6 +44,11 @@ public class BalanceInformation {
 	 */
 	public Hashtable<String, Ability> abilities = new Hashtable<String, Ability>();
 	
+	// Other
+	/**
+	 * Time in seconds that the an ability remains active.
+	 */
+	public Short abilitySelectedTime;
 	
 	/**
 	 * Used by gson.
@@ -91,7 +96,12 @@ public class BalanceInformation {
 			experienceSlope= 10000;
 			integrity=false;
 		}
-		
+		// Other:
+		if(abilitySelectedTime == null){
+			Saga.warning("Setting default value for balance information abilitySelectedTime.");
+			abilitySelectedTime= 3;
+			integrity=false;
+		}
 		
 		// Complete abilities:
 		Ability[] allAbilities = getAllAbilities();

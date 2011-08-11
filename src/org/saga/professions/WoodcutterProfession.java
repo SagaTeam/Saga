@@ -8,13 +8,6 @@ import org.saga.Saga;
 import org.saga.abilities.Ability;
 import org.saga.abilities.ChopDownAbility;
 import org.saga.abilities.TreeClimbAbility;
-import org.saga.pattern.SagaPatternBreakElement;
-import org.saga.pattern.SagaPatternCheckElement;
-import org.saga.pattern.SagaPatternLogicElement;
-import org.saga.pattern.SagaPatternListElement;
-import org.saga.pattern.SagaPatternLogicElement.LogicAction;
-import org.saga.pattern.SagaPatternLogicElement.LogicType;
-import org.saga.pattern.SagaPatternSelectionMoveElement;
 
 public class WoodcutterProfession extends Profession {
 
@@ -72,18 +65,27 @@ public class WoodcutterProfession extends Profession {
 	}
 	
 	@Override
-	protected Ability[] getAbilities() {
+	public Ability[] getAbilities() {
 		return ABILITIES;
 	}
 
 	@Override
-	protected Material[] getAbilityScrollMaterials() {
+	public Material[] getAbilityScrollMaterials() {
 		return ABILITY_SCROLL_MATERIALS;
 	}
 
 	@Override
-	public boolean isAbilityActive(int ability) {
-		return activeAbilities[ability];
+	public boolean isAbilityActive(Ability ability) {
+		
+		
+		for (int i = 0; i < activeAbilities.length; i++) {
+			if(ABILITIES[i].equals(ability)){
+				return activeAbilities[i];
+			}
+		}
+		return false;
+		
+		
 	}
 	
 
@@ -101,13 +103,31 @@ public class WoodcutterProfession extends Profession {
 	}
 	
 	@Override
-	protected void abilityActivateEvent(int ability) {
-		activeAbilities[ability] = true;
+	public void abilityActivateEvent(Ability ability) {
+		
+		
+		for (int i = 0; i < activeAbilities.length; i++) {
+			if(ABILITIES[i].equals(ability)){
+				activeAbilities[i] = true;
+				return;
+			}
+		}
+		
+		
 	}
 	
 	@Override
-	protected void abilityDeactivateEvent(int ability) {
-		activeAbilities[ability] = false;
+	public void abilityDeactivateEvent(Ability ability) {
+		
+		
+		for (int i = 0; i < activeAbilities.length; i++) {
+			if(ABILITIES[i].equals(ability)){
+				activeAbilities[i] = false;
+				return;
+			}
+		}
+		
+		
 	}
 	
 	@Override

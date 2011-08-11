@@ -36,7 +36,7 @@ public class TreeClimbAbility extends AbilityFunction {
 	
 	
 	public TreeClimbAbility() {
-		super(ABILITY_NAME);
+		super(ABILITY_NAME, AbilityActivateType.SINGLE_USE);
 	}
 	
 	@Override

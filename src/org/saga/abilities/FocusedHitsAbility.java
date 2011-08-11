@@ -15,7 +15,7 @@ public class FocusedHitsAbility extends Ability {
 	
 	// Initialization:
 	/**
-	 * Sets the profession name.
+	 * used by gson.
 	 * 
 	 */
 	public FocusedHitsAbility() {

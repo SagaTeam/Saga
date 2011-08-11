@@ -35,6 +35,16 @@ public abstract class AbilityFunction extends Ability {
 		super(name);
 	}
 	
+	/**
+	 * Forwards to first constructor.
+	 * 
+	 * @param name ability name
+	 * @param activateType activate type
+	 */
+	public AbilityFunction(String name, AbilityActivateType activateType) {
+		super(name, activateType);
+	}
+	
 	/* 
 	 * (non-Javadoc)
 	 * 

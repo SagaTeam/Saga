@@ -60,19 +60,9 @@ public abstract class Profession {
 	
 	// Main:
 	/**
-	 * Selected ability.
-	 */
-	transient private short selectedAbility=-1;
-	
-	/**
 	 * All abilities.
 	 */
 	transient private Ability[] abilities;
-	
-	/**
-	 * Ability timers.
-	 */
-	transient private short[] abilityTimers;
 	
 	/**
 	 * Attribute upgrades. Keeps a list of upgrade levels for the current level.
@@ -127,7 +117,6 @@ public abstract class Profession {
 		// Initialize dependent fields:
 		abilities = getAbilities();
 		experienceRequirement = calculateExperienceRequirement(level);
-		abilityTimers = new short[abilities.length];
 		
 		// Initiate attributes:
 		modifyAttributeUpgrades(getRawLevel());
@@ -165,55 +154,13 @@ public abstract class Profession {
 		return professionName;
 		
 	}
-	
-	/**
-	 * Selects next available ability. 
-	 * 
-	 */
-	private void selectNextAbility() {
 
-		short selectedNew = (short) (selectedAbility+1);
-		while (true) {
-			if(selectedNew>=abilities.length){
-				selectedNew= -1;
-				break;
-			}
-			if(abilities[selectedNew].levelHighEnough(level)){
-				break;
-			}
-			selectedNew++;
-		}
-		
-		
-		// Send message:
-		if(selectedNew==-1 && selectedAbility==-1){
-			sagaPlayer.sendMessage(PlayerMessages.noAbilitiesAvailable());
-		}else if(selectedNew==-1){
-			sagaPlayer.sendMessage(PlayerMessages.abilitySelectNone());
-		}else{
-			sagaPlayer.sendMessage(PlayerMessages.abilitySelect(abilities[selectedNew]));
-		}
-		
-		// Set selected ability:
-		selectedAbility= selectedNew;
-		
-		
-	}
-	
-	/**
-	 * Resets the ability selection.
-	 */
-	private void resetAbilitySelection() {
-		selectedAbility = -1;
-		// Message here, if needed
-	}
-	
 	/**
 	 * Returns all abilities for the profession.
 	 * 
 	 * @return all abilities
 	 */
-	protected abstract Ability[] getAbilities();
+	public abstract Ability[] getAbilities();
 	
 	/**
 	 * Return the ability name.
@@ -254,9 +201,8 @@ public abstract class Profession {
 	 * 
 	 * @param ability ability
 	 * @return true, if active
-	 * @throws IndexOutOfBoundsException when the given ability index is out of bounds
 	 */
-	public abstract boolean isAbilityActive(int ability) throws IndexOutOfBoundsException;
+	public abstract boolean isAbilityActive(Ability ability) throws IndexOutOfBoundsException;
 	
 	/**
 	 * Returns the ability count.
@@ -272,21 +218,7 @@ public abstract class Profession {
 	 * 
 	 * @return ability scroll materials
 	 */
-	protected abstract Material[] getAbilityScrollMaterials();
-	
-	/**
-	 * Deactivates an ability if possible.
-	 * 
-	 * @param ability ability index
-	 */
-	public void deactivateAbility(Ability ability){
-		for (int i = 0; i < abilities.length; i++) {
-			if(abilities[i].equals(ability)){
-				abilityDeactivateEvent(i);
-				sagaPlayer.sendMessage(PlayerMessages.abilityDeactivate(abilities[i]));
-			}
-		}
-	}
+	public abstract Material[] getAbilityScrollMaterials();
 	
 	/**
 	 * Adds experience
@@ -356,7 +288,6 @@ public abstract class Profession {
 		
 		
 	}
-
 	
 	/**
 	 * Modifies the attribute upgrades so they match the given level.
@@ -455,6 +386,21 @@ public abstract class Profession {
     	
 	}
 
+    /**
+	 * Gets the time remaining for the ability.
+	 * 
+	 * @param ability ability
+	 * @return time remaining. -1 if not found
+	 */
+	public Short getAbilityRemainingTime(Ability ability) {
+		
+		
+		// Forward to saga player:
+		return sagaPlayer.getAbilityRemainingTime(ability);
+
+		
+	}
+    
     // Events:
 	/**
 	 * Got damaged by living entity event.
@@ -495,37 +441,6 @@ public abstract class Profession {
 	 * @param event event
 	 */
 	public void leftClickInteractEvent(PlayerInteractEvent event) {
-
-		
-		// Check if the material is correct and try activating an ability:
-		Material[] scrollMaterials = getAbilityScrollMaterials();
-		for (int i = 0; i < scrollMaterials.length && selectedAbility!=-1; i++) {
-			
-			if(scrollMaterials[i].equals(event.getPlayer().getItemInHand().getType())){
-				// Check if there is enough stamina:
-				Double staminaUse = abilities[selectedAbility].calculateStaminaUse(level);
-				if(sagaPlayer.enoughStamina(staminaUse)){
-					// Check if already active:
-					if(!isAbilityActive(selectedAbility)){
-						sagaPlayer.sendMessage(PlayerMessages.abilityActivate(abilities[selectedAbility]));
-						abilityActivateEvent(selectedAbility);
-						abilityTimers[selectedAbility] = abilities[selectedAbility].calculateAbilityActiveTime(getLevel());
-						sagaPlayer.useStamina(staminaUse);
-						resetAbilitySelection();
-					}else{
-						sagaPlayer.sendMessage(PlayerMessages.abilityAlreadyActive(abilities[selectedAbility]));
-						resetAbilitySelection();
-					}
-					
-				}else{
-					sagaPlayer.sendMessage(PlayerMessages.notEnoughStamina(abilities[selectedAbility], sagaPlayer.getStamina(), sagaPlayer.getMaximumStamina(), staminaUse));
-					resetAbilitySelection();
-				}
-				break;
-			}
-			
-		}
-
 		
 	}
 
@@ -535,18 +450,6 @@ public abstract class Profession {
 	 * @param event event
 	 */
 	public void rightClickInteractEvent(PlayerInteractEvent event) {
-
-		
-		// Check if the material is correct for an ability scroll:
-		Material[] scrollMaterials = getAbilityScrollMaterials();
-		for (int i = 0; i < scrollMaterials.length; i++) {
-			if(scrollMaterials[i].equals(event.getPlayer().getItemInHand().getType())){
-				selectNextAbility();
-				break;
-			}
-		}
-		
-		
 		
 	}
 
@@ -589,16 +492,7 @@ public abstract class Profession {
 	public void clockTickEvent(int pTick) {
 
 		
-		// Ability deactivate timer:
-		for (int i = 0; i < abilities.length; i++) {
-			if(isAbilityActive(i)){
-				abilityTimers[i]--;
-				if(abilityTimers[i]<=0){
-					abilityDeactivateEvent(i);
-					deactivateAbility(abilities[i]);
-				}
-			}
-		}
+		
 		
 
 	}
@@ -606,18 +500,16 @@ public abstract class Profession {
 	/**
 	 * Activates an ability.
 	 * 
-	 * @param ability ability index
-	 * @throws IndexOutOfBoundsException when the given ability index is out of bounds
+	 * @param ability ability
 	 */
-	protected abstract void abilityActivateEvent(int ability) throws IndexOutOfBoundsException;
+	public abstract void abilityActivateEvent(Ability ability) throws IndexOutOfBoundsException;
 	
 	/**
 	 * Deactivates an ability.
 	 * 
 	 * @param ability ability index
-	 * @throws IndexOutOfBoundsException when the given ability index is out of bounds
 	 */
-	protected abstract void abilityDeactivateEvent(int ability) throws IndexOutOfBoundsException;
+	public abstract void abilityDeactivateEvent(Ability ability) throws IndexOutOfBoundsException;
 	
 	
 	

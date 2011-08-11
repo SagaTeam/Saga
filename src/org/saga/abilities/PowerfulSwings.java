@@ -31,7 +31,7 @@ public class PowerfulSwings extends AbilityFunction {
 	 */
 	public PowerfulSwings() {
 		
-		super(ABILITY_NAME);
+		super(ABILITY_NAME, AbilityActivateType.SINGLE_USE);
 		
 	}
 	

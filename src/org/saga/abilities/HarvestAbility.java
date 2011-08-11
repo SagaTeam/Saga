@@ -30,7 +30,7 @@ public class HarvestAbility extends AbilityFunction {
 	 */
 	public HarvestAbility() {
 		
-        super(ABILITY_NAME);
+        super(ABILITY_NAME, AbilityActivateType.SINGLE_USE);
 	
 	}
 

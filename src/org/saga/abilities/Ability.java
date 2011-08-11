@@ -18,6 +18,11 @@ public abstract class Ability {
 	private String abilityName;
 	
 	/**
+	 * Activate type.
+	 */
+	transient private AbilityActivateType activateType;
+	
+	/**
 	 * Stamina function x1.
 	 */
 	private Short staminaFunctionX1;
@@ -62,17 +67,31 @@ public abstract class Ability {
 	
 	// Initialization:
 	/**
-	 * Forces to give an ability name.
+	 * Sets name and activate type.
+	 * 
+	 * @param abilityName ability name
+	 * @param activateType activation type
+	 */
+	public Ability(String abilityName, AbilityActivateType activateType) {
+		
+		
+		this.abilityName = abilityName;
+		this.activateType = activateType;
+		
+		// Class name:
+		_className = getClass().getName();
+		
+		
+	}
+	
+	/**
+	 * Sets name. Activate type is set to {@link AbilityActivateType#TIMER}
 	 * 
 	 * @param abilityName ability name
 	 */
 	public Ability(String abilityName) {
 		
-		this.abilityName=abilityName;
-		
-		// Class name:
-		_className = getClass().getName();
-		
+		this(abilityName, AbilityActivateType.TIMER);
 		
 	}
 	
@@ -226,6 +245,15 @@ public abstract class Ability {
 	}
 	
 	/**
+	 * Gets ability activate type.
+	 * 
+	 * @return activate type
+	 */
+	public AbilityActivateType getActivateType() {
+		return activateType;
+	}
+	
+	/**
 	 * Gets the level requirement for the ability.
 	 * 
 	 * 
@@ -246,5 +274,13 @@ public abstract class Ability {
             return staminaFunctionX1 <= level;
 	}
 	
+	
+	public enum AbilityActivateType{
+		
+		TIMER,
+		SINGLE_USE,
+		TOGGLE;
+		
+	}
 	
 }

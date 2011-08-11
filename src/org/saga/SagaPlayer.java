@@ -58,6 +58,13 @@ public class SagaPlayer{
 	private Boolean[] selectedProfessions;
 	
 	
+	// Abilities:
+	/**
+	 * Ability manager.
+	 */
+	transient private PlayerAbilityManager abilityManager;
+	
+	
 	// Attributes:
 	/**
 	 * Attributes. Key is the attribute simple class name and the value is attribute upgrade.
@@ -161,6 +168,9 @@ public class SagaPlayer{
 			
 			
 		}
+		
+		// Initiate ability manager:
+		abilityManager = new PlayerAbilityManager(this, professions);
 		
 		
 	}
@@ -522,11 +532,24 @@ public class SagaPlayer{
 	public void deactivateAbility(Ability ability){
 		
 		
-		// Forward to all professions:
-		for (int i = 0; i < professions.length; i++) {
-			professions[i].deactivateAbility(ability);
-		}
+		// Forward to ability manager:
+		abilityManager.deactivateAbility(ability);
 		
+		
+	}
+	
+	/**
+	 * Gets the time remaining for the ability.
+	 * 
+	 * @param ability ability
+	 * @return time remaining. -1 if not found
+	 */
+	public Short getAbilityRemainingTime(Ability ability) {
+		
+		
+		// Forward to ability manager:
+		return abilityManager.getAbilityRemainingTime(ability);
+
 		
 	}
 	
@@ -825,18 +848,21 @@ public class SagaPlayer{
 		
 		
 	}
-	
 
 	/**
 	 * Left clicked.
 	 *
-	 * @param pEvent event
+	 * @param event event
 	 */
-	public void leftClickInteractEvent(PlayerInteractEvent pEvent) {
+	public void leftClickInteractEvent(PlayerInteractEvent event) {
+		
+		
+		// Send to ability manager:
+		abilityManager.leftClickInteractEvent(event);
 		
 		// Forward to all professions:
 		for (int i = 0; i < professions.length; i++) {
-			professions[i].leftClickInteractEvent(pEvent);
+			professions[i].leftClickInteractEvent(event);
 		}
 		
 		
@@ -845,13 +871,20 @@ public class SagaPlayer{
 	/**
 	 * Right clicked.
 	 *
-	 * @param pEvent event
+	 * @param event event
 	 */
-	public void rightClickInteractEvent(PlayerInteractEvent pEvent) {
+	public void rightClickInteractEvent(PlayerInteractEvent event) {
+		
+		
+		// Send to ability manager:
+		abilityManager.rightClickInteractEvent(event);
+		
 		// Forward to all professions:
 		for (int i = 0; i < professions.length; i++) {
-			professions[i].rightClickInteractEvent(pEvent);
+			professions[i].rightClickInteractEvent(event);
 		}
+		
+		
 	}
 
 	/**
@@ -893,9 +926,9 @@ public class SagaPlayer{
 	/**
 	 * Sends a clock tick.
 	 *
-	 * @param pTick tick number
+	 * @param tick tick number
 	 */
-	public void clockTickEvent(int pTick) {
+	public void clockTickEvent(int tick) {
 		
 		
 		// Stamina regeneration:
@@ -924,8 +957,11 @@ public class SagaPlayer{
 		
 		// Forward to all professions:
 		for (int i = 0; i < professions.length; i++) {
-			professions[i].clockTickEvent(pTick);
+			professions[i].clockTickEvent(tick);
 		}
+		
+		// Send to ability manager:
+		abilityManager.clockTickEvent(tick);
 		
 		
 	}

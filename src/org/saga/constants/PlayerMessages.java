@@ -1,11 +1,12 @@
 package org.saga.constants;
 
-import java.util.Arrays;
 import java.util.regex.Pattern;
 
 import org.bukkit.ChatColor;
+import org.bukkit.Effect;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.Player;
+import org.bukkit.event.Event;
 import org.saga.Saga;
 import org.saga.SagaPlayer;
 import org.saga.abilities.Ability;
@@ -45,6 +46,9 @@ public class PlayerMessages {
 	
 	public static ChatColor negativeHighlightColor = ChatColor.RED;
 	
+	public static Effect ABILITY_ACTIVATE2_SOUND = Effect.CLICK1;
+	
+	public static Effect ABILITY_DEACTIVATE2_SOUND = Effect.CLICK2;
 	
 	/**
 	 * First line of the error report to the player.
@@ -330,6 +334,8 @@ public class PlayerMessages {
 		ChatColor levelNotHighEnoghColor = ChatColor.DARK_GRAY;
 		ChatColor abilityActiveColor = ChatColor.DARK_GREEN;
 		String frameHorisontal = "--------------------------------";
+		Ability[] abilities = profession.getAbilities();
+		
 		
 		String rString = "";
 		rString += capitalize(profession.getProfessionName() + " profession");
@@ -340,14 +346,21 @@ public class PlayerMessages {
 		rString += "\n"+"lvl" + level +" with " + profession.getLevelExperience() + "/" + profession.getExperienceRequirement() + "exp";
 		for (int i = 0; i < profession.getAbilityCount(); i++) {
 			
+			String nameSuffix = "";
+			
 			rString += "\n";
 			String profLine = profession.getAbilityName(i);
 			ChatColor activeColor = defaultColor;
 			
-			if(profession.isAbilityActive(i)){
+			if(profession.isAbilityActive(abilities[i])){
 				activeColor = abilityActiveColor;
+				if(nameSuffix.length()!=0){
+					nameSuffix+=", ";
+				}
+				nameSuffix+= "("+profession.getAbilityRemainingTime(abilities[i])+"s)";
 			}
 			
+			profLine += nameSuffix;
 			
 			if(profession.getAbilityLevelRequirement(i) > level){
 				activeColor = levelNotHighEnoghColor;
