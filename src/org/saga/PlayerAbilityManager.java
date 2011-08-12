@@ -19,7 +19,7 @@ public class PlayerAbilityManager {
 	
 	private Hashtable<Ability, Short> abilityTimers = new Hashtable<Ability, Short>();
 	
-	private Material lastScrollMateriel = null;
+	private Material lastScrollMaterial = null;
 	
 	private short selectedAbility = -1;
 	
@@ -71,9 +71,9 @@ public class PlayerAbilityManager {
 
 		
 		// Reset selection if the old and new materials aren't the same.
-		if(!scrollMaterial.equals(lastScrollMateriel)){
+		if(!scrollMaterial.equals(lastScrollMaterial)){
 			resetSelection();
-			lastScrollMateriel = scrollMaterial;
+			lastScrollMaterial = scrollMaterial;
 		}
 		
 		// Get abilities associated with a material:
@@ -81,7 +81,6 @@ public class PlayerAbilityManager {
 		
 		// Return if there is no association:
 		if(abilities == null){
-			System.out.println("no ability for "+scrollMaterial);
 			return;
 		}
 		
@@ -120,7 +119,7 @@ public class PlayerAbilityManager {
 	private void resetSelection() {
 		
 		
-		lastScrollMateriel = null;
+		lastScrollMaterial = null;
 		selectedAbility = -1;
 		
 		
@@ -129,21 +128,23 @@ public class PlayerAbilityManager {
 	public void activateAbility(Material itemInHand) {
 
 		
+		// Ignore if an invalid item is held:
+		if(!itemInHand.equals(lastScrollMaterial)){
+			resetSelection();
+			return;
+		}
+		
 		// Ignore if no ability is selected:
 		if(selectedAbility == -1){
 			return;
 		}
 		
 		// Get variables:
-		Ability ability = materialsAbilities.get(lastScrollMateriel).get(selectedAbility);
+		Ability ability = materialsAbilities.get(lastScrollMaterial).get(selectedAbility);
 		Profession abilityProfession = abilityProfessions.get(ability);
 		Short level = abilityProfession.getLevel();
 		
-		// Ignore if an invalid item is held:
-		if(!ability.equals(materialsAbilities.get(itemInHand))){
-			resetSelection();
-			return;
-		}
+		
 		
 		// Check if there is enough stamina:
 		Double staminaUse = ability.calculateStaminaUse(level);
@@ -155,7 +156,6 @@ public class PlayerAbilityManager {
 		
 		// Add timer:
 		if(ability.getActivateType().equals(AbilityActivateType.TIMER)){
-			System.out.println("putting timer:"+ability.calculateAbilityActiveTime(abilityProfession.getLevel()));
 			abilityTimers.put(ability, ability.calculateAbilityActiveTime(abilityProfession.getLevel()));
 		}
 		
