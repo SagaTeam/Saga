@@ -69,6 +69,16 @@ public class MinerProfession extends Profession {
 	}
 
 	
+	/* 
+	 * (non-Javadoc)
+	 * 
+	 * @see org.saga.professions.Profession#getProfessionType()
+	 */
+	@Override
+	public ProfessionType getProfessionType() {
+		return ProfessionType.PROFESSION;
+	}
+	
 	// Interaction:
 	/* 
 	 * (non-Javadoc)

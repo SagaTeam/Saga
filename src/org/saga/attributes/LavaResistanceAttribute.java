@@ -18,7 +18,7 @@ public class LavaResistanceAttribute extends Attribute {
 	 * 
 	 */
 	public LavaResistanceAttribute() {
-		super(ATTRIBUTE_NAME);
+		super(ATTRIBUTE_NAME, DisplayType.DEFENSE);
 	}
 	
 	/* 

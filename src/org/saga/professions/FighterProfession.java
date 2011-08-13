@@ -64,9 +64,14 @@ public class FighterProfession extends Profession {
 
 	
 	// Interaction:
+	/* 
+	 * (non-Javadoc)
+	 * 
+	 * @see org.saga.professions.Profession#getProfessionType()
+	 */
 	@Override
-	public String getProfessionName() {
-		return PROFESSION_NAME;
+	public ProfessionType getProfessionType() {
+		return ProfessionType.CLASS;
 	}
 
     @Override

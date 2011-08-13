@@ -19,7 +19,7 @@ public class FireAbsorbtionAttribute extends Attribute {
 	 * 
 	 */
 	public FireAbsorbtionAttribute() {
-		super(ATTRIBUTE_NAME);
+		super(ATTRIBUTE_NAME, DisplayType.DEFENSE);
 	}
 
 	/* 

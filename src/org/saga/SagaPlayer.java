@@ -502,34 +502,12 @@ public class SagaPlayer{
 	}
 	
 	/**
-	 * Gets a profession.
+	 * Returns players professions.
 	 * 
-	 * @param profession profession index
-	 * @return profession
-	 * @throws IndexOutOfBoundsException if the give index is out of bounds.
+	 * @return players professions
 	 */
-	public Profession getProfessions(int profession) throws IndexOutOfBoundsException{
-		return professions[profession];
-	}
-	
-	/**
-	 * Gets a if the profession is selected.
-	 * 
-	 * @param profession profession index
-	 * @return true if the profession is selected
-	 * @throws IndexOutOfBoundsException if the give index is out of bounds.
-	 */
-	public boolean isProfessionSelected(int profession) throws IndexOutOfBoundsException{
-		return selectedProfessions[profession];
-	}
-	
-	/**
-	 * Returns the number of professions.
-	 * 
-	 * @return the number of professions
-	 */
-	public int getProfessionCount() {
-		return professions.length;
+	public Profession[] getProfessions() {
+		return professions;
 	}
 	
 	/**
@@ -610,7 +588,8 @@ public class SagaPlayer{
 	}
 	
 	/**
-	 * Gets the upgrade level for the attribute.
+	 * Gets current upgrade level for the attribute.
+	 * Includes temporary upgrade.
 	 * 
 	 * @param attributeName attribute name
 	 * @return attribute upgrade, 0 if none

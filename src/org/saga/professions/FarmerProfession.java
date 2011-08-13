@@ -60,8 +60,17 @@ public class FarmerProfession extends Profession {
 		
 	}
 
-	
 	// Interaction:
+	/* 
+	 * (non-Javadoc)
+	 * 
+	 * @see org.saga.professions.Profession#getProfessionType()
+	 */
+	@Override
+	public ProfessionType getProfessionType() {
+		return ProfessionType.PROFESSION;
+	}
+	
 	/* 
 	 * (non-Javadoc)
 	 * 

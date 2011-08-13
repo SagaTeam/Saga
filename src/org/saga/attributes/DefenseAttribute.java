@@ -51,7 +51,7 @@ public class DefenseAttribute extends Attribute {
 	public DefenseAttribute(String name, Material[] useMaterials, AttackerType attackerType, AttackType attackType) {
 		
 		
-		super(name);
+		super(name, DisplayType.DEFENSE);
 		this.useMaterials = useMaterials;
 		this.attackerType = attackerType;
 		this.attackType = attackType;

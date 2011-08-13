@@ -3,10 +3,7 @@ package org.saga.professions;
 import org.bukkit.Material;
 import org.saga.Saga;
 import org.saga.abilities.Ability;
-import org.saga.abilities.CounterattackAbility;
-import org.saga.abilities.DisarmAbility;
 import org.saga.abilities.FireballAbility;
-import org.saga.abilities.HeavyHitAbility;
 
 public class MageProfession extends Profession {
 
@@ -43,6 +40,17 @@ public class MageProfession extends Profession {
 
 	}
 
+	
+	/* 
+	 * (non-Javadoc)
+	 * 
+	 * @see org.saga.professions.Profession#getProfessionType()
+	 */
+	@Override
+	public ProfessionType getProfessionType() {
+		return ProfessionType.CLASS;
+	}
+	
 	@Override
 	public Ability[] getAbilities() {
 		return ABILITIES;

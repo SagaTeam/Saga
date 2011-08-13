@@ -41,7 +41,7 @@ public class BlockAttribute extends Attribute {
 	 * 
 	 */
 	public BlockAttribute() {
-		super(ATTRIBUTE_NAME);
+		super(ATTRIBUTE_NAME, DisplayType.DEFENSE);
 	}
 	
 	/* 

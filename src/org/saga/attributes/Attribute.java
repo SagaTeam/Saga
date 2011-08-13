@@ -1,5 +1,7 @@
 package org.saga.attributes;
 
+import javax.swing.text.html.HTMLDocument.HTMLReader.HiddenAction;
+
 import org.bukkit.event.Event;
 import org.saga.Saga;
 import org.saga.SagaPlayer;
@@ -40,16 +42,31 @@ public abstract class Attribute {
 	 */
 	private Double functionY2;
 	
+	/**
+	 * Determines how the attribute will be displayed for the player.
+	 */
+	private DisplayType displayType;
 	
 	// Initiation:
 	/**
-	 * Forces a name.
+	 * Sets a name.
+	 * 
+	 * @param name name
+	 * @param displayType how the attribute will be displayed
+	 */
+	public Attribute(String name, DisplayType displayType) {
+		this._className = getClass().getName();
+		this.name = name;
+		this.displayType = displayType;
+	}
+	
+	/**
+	 * Sets a name and {@link HiddenAction} attribute.
 	 * 
 	 * @param name name
 	 */
 	public Attribute(String name) {
-		this._className = getClass().getName();
-		this.name = name;
+		this(name, DisplayType.HIDDEN);
 	}
 	
 	/**
@@ -86,6 +103,11 @@ public abstract class Attribute {
 		if(functionY2==null){
 			functionY2 = 0.0;
 			Saga.info("Setting default value for "+getName()+" attribute functionY2.");
+			integrity = false;
+		}
+		if(displayType==null){
+			displayType = DisplayType.NONE;
+			Saga.info("Setting default value for "+getName()+" attribute displayType.");
 			integrity = false;
 		}
 
@@ -161,6 +183,15 @@ public abstract class Attribute {
 	}
 	
 	/**
+	 * Gets the display type.
+	 * 
+	 * @return display type.
+	 */
+	public DisplayType getDisplayType() {
+		return displayType;
+	}
+	
+	/**
 	 * Rounds to ceiling.
 	 * 
 	 * @param value value
@@ -184,5 +215,23 @@ public abstract class Attribute {
 		
 	}
 	
+	
+	/**
+	 * Enums that determine how the attribute is displayed for the player.
+	 * 
+	 * @author andf
+	 *
+	 */
+	public enum DisplayType{
+		
+		
+		NONE,
+		HIDDEN,
+		OFFENCE,
+		DEFENSE,
+		OTHER;
+		
+		
+	}
 	
 }

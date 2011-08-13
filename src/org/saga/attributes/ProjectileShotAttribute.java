@@ -22,7 +22,7 @@ public class ProjectileShotAttribute extends Attribute{
 	 * @param projectileType projectile type
 	 */
 	public ProjectileShotAttribute(String name, ProjectileType projectileType) {
-		super(name);
+		super(name, DisplayType.OFFENCE);
 		this.projectileType = projectileType;
 	}
 

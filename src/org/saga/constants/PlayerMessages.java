@@ -1,17 +1,19 @@
 package org.saga.constants;
 
+import java.util.ArrayList;
 import java.util.regex.Pattern;
 
 import org.bukkit.ChatColor;
 import org.bukkit.Effect;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.Player;
-import org.bukkit.event.Event;
 import org.saga.Saga;
 import org.saga.SagaPlayer;
 import org.saga.abilities.Ability;
 import org.saga.attributes.Attribute;
+import org.saga.attributes.Attribute.DisplayType;
 import org.saga.professions.Profession;
+import org.saga.professions.Profession.ProfessionType;
 
 public class PlayerMessages {
 
@@ -45,6 +47,15 @@ public class PlayerMessages {
 	public static ChatColor positiveHighlightColor = ChatColor.GREEN;
 	
 	public static ChatColor negativeHighlightColor = ChatColor.RED;
+	
+	public static ChatColor unavailableHighlightColor = ChatColor.DARK_GRAY;
+	
+	public static ChatColor normalTextColor1 = ChatColor.GOLD;
+	
+	public static ChatColor normalTextColor2 = ChatColor.YELLOW;
+	
+	public static ChatColor frameColor = ChatColor.DARK_GREEN;
+	
 	
 	public static Effect ABILITY_ACTIVATE2_SOUND = Effect.CLICK1;
 	
@@ -266,13 +277,13 @@ public class PlayerMessages {
 	
 	public static String experienceGain(Profession profession, int gain, int current, int required) {
 		
-		return capitalize(profession.getProfessionName()) + " profession got " + gain + " experience. (" +current+"/" + required+")";
+		return capitalize(profession.getName()) + " profession got " + gain + " experience. (" +current+"/" + required+")";
 		
 	}
 
 	public static String levelUp(Profession profession, int level) {
 		
-		return capitalize(profession.getProfessionName()) + " is now level " + level + ".";
+		return capitalize(profession.getName()) + " is now level " + level + ".";
 		
 	}
 	
@@ -286,128 +297,389 @@ public class PlayerMessages {
 		
 	}
 	
+	// Stats:
 	public static String playerStats(SagaPlayer sagaPlayer) {
 		
 		
-		ChatColor defaultColor = ChatColor.WHITE;
+		ChatColor messageColor = PlayerMessages.normalColor;
+		StringBuffer rString = new StringBuffer();
+		ChatColor professionsColor = normalTextColor1;
+		ChatColor attributesColor = normalTextColor2;
 		
-		String frameHorisontal = "--------------------------------";
+		// Physical:
+		rString.append(ChatColor.DARK_RED);
+		rString.append(new Double(sagaPlayer.getHealth()/2) + "/10.0hp");
+		rString.append(messageColor);
+		rString.append(" ");
+		rString.append(ChatColor.DARK_GREEN);
+		rString.append(new Double(sagaPlayer.getStamina().intValue()) + "/" + sagaPlayer.getMaximumStamina() + "st");
+		rString.append(messageColor);
 		
-		String rString = "Player information";
-		int frameShift = 2;
-		rString = frameHorisontal.substring(0, frameShift) + rString + frameHorisontal.substring(frameShift + rString.length()-2)+ "\n";
-		rString += new Double(sagaPlayer.getHealth())/2 + "/10hp " + sagaPlayer.getStamina() + "/" + sagaPlayer.getMaximumStamina() + "st"+ "\n";
-		rString += "Professions: ";
-		for (int i = 0; i < sagaPlayer.getProfessionCount(); i++) {
-			if(sagaPlayer.isProfessionSelected(i)){
-				if(i!=0){
-					rString += ", ";
-				}
-				rString += "lvl" + sagaPlayer.getProfessions(i).getLevel() + " " + sagaPlayer.getProfessions(i).getProfessionName();
+		rString.append("\n");
+		
+		// Professions:
+		rString.append(professionShortenedStats(sagaPlayer, professionsColor));
+		rString.append(messageColor);
+		
+		rString.append("\n");
+		
+		// Attributes:
+		rString.append(getAttributesStats(sagaPlayer, attributesColor));
+		rString.append(messageColor);
+		
+		// Add main color:
+		rString.insert(0, messageColor);
+		
+		// Add frame:
+		return frame("Player information", rString.toString(), messageColor);
+		
+		
+	}
+	
+	private static String professionShortenedStats(SagaPlayer sagaPlayer, ChatColor messageColor) {
+		
+		
+		StringBuffer rString = new StringBuffer();
+		Profession[] allProfessions = sagaPlayer.getProfessions();
+		ArrayList<String> classes = new ArrayList<String>();
+		ArrayList<String> professions = new ArrayList<String>();
+		ArrayList<String> specializations = new ArrayList<String>();
+		ArrayList<String> roles = new ArrayList<String>();
+		ArrayList<String> neither = new ArrayList<String>();
+		ArrayList<String> currentProfs;
+		String notChosen = "not chosen";
+		
+		// Add main color:
+		rString.append(messageColor);
+		
+		// Loop trough and add all professions:
+		for (int i = 0; i < allProfessions.length; i++) {
+			if(allProfessions[i].getProfessionType().equals(ProfessionType.CLASS)){
+				classes.add(getProfessionElement(allProfessions[i], messageColor));
+			}else if(allProfessions[i].getProfessionType().equals(ProfessionType.PROFESSION)){
+				professions.add(getProfessionElement(allProfessions[i], messageColor));
+			}else if(allProfessions[i].getProfessionType().equals(ProfessionType.SPECIALIZATION)){
+				specializations.add(getProfessionElement(allProfessions[i], messageColor));
+			}else if(allProfessions[i].getProfessionType().equals(ProfessionType.ROLE)){
+				roles.add(getProfessionElement(allProfessions[i], messageColor));
+			}else{
+				neither.add(getProfessionElement(allProfessions[i], messageColor));
 			}
 		}
 		
-		String attackAattributes = attributeStats(sagaPlayer, Saga.attributeInformation().attackAttributes);
-		rString += "\n" + "Attack:";
-		if(attackAattributes.length() >0 ){
-			rString += attackAattributes;
+		// Add classes:
+		currentProfs = classes;
+		if(currentProfs.size() == 1){
+			rString.append("Class: ");
+		}else if(currentProfs.size() > 1){
+			rString.append("Classes: ");
+		}else{
+			rString.append("Class: " + notChosen);
+		}
+		for (int i = 0; i < currentProfs.size(); i++) {
+			if(i != 0){
+				rString.append(", ");
+			}
+			rString.append(currentProfs.get(i));
 		}
 		
-		String defenceAattributes = attributeStats(sagaPlayer, Saga.attributeInformation().defenseAttributes);
-		rString += "\n" + "Defense:";
-		if(defenceAattributes.length() >0 ){
-			rString += defenceAattributes;
+		rString.append(" ");
+		
+		// Add professions:
+		currentProfs = professions;
+		if(currentProfs.size() == 1){
+			rString.append("Profession: ");
+		}else if(currentProfs.size() > 1){
+			rString.append("Professions: ");
+		}else{
+			rString.append("Profession: " + notChosen);
+		}
+		for (int i = 0; i < currentProfs.size(); i++) {
+			if(i != 0){
+				rString.append(", ");
+			}
+			rString.append(currentProfs.get(i));
 		}
 		
-		rString += "\n" + frameHorisontal;
+		rString.append("\n");
 		
-		return defaultColor + rString;
+		// Add Specializations:
+		currentProfs = specializations;
+		if(currentProfs.size() == 1){
+			rString.append("Specializarion: ");
+		}else if(currentProfs.size() > 1){
+			rString.append("Specializarions: ");
+		}else{
+			rString.append("Specializarion: " + notChosen);
+		}
+		for (int i = 0; i < currentProfs.size(); i++) {
+			if(i != 0){
+				rString.append(", ");
+			}
+			rString.append(currentProfs.get(i));
+		}
+		
+		rString.append(" ");
+		
+		// Add roles:
+		currentProfs = roles;
+		if(currentProfs.size() == 1){
+			rString.append("Role: ");
+		}else if(currentProfs.size() > 1){
+			rString.append("Roles: ");
+		}else{
+			rString.append("Role: " + notChosen);
+		}
+		for (int i = 0; i < currentProfs.size(); i++) {
+			if(i != 0){
+				rString.append(", ");
+			}
+			rString.append(currentProfs.get(i));
+		}
+		
+		// Add neither:
+		if(neither.size() > 0){
+			
+			rString.append("\n");
+			
+			currentProfs = neither;
+			if(currentProfs.size() == 1){
+				rString.append("Other: ");
+			}else if(currentProfs.size() > 1){
+				rString.append("Other: ");
+			}else{
+				rString.append("Other: " + notChosen);
+			}
+			for (int i = 0; i < currentProfs.size(); i++) {
+				if(i != 0){
+					rString.append(", ");
+				}
+				rString.append(currentProfs.get(i));
+			}
+		}
+		
+		return rString.toString();
+		
+		
+	}
+	
+	private static String getProfessionElement(Profession profession, ChatColor messageColor){
+		
+		return messageColor + profession.getName()+"("+profession.getLevel()+")";
+		
+	}
+
+	private static String getAttributesStats(SagaPlayer sagaPlayer, ChatColor elementColor) {
+		
+		
+		StringBuffer rString = new StringBuffer();
+		ArrayList<String> offence = new ArrayList<String>();
+		ArrayList<String> defense = new ArrayList<String>();
+		ArrayList<String> other = new ArrayList<String>();
+		Attribute[] attributes;
+		ArrayList<String> distrAttributes;
+		String attributeElement = "";
+		
+		// Loop trough attack:
+		attributes = Saga.attributeInformation().attackAttributes;
+		for (int i = 0; i < attributes.length; i++) {
+			if(attributes[i].getDisplayType().equals(DisplayType.OFFENCE)){
+				attributeElement = getAttributeElement(sagaPlayer, attributes[i], elementColor);
+				if(attributeElement.length() != 0)
+					offence.add(attributeElement);
+			}else if(attributes[i].getDisplayType().equals(DisplayType.DEFENSE)){
+				attributeElement = getAttributeElement(sagaPlayer, attributes[i], elementColor);
+				if(attributeElement.length() != 0)
+					defense.add(attributeElement);
+			}else if(attributes[i].getDisplayType().equals(DisplayType.HIDDEN)){
+				
+				
+			}else{
+				attributeElement = getAttributeElement(sagaPlayer, attributes[i], elementColor);
+				if(attributeElement.length() != 0)
+					other.add(attributeElement);
+			}
+		}
+		
+		// Loop trough defense:
+		attributes = Saga.attributeInformation().defenseAttributes;
+		for (int i = 0; i < attributes.length; i++) {
+			if(attributes[i].getDisplayType().equals(DisplayType.OFFENCE)){
+				attributeElement = getAttributeElement(sagaPlayer, attributes[i], elementColor);
+				if(attributeElement.length() != 0)
+					offence.add(attributeElement);
+			}else if(attributes[i].getDisplayType().equals(DisplayType.DEFENSE)){
+				attributeElement = getAttributeElement(sagaPlayer, attributes[i], elementColor);
+				if(attributeElement.length() != 0)
+					defense.add(attributeElement);
+			}else if(attributes[i].getDisplayType().equals(DisplayType.HIDDEN)){
+				
+				
+			}else{
+				attributeElement = getAttributeElement(sagaPlayer, attributes[i], elementColor);
+				if(attributeElement.length() != 0)
+					other.add(attributeElement);
+			}
+		}
+		
+		// Loop trough projectile shot:
+		attributes = Saga.attributeInformation().projectileShotAttributes;
+		for (int i = 0; i < attributes.length; i++) {
+			if(attributes[i].getDisplayType().equals(DisplayType.OFFENCE)){
+				attributeElement = getAttributeElement(sagaPlayer, attributes[i], elementColor);
+				if(attributeElement.length() != 0)
+					offence.add(attributeElement);
+			}else if(attributes[i].getDisplayType().equals(DisplayType.DEFENSE)){
+				attributeElement = getAttributeElement(sagaPlayer, attributes[i], elementColor);
+				if(attributeElement.length() != 0)
+					defense.add(attributeElement);
+			}else if(attributes[i].getDisplayType().equals(DisplayType.HIDDEN)){
+				
+				
+			}else{
+				attributeElement = getAttributeElement(sagaPlayer, attributes[i], elementColor);
+				if(attributeElement.length() != 0)
+					other.add(attributeElement);
+			}
+		}
+		
+		// Add offense:
+		distrAttributes = offence;
+		if(distrAttributes.size() != 0 || true){
+			if(rString.length() != 0){
+				rString.append("\n");
+			}
+			rString.append("Offence: ");
+			for (int i = 0; i < distrAttributes.size(); i++) {
+				if(i != 0){
+					rString.append(", ");
+				}
+				rString.append(distrAttributes.get(i));
+			}
+		}
+		
+		// Add defense:
+		distrAttributes = defense;
+		if(distrAttributes.size() != 0 || true){
+			if(rString.length() != 0){
+				rString.append("\n");
+			}
+			rString.append("Defense: ");
+			for (int i = 0; i < distrAttributes.size(); i++) {
+				if(i != 0){
+					rString.append(", ");
+				}
+				rString.append(distrAttributes.get(i));
+			}
+		}
+		
+		// Add other:
+		distrAttributes = other;
+		if(distrAttributes.size() != 0){
+			if(rString.length() != 0){
+				rString.append("\n");
+			}
+			rString.append("Other: ");
+			for (int i = 0; i < distrAttributes.size(); i++) {
+				if(i != 0){
+					rString.append(", ");
+				}
+				rString.append(distrAttributes.get(i));
+			}
+		}
+		
+		// Add main color:
+		rString.insert(0, elementColor);
+		
+		return rString.toString();
 		
 		
 	}
 
-	
+	private static String getAttributeElement(SagaPlayer sagaPlayer, Attribute attribute, ChatColor messageColor){
+		
+		
+		Short upgrade = sagaPlayer.getAttributeUpgrade(attribute.getName());
+		Short temporaryUpgrade =  sagaPlayer.getAttributeTemporaryUpgrade(attribute.getName());;
+		ChatColor attributeColor = normalColor;
+		
+		// Ignore if the attribute is not present:
+		if(temporaryUpgrade == 0 && upgrade == 0){
+			return "";
+		}
+		
+		// Highlight:
+		if(temporaryUpgrade < 0){
+			attributeColor = negativeHighlightColor;
+		}else if(temporaryUpgrade > 0){
+			attributeColor = positiveHighlightColor;
+		}else{
+			attributeColor = messageColor;
+		}
+		
+		return attributeColor + attribute.getName(upgrade, temporaryUpgrade) + messageColor;
+		
+		
+	}
+
 	public static String professionStats(Profession profession) {
 
 		
-		ChatColor defaultColor = ChatColor.WHITE;
-		ChatColor levelNotHighEnoghColor = ChatColor.DARK_GRAY;
-		ChatColor abilityActiveColor = ChatColor.DARK_GREEN;
-		String frameHorisontal = "--------------------------------";
+		StringBuffer rString = new StringBuffer();
+		ChatColor messageColor = PlayerMessages.normalColor;
+		ChatColor levelColor = ChatColor.GOLD;
+		ChatColor abilitiesColor = ChatColor.YELLOW;
+		
+		// Level:
+		rString.append(levelColor);
+		rString.append("lvl"+profession.getLevel());
+		rString.append(" ");
+		rString.append(profession.getLevelExperience() + "/" + profession.getExperienceRequirement() + "exp");
+		rString.append(messageColor);
+		
+		rString.append("\n");
+		
+		// Abilities:
 		Ability[] abilities = profession.getAbilities();
-		
-		
-		String rString = "";
-		rString += capitalize(profession.getProfessionName() + " profession");
-		int frameShift = 2;
-		rString = frameHorisontal.substring(0, frameShift) + rString + frameHorisontal.substring(frameShift + rString.length()-2);
-		
-		Short level = profession.getLevel();
-		rString += "\n"+"lvl" + level +" with " + profession.getLevelExperience() + "/" + profession.getExperienceRequirement() + "exp";
-		for (int i = 0; i < profession.getAbilityCount(); i++) {
-			
-			String nameSuffix = "";
-			
-			rString += "\n";
-			String profLine = profession.getAbilityName(i);
-			ChatColor activeColor = defaultColor;
-			
-			if(profession.isAbilityActive(abilities[i])){
-				activeColor = abilityActiveColor;
-				if(nameSuffix.length()!=0){
-					nameSuffix+=", ";
-				}
-				nameSuffix+= "("+profession.getAbilityRemainingTime(abilities[i])+"s)";
+		for (int i = 0; i < abilities.length; i++) {
+			if(i != 0){
+				rString.append("\n");
 			}
-			
-			profLine += nameSuffix;
-			
-			if(profession.getAbilityLevelRequirement(i) > level){
-				activeColor = levelNotHighEnoghColor;
-				profLine += " (requires level "+profession.getAbilityLevelRequirement(i)+")";
-			}else{
-				profLine += ": " + Math.ceil(profession.getAbilityStaminaUse(i))+"st";
-			}
-			rString += activeColor + profLine;
-			
+			rString.append(getAbilityElement(profession, abilities[i], abilitiesColor));
 		}
-		rString += defaultColor;
-		rString += "\n"+frameHorisontal;
+		rString.append(messageColor);
 		
-		return rString;
+		// Add frame:
+		return frame(profession.getName() + " " + profession.getProfessionType().getName(), rString.toString(), messageColor);
 		
 		
 	}
 	
-	public static String attributeStats(SagaPlayer sagaPlayer, Attribute[] attributes) {
+	private static String getAbilityElement(Profession profession, Ability ability, ChatColor messageColor) {
+
 		
+		StringBuffer rString = new StringBuffer();
+		ChatColor abilityColor = messageColor;
 		
-		String rString = "";
+		// Add name:
+		rString.append(ability.getAbilityName());
 		
-		for (int i = 0; i < attributes.length; i++) {
-			String attributeName = attributes[i].getName();
-			Short upgradeValue = sagaPlayer.getAttributeUpgrade(attributeName);
-			Short temporaryUpgradeValue = sagaPlayer.getAttributeTemporaryUpgrade(attributeName);
-			if( !(upgradeValue == 0 && temporaryUpgradeValue == 0) ){
-				if(rString.length() > 0){
-					rString += ", ";
-				}
-				ChatColor elementColor;
-				if(temporaryUpgradeValue > 0){
-					elementColor = positiveHighlightColor;
-				}else if(temporaryUpgradeValue < 0){
-					elementColor = negativeHighlightColor;
-				}else{
-					elementColor = normalColor;
-				}
-				rString += elementColor + attributes[i].getName(upgradeValue, temporaryUpgradeValue) + normalColor;
-			}
-			
+		// Add stamina if level is high enough, requirement otherwise:
+		Short requiredLevel = ability.getLevelRequirement();
+		Short level = profession.getLevel();
+		if(level >= requiredLevel){
+			rString.append("("+ability.calculateStaminaUse(level)+"st)");
+		}else{
+			rString.append("(lvl"+requiredLevel+")");
+			abilityColor = unavailableHighlightColor;
 		}
 		
+		return abilityColor + rString.toString() + messageColor;
 		
-		return rString;
+		
 	}
+	
+	// Professions:
 	
 	public static String invalidProfession(String profession){
 		
@@ -466,7 +738,7 @@ public class PlayerMessages {
 	}
 	
 	public static String setLevelTo(String playerName, Profession profession , Short level){
-		return playerName + " "+ profession.getProfessionName() +" profession level set to " + level + ".";
+		return playerName + " "+ profession.getName() +" profession level set to " + level + ".";
 	}
 	
 	public static String levelLimitReached(Short level) {
@@ -488,6 +760,22 @@ public class PlayerMessages {
 
 		
 		String[] arrayMessage = Pattern.compile("\n").split(message);
+		
+		// Add lost colors after line brake:
+		int lastColorIndex = -1;
+		String colorString= "\u00A7";
+		String color = "";
+		for (int i = 1; i < arrayMessage.length; i++) {
+			lastColorIndex = arrayMessage[i-1].lastIndexOf(colorString);
+			if(lastColorIndex != -1 && (arrayMessage[i-1].length() - lastColorIndex - colorString.length()) >= 1 ){
+				color = arrayMessage[i-1].substring(lastColorIndex, lastColorIndex + colorString.length()+1);
+			}
+			if(color.length() != 0){
+				arrayMessage[i] = color + arrayMessage[i];
+			}
+			
+		}
+		
 		for (int i = 0; i < arrayMessage.length; i++) {
 			player.sendMessage(arrayMessage[i]);
 		}
@@ -495,7 +783,27 @@ public class PlayerMessages {
 		
 	}
 	
-	
+	private static String frame(String frameName, String message, ChatColor messageColor) {
+
+		
+		int frameShift = 2;
+		String frameHorisontal = "----------------------------------";
+		
+		StringBuffer rString = new StringBuffer();
+		rString.append(frameColor);
+		rString.append(frameHorisontal.substring(0, frameShift) + capitalize(frameName) + frameHorisontal.substring(frameShift + frameName.length()-2));
+		rString.append("\n");
+		rString.append(messageColor);
+		rString.append(message);
+		rString.append("\n");
+		rString.append(frameColor);
+		rString.append(frameHorisontal);
+		rString.append(messageColor);
+		
+		return rString.toString();
+		
+		
+	}
 	
 	
 	

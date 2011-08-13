@@ -30,9 +30,8 @@ public abstract class Profession {
 	/**
 	 * Profession name.
 	 */
-	transient private String professionName;
+	transient private String professionName = "";
 
-	
 	// Player information:
 	/**
 	 * Profession level.
@@ -77,17 +76,8 @@ public abstract class Profession {
 	 * @param professionName profession name
 	 */
 	public Profession(String professionName) {
-	
-		
-		// Set class name:
 		_className = getClass().getName();
- 		
-		
-		// Force all extending classes to provide a name:
 		this.professionName = professionName;
-		
-		
-		
 	}
 	
 	public Profession() {
@@ -112,7 +102,6 @@ public abstract class Profession {
 		
 		// Inheriting class:
 		completeExtended();
-
 		
 		// Initialize dependent fields:
 		abilities = getAbilities();
@@ -128,7 +117,6 @@ public abstract class Profession {
 	 * Does a complete for an extended classes.
 	 */
 	public abstract void completeExtended();
-	
 	
 	/**
 	 * Wraps all required variables.
@@ -149,12 +137,19 @@ public abstract class Profession {
 	 * 
 	 * @return the profession name
 	 */
-	public String getProfessionName(){
+	public String getName(){
 		
 		return professionName;
 		
 	}
 
+	/**
+	 * Returns profession type.
+	 * 
+	 * @return profession type
+	 */
+	public abstract ProfessionType getProfessionType();
+	
 	/**
 	 * Returns all abilities for the profession.
 	 * 
@@ -169,7 +164,7 @@ public abstract class Profession {
 	 * @return ability name
 	 * @throws IndexOutOfBoundsException when the given ability index is out of bounds
 	 */
-	public String getAbilityName(int ability) throws IndexOutOfBoundsException{
+	public String getAbilityName2222222(int ability) throws IndexOutOfBoundsException{
 		return abilities[ability].getAbilityName();
 	}
 	
@@ -298,7 +293,7 @@ public abstract class Profession {
 		
 		
 		// Retrieve attribute upgrades for the profession:
-		Hashtable<String, Short[]> upgrades = Saga.attributeInformation().getAttributeUpgrades(getProfessionName());
+		Hashtable<String, Short[]> upgrades = Saga.attributeInformation().getAttributeUpgrades(getName());
 		
 		// Loop trough all retrieved attributes:
 		Enumeration<String> allAttributeNames= upgrades.keys();
@@ -512,6 +507,41 @@ public abstract class Profession {
 	public abstract void abilityDeactivateEvent(Ability ability);
 	
 	
-	
+	/**
+	 * Profession type.
+	 * 
+	 * @author andf
+	 *
+	 */
+	public enum ProfessionType{
+		
+		NEITHER("neither"),
+		PROFESSION("profession"),
+		CLASS("class"),
+		SPECIALIZATION("specialization"),
+		ROLE("role");
+		
+		String name;
+		
+		/**
+		 * Sets name.
+		 * 
+		 * @param name name
+		 */
+		private ProfessionType(String name) {
+			this.name = name;
+		}
+		
+		/**
+		 * Returns the name for the type.
+		 * 
+		 * @return name
+		 */
+		public String getName() {
+			return name;
+		}
+		
+		
+	}
 	
 }

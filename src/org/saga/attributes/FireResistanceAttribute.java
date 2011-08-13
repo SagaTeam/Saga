@@ -19,7 +19,7 @@ public class FireResistanceAttribute extends Attribute {
 	 * 
 	 */
 	public FireResistanceAttribute() {
-		super(ATTRIBUTE_NAME);
+		super(ATTRIBUTE_NAME, DisplayType.DEFENSE);
 	}
 	
 	/* 

@@ -34,6 +34,10 @@ public class WoodcutterProfession extends Profession {
 	
 	
 	// Initialization:
+	/**
+	 * Used by gson.
+	 * 
+	 */
 	public WoodcutterProfession() {
 		
 		super(PROFESSION_NAME);
@@ -53,15 +57,14 @@ public class WoodcutterProfession extends Profession {
 		
 	}
 
-	
-	// Interaction:
 	/* 
 	 * (non-Javadoc)
-	 * @see org.saga.professions.Profession#getProfessionName()
+	 * 
+	 * @see org.saga.professions.Profession#getProfessionType()
 	 */
 	@Override
-	public String getProfessionName() {
-		return PROFESSION_NAME;
+	public ProfessionType getProfessionType() {
+		return ProfessionType.PROFESSION;
 	}
 	
 	@Override

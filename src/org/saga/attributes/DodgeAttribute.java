@@ -41,7 +41,7 @@ public class DodgeAttribute extends Attribute {
 	 * 
 	 */
 	public DodgeAttribute() {
-		super(ATTRIBUTE_NAME);
+		super(ATTRIBUTE_NAME, DisplayType.DEFENSE);
 	}
 	
 	/* 

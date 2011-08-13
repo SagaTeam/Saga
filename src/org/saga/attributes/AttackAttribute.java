@@ -52,7 +52,7 @@ public class AttackAttribute extends Attribute {
 	public AttackAttribute(String name, Material[] useMaterials, AttackedType attackedType, AttackType attackType) {
 		
 		
-		super(name);
+		super(name, DisplayType.OFFENCE);
 		this.useMaterials = useMaterials;
 		this.attackedType = attackedType;
 		this.attackType = attackType;
