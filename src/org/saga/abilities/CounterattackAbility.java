@@ -1,18 +1,16 @@
 package org.saga.abilities;
 
-import java.util.*;
-
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Player;
 import org.bukkit.event.entity.EntityDamageByEntityEvent;
-import org.saga.Saga;
+import org.saga.SagaPlayer;
+import org.saga.abilities.types.OnGotDamagedByLivingEntity;
 import org.saga.constants.PlayerMessages;
+import org.saga.professions.Profession;
 
-public class CounterattackAbility extends AbilityFunction{
+public class CounterattackAbility extends AbilityFunction implements OnGotDamagedByLivingEntity{
 
-	
-	private final String TEST_FIELD="TESTGOESHERE";
 	
 	/**
 	 * Ability name.
@@ -45,15 +43,13 @@ public class CounterattackAbility extends AbilityFunction{
 
 	
 	// Interaction:
-	/**
-	 * Uses counterattack. Deactivate the ability before you use it, otherwise it will cause endless
-	 * counterattack ping pong.
+	/* 
+	 * (non-Javadoc)
 	 * 
-	 * @param level level
-	 * @param event event
-	 * @return true, if the conditions were met for use
+	 * @see org.saga.abilities.types.UseOnGotDamagedByLivingEntity#use(java.lang.Short, org.saga.SagaPlayer, org.saga.professions.Profession, org.bukkit.event.entity.EntityDamageByEntityEvent)
 	 */
-	public boolean use(Short level, EntityDamageByEntityEvent event){
+	@Override
+	public void use(Short level, SagaPlayer sagaPlayer, Profession profession, EntityDamageByEntityEvent event){
 		
 		
 		Entity damager = event.getDamager();
@@ -61,7 +57,7 @@ public class CounterattackAbility extends AbilityFunction{
 		
 		// Return if the damager can't be damaged back:
 		if(!(damager instanceof LivingEntity)){
-			return false;
+			return;
 		}
 		
 		if(damager instanceof Player){
@@ -72,8 +68,6 @@ public class CounterattackAbility extends AbilityFunction{
 		}
 		
 		((LivingEntity) damager).damage(new Double(calculateFunctionValue(level) * event.getDamage()).intValue(), damaged);
-		
-		return true;
 		
 		
 	}

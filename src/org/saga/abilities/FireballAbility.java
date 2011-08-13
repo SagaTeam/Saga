@@ -1,8 +1,10 @@
 package org.saga.abilities;
 
 import org.saga.SagaPlayer;
+import org.saga.abilities.types.OnActivateAbility;
+import org.saga.professions.Profession;
 
-public class FireballAbility extends AbilityFunction {
+public class FireballAbility extends AbilityFunction implements OnActivateAbility{
 
 	
 	/**
@@ -17,7 +19,7 @@ public class FireballAbility extends AbilityFunction {
 	 */
 	public FireballAbility() {
 		
-        super(ABILITY_NAME, AbilityActivateType.SINGLE_USE);
+        super(ABILITY_NAME, AbilityActivateType.INSTANTANEOUS);
 	
 	}
 	
@@ -33,13 +35,12 @@ public class FireballAbility extends AbilityFunction {
 	}
 
 	
-	/**
-	 * Uses the ability
+	/* 
+	 * (non-Javadoc)
 	 * 
-	 * @param level level
-	 * @param sagaPlayer saga player
+	 * @see org.saga.abilities.types.OnActivateAbility#use(java.lang.Short, org.saga.SagaPlayer, org.saga.professions.Profession)
 	 */
-	public void use(Short level, SagaPlayer sagaPlayer) {
+	public void use(Short level, SagaPlayer sagaPlayer, Profession profession) {
 		
 		sagaPlayer.shootFireball(calculateFunctionValue(level));
 		

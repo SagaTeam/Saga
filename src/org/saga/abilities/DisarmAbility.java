@@ -4,14 +4,16 @@ import java.util.*;
 
 import org.bukkit.Material;
 import org.bukkit.entity.Entity;
-import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Player;
 import org.bukkit.event.entity.EntityDamageByEntityEvent;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.PlayerInventory;
+import org.saga.SagaPlayer;
+import org.saga.abilities.types.OnDamagedLivingEntity;
 import org.saga.constants.PlayerMessages;
+import org.saga.professions.Profession;
 
-public class DisarmAbility extends Ability{
+public class DisarmAbility extends Ability implements OnDamagedLivingEntity{
 
 	/**
 	 * Ability name.
@@ -34,14 +36,34 @@ public class DisarmAbility extends Ability{
 	transient final Random random = new Random();
 	
 	
+	/**
+	 * Used by gson.
+	 * 
+	 */
 	public DisarmAbility() {
 		
             super(ABILITY_NAME);
 		
 	}
-
 	
-	public boolean use(Short level, EntityDamageByEntityEvent event){
+	/* 
+	 * (non-Javadoc)
+	 * 
+	 * @see org.saga.abilities.Ability#completeExtended()
+	 */
+	@Override
+	public boolean completeExtended() {
+		return true;
+	}
+	
+	
+	/* 
+	 * (non-Javadoc)
+	 * 
+	 * @see org.saga.abilities.types.OnDamagedLivingEntity#use(java.lang.Short, org.saga.SagaPlayer, org.saga.professions.Profession, org.bukkit.event.entity.EntityDamageByEntityEvent)
+	 */
+	@Override
+	public void use(Short level, SagaPlayer sagaPlayer, Profession profession, EntityDamageByEntityEvent event){
 
 		
 		Entity damager = event.getDamager();
@@ -50,7 +72,7 @@ public class DisarmAbility extends Ability{
 		// Return if the damaged can't be disarmed:
 		if(!(damaged instanceof Player)){
 			((Player) damager).sendMessage(PlayerMessages.abilityUseFailedOn(damaged, this));
-			return false;
+			return;
 		}
 		
 		PlayerInventory inventory = ((Player)damaged).getInventory();
@@ -58,7 +80,7 @@ public class DisarmAbility extends Ability{
 		// Return if there is nothing to disarm:
 		if(inventory.getItemInHand().getType().equals(Material.AIR)){
 			System.out.println("nothing to disarm");
-			return true;
+			return;
 		}
 		
 		
@@ -86,7 +108,7 @@ public class DisarmAbility extends Ability{
 		}
 		
 		
-		return true;
+		return;
 		
 		
 	}
@@ -101,11 +123,5 @@ public class DisarmAbility extends Ability{
 		return new Double(SLOT_RANGE_MINIMUM + (SLOT_RANGE_MAXIMUM - SLOT_RANGE_MINIMUM) * random.nextDouble()).intValue();
 		
 	}
-		
-	@Override
-	public boolean completeExtended() {
-		return true;
-	}
-	
 	
 }

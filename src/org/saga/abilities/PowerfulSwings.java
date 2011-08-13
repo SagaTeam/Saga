@@ -1,17 +1,21 @@
 package org.saga.abilities;
 
 
+import java.util.Random;
+
 import org.bukkit.Material;
 import org.saga.SagaPlayer;
+import org.saga.abilities.types.OnActivateAbility;
 import org.saga.constants.PlayerMessages;
 import org.saga.pattern.SagaPatternBreakElement;
 import org.saga.pattern.SagaPatternLogicElement;
 import org.saga.pattern.SagaPatternElement;
 import org.saga.pattern.SagaPatternListElement;
 import org.saga.pattern.SagaPatternLogicElement.LogicAction;
+import org.saga.professions.Profession;
 
 
-public class PowerfulSwings extends AbilityFunction {
+public class PowerfulSwings extends AbilityFunction implements OnActivateAbility{
 
 	
 	/**
@@ -24,6 +28,11 @@ public class PowerfulSwings extends AbilityFunction {
 	 */
 	transient private static SagaPatternElement PATTERN = createPattern();
 
+	/**
+	 * Random generator.
+	 */
+	transient final Random random = new Random();
+	
 	
 	/**
 	 * Used by gson.
@@ -31,10 +40,9 @@ public class PowerfulSwings extends AbilityFunction {
 	 */
 	public PowerfulSwings() {
 		
-		super(ABILITY_NAME, AbilityActivateType.SINGLE_USE);
+		super(ABILITY_NAME, AbilityActivateType.INSTANTANEOUS);
 		
 	}
-	
 
 	/* 
 	 * (non-Javadoc)
@@ -51,18 +59,16 @@ public class PowerfulSwings extends AbilityFunction {
 	}
 	
 	
-	
-	/**
-	 * Uses the ability.
+	/* 
+	 * (non-Javadoc)
 	 * 
-	 * @param level level
-	 * @param sagaPlayer saga player
-	 * @param orthogonalFlip if true, there will be a orthogonal flip
+	 * @see org.saga.abilities.types.OnActivateAbility#use(java.lang.Short, org.saga.SagaPlayer, org.saga.professions.Profession)
 	 */
-	public void use(Short level, SagaPlayer sagaPlayer, boolean orthogonalFlip) {
+	@Override
+	public void use(Short level, SagaPlayer sagaPlayer, Profession profession) {
 		
 		
-		sagaPlayer.initiatePattern(PATTERN, (short) (level * calculateFunctionValue(level)), orthogonalFlip, 100);
+		sagaPlayer.initiatePattern(PATTERN, (short) (level * calculateFunctionValue(level)), random.nextBoolean(), 100);
 		
 		
 		sagaPlayer.sendMessage(PlayerMessages.usedAbility(this));

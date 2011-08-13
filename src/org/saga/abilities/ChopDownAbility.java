@@ -2,8 +2,9 @@ package org.saga.abilities;
 
 import org.bukkit.Location;
 import org.bukkit.Material;
-import org.bukkit.event.block.BlockBreakEvent;
+import org.bukkit.event.block.BlockDamageEvent;
 import org.saga.SagaPlayer;
+import org.saga.abilities.types.OnBlockDamage;
 import org.saga.constants.PlayerMessages;
 import org.saga.pattern.SagaPatternBreakElement;
 import org.saga.pattern.SagaPatternCheckElement;
@@ -13,8 +14,9 @@ import org.saga.pattern.SagaPatternLogicElement;
 import org.saga.pattern.SagaPatternSelectionMoveElement;
 import org.saga.pattern.SagaPatternLogicElement.LogicAction;
 import org.saga.pattern.SagaPatternLogicElement.LogicType;
+import org.saga.professions.Profession;
 
-public class ChopDownAbility extends AbilityFunction {
+public class ChopDownAbility extends AbilityFunction implements OnBlockDamage{
 
 	
 	/**
@@ -25,7 +27,7 @@ public class ChopDownAbility extends AbilityFunction {
 	/**
 	 * Pattern.
 	 */
-	transient private static SagaPatternElement PATTERN = createPattern2();
+	transient private static SagaPatternElement PATTERN = createPattern();
 
 	
 	/**
@@ -49,14 +51,13 @@ public class ChopDownAbility extends AbilityFunction {
 	}
 	
 
-	/**
-	 * Uses the ability.
+	/* 
+	 * (non-Javadoc)
 	 * 
-	 * @param level level
-	 * @param sagaPlayer saga player
-	 * @param orthogonalFlip if true, there will be a orthogonal flip
+	 * @see org.saga.abilities.types.UseOnBlockDamage#use(java.lang.Short, org.saga.SagaPlayer, org.saga.professions.Profession, org.bukkit.event.block.BlockDamageEvent)
 	 */
-	public void use(Short level, SagaPlayer sagaPlayer, BlockBreakEvent event) {
+	@Override
+	public void use(Short level, SagaPlayer sagaPlayer, Profession profession, BlockDamageEvent event) {
 		
 		Location target = event.getBlock().getLocation();
 		
@@ -71,7 +72,12 @@ public class ChopDownAbility extends AbilityFunction {
 		
 	}
 	
-	private static SagaPatternElement createPattern2(){
+	/**
+	 * Creates the pattern for the ability.
+	 * 
+	 * @return ability pattern
+	 */
+	private static SagaPatternElement createPattern(){
 		
 		
 		// At least eight leaves leaves:
@@ -162,6 +168,12 @@ public class ChopDownAbility extends AbilityFunction {
 		
 	}
 
+	/**
+	 * Support method for create pattern.
+	 * 
+	 * @param move
+	 * @return
+	 */
 	private static SagaPatternElement createBranchRemove(SagaPatternSelectionMoveElement move){
 		
 		
@@ -290,216 +302,7 @@ public class ChopDownAbility extends AbilityFunction {
 	}
 	
 	/**
-	 * Creates the pattern for the ability.
-	 * 
-	 * @return ability pattern
-	 */
-	private static SagaPatternElement createPattern(){
-		
-		
-		// Initiation:
-		SagaPatternListElement initiationList = new SagaPatternListElement();
-//		initiationList.addElement(new SagaPatternLogicElement(0, 0, 0, new Material[]{Material.LOG}, LogicAction.NTERMINATE)); // Don't terminate if a log is found.
-		
-//		
-//		
-//		// SE leaves:
-//		SagaPatternLogicElement leavesCheck = new SagaPatternLogicElement(LogicAction.NTERMINATE, LogicType.AND);
-//		leavesCheck.addElement(createLeavesCheckLine(new SagaPatternCheckElement(1, 0, 0, new Material[]{Material.LEAVES})));
-//		leavesCheck.addElement(createLeavesCheckLine(new SagaPatternCheckElement(1, 0, 1, new Material[]{Material.LEAVES})));
-//		leavesCheck.addElement(createLeavesCheckLine(new SagaPatternCheckElement(0, 0, 1, new Material[]{Material.LEAVES})));
-//		leavesCheck.addElement(createLeavesCheckLine(new SagaPatternCheckElement(-1, 0, 1, new Material[]{Material.LEAVES})));
-//		leavesCheck.addElement(createLeavesCheckLine(new SagaPatternCheckElement(-1, 0, 0, new Material[]{Material.LEAVES})));
-//		leavesCheck.addElement(createLeavesCheckLine(new SagaPatternCheckElement(-1, 0, -1, new Material[]{Material.LEAVES})));
-//		leavesCheck.addElement(createLeavesCheckLine(new SagaPatternCheckElement(0, 0, -1, new Material[]{Material.LEAVES})));
-//		leavesCheck.addElement(createLeavesCheckLine(new SagaPatternCheckElement(1, 0, -1, new Material[]{Material.LEAVES})));
-//		
-//		// No logs surrounding at the bottom:
-//		SagaPatternLogicElement eightLogsCheckElement = new SagaPatternLogicElement(LogicAction.NONE, LogicType.OR);
-//		eightLogsCheckElement.addElement(new SagaPatternCheckElement(1, 0, 0, new Material[]{Material.LOG}));
-//		eightLogsCheckElement.addElement(new SagaPatternCheckElement(1, 0, 1, new Material[]{Material.LOG}));
-//		eightLogsCheckElement.addElement(new SagaPatternCheckElement(0, 0, 1, new Material[]{Material.LOG}));
-//		eightLogsCheckElement.addElement(new SagaPatternCheckElement(-1, 0, 1, new Material[]{Material.LOG}));
-//		eightLogsCheckElement.addElement(new SagaPatternCheckElement(-1, 0, 0, new Material[]{Material.LOG}));
-//		eightLogsCheckElement.addElement(new SagaPatternCheckElement(-1, 0, -1, new Material[]{Material.LOG}));
-//		eightLogsCheckElement.addElement(new SagaPatternCheckElement(0, 0, -1, new Material[]{Material.LOG}));
-//		eightLogsCheckElement.addElement(new SagaPatternCheckElement(1, 0, -1, new Material[]{Material.LOG}));
-//		
-//		SagaPatternLogicElement trunkOutsideCheck = new SagaPatternLogicElement(LogicAction.TERMINATE, LogicType.OR);
-//		trunkOutsideCheck.addElement(eightLogsCheckElement); // 0
-//		trunkOutsideCheck.addElement(new SagaPatternSelectionMoveElement(0, 1, 0));
-//		trunkOutsideCheck.addElement(eightLogsCheckElement); // 1
-//		
-		// Main list:
-		SagaPatternListElement mainList = new SagaPatternListElement();
-		mainList.addElement(new SagaPatternBreakElement(0, 0, 0));
-		
-		// Up:
-		SagaPatternListElement upList = new SagaPatternListElement();
-		upList.addElement(new SagaPatternLogicElement(0, 1, 0, new Material[]{Material.LOG}, LogicAction.NBREAK)); // Don't break if a log is found.
-		upList.addElement(new SagaPatternSelectionMoveElement(0, 1, 0));
-		upList.addElement(mainList);
-		upList.addElement(new SagaPatternSelectionMoveElement(0, -1, 0));
-		
-//		// Up north:
-//		SagaPatternListElement upNorthList = new SagaPatternListElement();
-//		upNorthList.addElement(new SagaPatternLogicElement(-1, 1, 0, new Material[]{Material.LOG}, LogicAction.NBREAK)); // Don't break if a log is found.
-//		upNorthList.addElement(new SagaPatternSelectionMoveElement(-1, 1, 0));
-//		upNorthList.addElement(new SagaPatternBreakElement(0, 0, 0));
-//		upNorthList.addElement(mainList);
-//		upNorthList.addElement(new SagaPatternSelectionMoveElement(1, -1, 0));
-//		
-//		// Up north-east:
-//		SagaPatternListElement upNorthEastList = new SagaPatternListElement();
-//		upNorthEastList.addElement(new SagaPatternLogicElement(-1, 1, -1, new Material[]{Material.LOG}, LogicAction.NBREAK)); // Don't break if a log is found.
-//		upNorthEastList.addElement(new SagaPatternSelectionMoveElement(-1, 1, -1));
-//		upNorthEastList.addElement(new SagaPatternBreakElement(0, 0, 0));
-//		upNorthEastList.addElement(mainList);
-//		upNorthEastList.addElement(new SagaPatternSelectionMoveElement(1, -1, 1));
-//		
-//		// Up east:
-//		SagaPatternListElement upEastList = new SagaPatternListElement();
-//		upEastList.addElement(new SagaPatternLogicElement(0, 1, -1, new Material[]{Material.LOG}, LogicAction.NBREAK)); // Don't break if a log is found.
-//		upEastList.addElement(new SagaPatternSelectionMoveElement(0, 1, -1));
-//		upEastList.addElement(new SagaPatternBreakElement(0, 0, 0));
-//		upEastList.addElement(mainList);
-//		upEastList.addElement(new SagaPatternSelectionMoveElement(0, -1, 1));
-//		
-//		// Up south-east:
-//		SagaPatternListElement upSouthEastList = new SagaPatternListElement();
-//		upSouthEastList.addElement(new SagaPatternLogicElement(1, 1, -1, new Material[]{Material.LOG}, LogicAction.NBREAK)); // Don't break if a log is found.
-//		upSouthEastList.addElement(new SagaPatternSelectionMoveElement(1, 1, -1));
-//		upSouthEastList.addElement(new SagaPatternBreakElement(0, 0, 0));
-//		upSouthEastList.addElement(mainList);
-//		upSouthEastList.addElement(new SagaPatternSelectionMoveElement(-1, -1, 1));
-//		
-//		// Up south:
-//		SagaPatternListElement upSouthList = new SagaPatternListElement();
-//		upSouthList.addElement(new SagaPatternLogicElement(1, 1, 0, new Material[]{Material.LOG}, LogicAction.NBREAK)); // Don't break if a log is found.
-//		upSouthList.addElement(new SagaPatternSelectionMoveElement(1, 1, 0));
-//		upSouthList.addElement(new SagaPatternBreakElement(0, 0, 0));
-//		upSouthList.addElement(mainList);
-//		upSouthList.addElement(new SagaPatternSelectionMoveElement(-1, -1, 0));
-//		
-//		// Up south-west:
-//		SagaPatternListElement upSouthWestList = new SagaPatternListElement();
-//		upSouthWestList.addElement(new SagaPatternLogicElement(1, 1, 1, new Material[]{Material.LOG}, LogicAction.NBREAK)); // Don't break if a log is found.
-//		upSouthWestList.addElement(new SagaPatternSelectionMoveElement(1, 1, 1));
-//		upSouthWestList.addElement(new SagaPatternBreakElement(0, 0, 0));
-//		upSouthWestList.addElement(mainList);
-//		upSouthWestList.addElement(new SagaPatternSelectionMoveElement(-1, -1, -1));
-//		
-//		// Up west:
-//		SagaPatternListElement upWestList = new SagaPatternListElement();
-//		upWestList.addElement(new SagaPatternLogicElement(0, 1, 1, new Material[]{Material.LOG}, LogicAction.NBREAK)); // Don't break if a log is found.
-//		upWestList.addElement(new SagaPatternSelectionMoveElement(0, 1, 1));
-//		upWestList.addElement(new SagaPatternBreakElement(0, 0, 0));
-//		upWestList.addElement(mainList);
-//		upWestList.addElement(new SagaPatternSelectionMoveElement(0, -1, -1));
-//		
-//		// Up north-west:
-//		SagaPatternListElement upNorthWestList = new SagaPatternListElement();
-//		upNorthWestList.addElement(new SagaPatternLogicElement(-1, 1, 1, new Material[]{Material.LOG}, LogicAction.NBREAK)); // Don't break if a log is found.
-//		upNorthWestList.addElement(new SagaPatternSelectionMoveElement(-1, 1, 1));
-//		upNorthWestList.addElement(new SagaPatternBreakElement(0, 0, 0));
-//		upNorthWestList.addElement(mainList);
-//		upNorthWestList.addElement(new SagaPatternSelectionMoveElement(1, -1, -1));
-//		
-//		// North:
-//		SagaPatternListElement northList = new SagaPatternListElement();
-//		northList.addElement(new SagaPatternLogicElement(-1, 0, 0, new Material[]{Material.LOG}, LogicAction.NBREAK)); // Don't break if a log is found.
-//		northList.addElement(new SagaPatternSelectionMoveElement(-1, 0, 0));
-//		northList.addElement(new SagaPatternBreakElement(0, 0, 0));
-//		northList.addElement(mainList);
-//		northList.addElement(new SagaPatternSelectionMoveElement(1, 0, 0));
-//		
-//		// North-east:
-//		SagaPatternListElement northEastList = new SagaPatternListElement();
-//		northEastList.addElement(new SagaPatternLogicElement(-1, 0, -1, new Material[]{Material.LOG}, LogicAction.NBREAK)); // Don't break if a log is found.
-//		northEastList.addElement(new SagaPatternSelectionMoveElement(-1, 0, -1));
-//		northEastList.addElement(new SagaPatternBreakElement(0, 0, 0));
-//		northEastList.addElement(mainList);
-//		northEastList.addElement(new SagaPatternSelectionMoveElement(1, 0, 1));
-//		
-//		// East:
-//		SagaPatternListElement eastList = new SagaPatternListElement();
-//		eastList.addElement(new SagaPatternLogicElement(0, 0, -1, new Material[]{Material.LOG}, LogicAction.NBREAK)); // Don't break if a log is found.
-//		eastList.addElement(new SagaPatternSelectionMoveElement(0, 0, -1));
-//		eastList.addElement(new SagaPatternBreakElement(0, 0, 0));
-//		eastList.addElement(mainList);
-//		eastList.addElement(new SagaPatternSelectionMoveElement(0, 0, 1));
-//		
-//		// South-east:
-//		SagaPatternListElement southEastList = new SagaPatternListElement();
-//		southEastList.addElement(new SagaPatternLogicElement(1, 0, -1, new Material[]{Material.LOG}, LogicAction.NBREAK)); // Don't break if a log is found.
-//		southEastList.addElement(new SagaPatternSelectionMoveElement(1, 0, -1));
-//		southEastList.addElement(new SagaPatternBreakElement(0, 0, 0));
-//		southEastList.addElement(mainList);
-//		southEastList.addElement(new SagaPatternSelectionMoveElement(-1, 0, 1));
-//		
-//		// South:
-//		SagaPatternListElement southList = new SagaPatternListElement();
-//		southList.addElement(new SagaPatternLogicElement(1, 0, 0, new Material[]{Material.LOG}, LogicAction.NBREAK)); // Don't break if a log is found.
-//		southList.addElement(new SagaPatternSelectionMoveElement(1, 0, 0));
-//		southList.addElement(new SagaPatternBreakElement(0, 0, 0));
-//		southList.addElement(mainList);
-//		southList.addElement(new SagaPatternSelectionMoveElement(-1, 0, 0));
-//		
-//		// South-west:
-//		SagaPatternListElement southWestList = new SagaPatternListElement();
-//		southWestList.addElement(new SagaPatternLogicElement(1, 0, 1, new Material[]{Material.LOG}, LogicAction.NBREAK)); // Don't break if a log is found.
-//		southWestList.addElement(new SagaPatternSelectionMoveElement(1, 0, 1));
-//		southWestList.addElement(new SagaPatternBreakElement(0, 0, 0));
-//		southWestList.addElement(mainList);
-//		southWestList.addElement(new SagaPatternSelectionMoveElement(-1, 0, -1));
-//		
-//		// West:
-//		SagaPatternListElement westList = new SagaPatternListElement();
-//		westList.addElement(new SagaPatternLogicElement(0, 0, 1, new Material[]{Material.LOG}, LogicAction.NBREAK)); // Don't break if a log is found.
-//		westList.addElement(new SagaPatternSelectionMoveElement(0, 0, 1));
-//		westList.addElement(new SagaPatternBreakElement(0, 0, 0));
-//		westList.addElement(mainList);
-//		westList.addElement(new SagaPatternSelectionMoveElement(0, 0, -1));
-//		
-//		// North-west:
-//		SagaPatternListElement northWestList = new SagaPatternListElement();
-//		northWestList.addElement(new SagaPatternLogicElement(-1, 0, 1, new Material[]{Material.LOG}, LogicAction.NBREAK)); // Don't break if a log is found.
-//		northWestList.addElement(new SagaPatternSelectionMoveElement(-1, 0, 1));
-//		northWestList.addElement(new SagaPatternBreakElement(0, 0, 0));
-//		northWestList.addElement(mainList);
-//		northWestList.addElement(new SagaPatternSelectionMoveElement(1, 0, -1));
-//		
-		// Put everything together:
-//		initiationList.addElement(trunkOutsideCheck);
-//		initiationList.addElement(leavesCheck);
-		initiationList.addElement(mainList);
-		
-//		mainList.addElement(northList);
-//		mainList.addElement(northEastList);
-//		mainList.addElement(eastList);
-//		mainList.addElement(southEastList);
-//		mainList.addElement(southList);
-//		mainList.addElement(southWestList);
-//		mainList.addElement(westList);
-//		mainList.addElement(northWestList);
-//		
-//		mainList.addElement(upNorthList);
-//		mainList.addElement(upNorthEastList);
-//		mainList.addElement(upEastList);
-//		mainList.addElement(upSouthEastList);
-//		mainList.addElement(upSouthList);
-//		mainList.addElement(upSouthWestList);
-//		mainList.addElement(upWestList);
-//		mainList.addElement(upNorthWestList);
-		mainList.addElement(upList);
-				
-		return initiationList;
-		
-		
-	}
-	
-	/**
-	 * Support method for create pattern
+	 * Support method for create pattern.
 	 * 
 	 * @param scrollElement scroll element
 	 * @return leaves stripe

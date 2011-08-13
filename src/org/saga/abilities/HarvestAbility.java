@@ -3,14 +3,16 @@ package org.saga.abilities;
 import org.bukkit.Material;
 import org.bukkit.material.MaterialData;
 import org.saga.SagaPlayer;
+import org.saga.abilities.types.OnActivateAbility;
 import org.saga.constants.PlayerMessages;
 import org.saga.pattern.SagaPatternBreakElement;
 import org.saga.pattern.SagaPatternElement;
 import org.saga.pattern.SagaPatternListElement;
 import org.saga.pattern.SagaPatternLogicElement;
 import org.saga.pattern.SagaPatternLogicElement.LogicAction;
+import org.saga.professions.Profession;
 
-public class HarvestAbility extends AbilityFunction {
+public class HarvestAbility extends AbilityFunction implements OnActivateAbility{
 
 	
 	/**
@@ -30,7 +32,7 @@ public class HarvestAbility extends AbilityFunction {
 	 */
 	public HarvestAbility() {
 		
-        super(ABILITY_NAME, AbilityActivateType.SINGLE_USE);
+        super(ABILITY_NAME, AbilityActivateType.INSTANTANEOUS);
 	
 	}
 
@@ -45,13 +47,13 @@ public class HarvestAbility extends AbilityFunction {
 	}
 	
 
-	/**
-	 * Uses the ability.
+	/* 
+	 * (non-Javadoc)
 	 * 
-	 * @param level level
-	 * @param sagaPlayer saga player
+	 * @see org.saga.abilities.types.OnActivateAbility#use(java.lang.Short, org.saga.SagaPlayer, org.saga.professions.Profession)
 	 */
-	public void use(Short level, SagaPlayer sagaPlayer) {
+	@Override
+	public void use(Short level, SagaPlayer sagaPlayer, Profession profession) {
 		
 		
 		sagaPlayer.initiatePattern(PATTERN, (short) (level * calculateFunctionValue(level)), false, 100);

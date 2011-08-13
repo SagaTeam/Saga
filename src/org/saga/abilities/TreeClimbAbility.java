@@ -6,6 +6,7 @@ import org.bukkit.block.Block;
 import org.bukkit.block.BlockFace;
 import org.bukkit.event.block.BlockDamageEvent;
 import org.saga.SagaPlayer;
+import org.saga.abilities.types.OnBlockDamage;
 import org.saga.constants.BlockConstants;
 import org.saga.constants.PlayerMessages;
 import org.saga.pattern.SagaPatternCheckElement;
@@ -15,8 +16,9 @@ import org.saga.pattern.SagaPatternLogicElement;
 import org.saga.pattern.SagaPatternSelectionMoveElement;
 import org.saga.pattern.SagaPatternLogicElement.LogicAction;
 import org.saga.pattern.SagaPatternLogicElement.LogicType;
+import org.saga.professions.Profession;
 
-public class TreeClimbAbility extends AbilityFunction {
+public class TreeClimbAbility extends AbilityFunction implements OnBlockDamage{
 
 	
 	/**
@@ -35,19 +37,35 @@ public class TreeClimbAbility extends AbilityFunction {
 	transient private SagaPatternLogicElement ACTIVATE_CHECK_PATTERN_DOWN = createActivateCheckPattern(false);
 	
 	
+	/**
+	 * Used by gson.
+	 * 
+	 */
 	public TreeClimbAbility() {
-		super(ABILITY_NAME, AbilityActivateType.SINGLE_USE);
+		super(ABILITY_NAME, AbilityActivateType.INSTANTANEOUS);
 	}
 	
+	/* 
+	 * (non-Javadoc)
+	 * 
+	 * @see org.saga.abilities.AbilityFunction#completeSecondExtended()
+	 */
 	@Override
 	protected boolean completeSecondExtended() {
 		return true;
 	}
 
-	public void use(Short level, SagaPlayer sagaPlayer, BlockDamageEvent event) {
+	
+	/* 
+	 * (non-Javadoc)
+	 * 
+	 * @see org.saga.abilities.types.OnBlockDamage#use(java.lang.Short, org.saga.SagaPlayer, org.saga.professions.Profession, org.bukkit.event.block.BlockDamageEvent)
+	 */
+	@Override
+	public void use(Short level, SagaPlayer sagaPlayer, Profession profession, BlockDamageEvent event) {
 
 		
-		int blockLimit=60;
+		int blockLimit=30;
 		Block targetedBlock = event.getBlock();
 		Location location = null;
 		Short patternLevel = new Double(level * calculateFunctionValue(level)).shortValue();
@@ -256,5 +274,6 @@ public class TreeClimbAbility extends AbilityFunction {
 		
 
 	}
+	
 	
 }

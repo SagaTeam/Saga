@@ -1,8 +1,9 @@
 package org.saga.abilities;
 
 import org.saga.Saga;
+import org.saga.abilities.types.OnAbility;
 
-public abstract class Ability {
+public abstract class Ability implements OnAbility{
 
 	
 	/**
@@ -103,7 +104,6 @@ public abstract class Ability {
 		_className = getClass().getName();
 	}
 	
-	
 	/**
 	 * Goes trough all the fields and makes sure everything has been set after gson load.
 	 * If not, it fills the field with defaults.
@@ -179,6 +179,7 @@ public abstract class Ability {
 	 */
 	public abstract boolean completeExtended();
 	
+	
 	/**
 	 * Gets the minimum required level.
 	 * 
@@ -244,6 +245,16 @@ public abstract class Ability {
 		return abilityName;
 	}
 	
+	/* 
+	 * (non-Javadoc)
+	 * 
+	 * @see org.saga.abilities.types.UseOnAbility#getAbility()
+	 */
+	@Override
+	public Ability getAbility() {
+		return this;
+	}
+	
 	/**
 	 * Gets ability activate type.
 	 * 
@@ -278,7 +289,7 @@ public abstract class Ability {
 	public enum AbilityActivateType{
 		
 		TIMER,
-		SINGLE_USE,
+		INSTANTANEOUS,
 		TOGGLE;
 		
 	}
