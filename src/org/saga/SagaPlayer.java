@@ -183,7 +183,8 @@ public class SagaPlayer{
 		
 	}
 	
-	// Interaction:
+	
+	// Player entity management:
 	/**
 	 * Returns player name.
 	 * 
@@ -199,7 +200,7 @@ public class SagaPlayer{
 	 * @param name player name
 	 */
 	private void setName(String name) {
-            this.name = name;
+		this.name = name;
 	}
 	
 	/**
@@ -222,37 +223,8 @@ public class SagaPlayer{
 		isOnlinePlayer = false;
 	}
 	
-	/**
-	 * Checks if there is enough stamina.
-	 * 
-	 * @param staminaSubs Stamina to be subtracted.
-	 * @return true if there is enough stamina
-	 */
-	public boolean enoughStamina(Double staminaSubtr) {
-		return stamina>=staminaSubtr;
-	}
 	
-	/**
-	 * Uses stamina and sends a message. Can go below zero.
-	 * 
-	 * @param useAmount use amount
-	 */
-	public void useStamina(Double useAmount) {
-
-		stamina -= useAmount;
-		sendMessage(PlayerMessages.staminaUsed(useAmount, getStamina(), getMaximumStamina()));
-		
-	}
-	
-	/**
-	 * Gets stamina.
-	 * 
-	 * @return stamina
-	 */
-	public Double getStamina() {
-		return stamina;
-	}
-	
+	// Health:
 	/**
 	 * Returns player health.
 	 * 
@@ -267,49 +239,7 @@ public class SagaPlayer{
 		}
 		
 	}
-	
-	/**
-	 * Gets players maximum stamina. Including bonuses.
-	 * 
-	 * @return player maximum stamina
-	 */
-	public double getMaximumStamina() {
-		
-		return Saga.balanceInformation().maximumStamina+0;
 
-	}
-	
-	/**
-	 * Check if there is enough stamina to drain.
-	 * 
-	 * @param drainAmount drain amount
-	 * @return true if there is enough stamina.
-	 */
-	public boolean enoughStamina(double drainAmount) {
-
-		return stamina>=drainAmount;
-		
-	}
-	
-	/**
-	 * Regenerates stamina.
-	 */
-	private void naturalStaminaRegenerate() {
-		
-		
-		if(stamina >= getMaximumStamina()){
-			return;
-		}
-		stamina += Saga.balanceInformation().staminaPerSecond;
-		if(stamina > getMaximumStamina()){
-			stamina = getMaximumStamina();
-		}
-		if(((int)(stamina - Saga.balanceInformation().staminaPerSecond)/10) != (int)(stamina/10)){
-			sendMessage(PlayerMessages.staminaRegeneration(stamina, getMaximumStamina()));
-		}
-
-	}
-	
 	/**
 	 * Regenerates health. Doesen't send a message.
 	 * 
@@ -358,158 +288,73 @@ public class SagaPlayer{
 		
 	}
 	
+	
+	// Stamina:
 	/**
-	 * Sends the player a message if he is online.
+	 * Gets stamina.
 	 * 
-	 * @param message
+	 * @return stamina
 	 */
-	public void sendMessage(String message) {
+	public Double getStamina() {
+		return stamina;
+	}
+	
+	/**
+	 * Gets players maximum stamina. Including bonuses.
+	 * 
+	 * @return player maximum stamina
+	 */
+	public double getMaximumStamina() {
 		
-            if(isOnlinePlayer()){
-            	PlayerMessages.sendMultipleLines(message, player);
-            }
+		return Saga.balanceInformation().maximumStamina+0;
 
 	}
 	
 	/**
-	 * Moves the player to the given location.
-	 * Must be used when the teleport is part of an ability.
+	 * Check if there is enough stamina to drain.
 	 * 
-	 * @param location location
+	 * @param drainAmount drain amount
+	 * @return true if there is enough stamina.
 	 */
-	public void moveTo(Location location) {
+	public boolean enoughStamina(double drainAmount) {
 
-		if(isOnlinePlayer()){
-        	player.teleport(location);
-        }
+		return stamina >= drainAmount;
 		
 	}
 	
 	/**
-	 * Centers the location to the block and moves the player there.
+	 * Uses stamina and sends a message. Can go below zero.
 	 * 
-	 * @param location location
+	 * @param useAmount use amount
 	 */
-	public void moveToCentered(Location location) {
-		
-		moveTo(location.add(0.5, 0, 0.5));
-	}
-	
-	/**
-	 * Puts a player on the given blocks center.
-	 * 
-	 * @param locationBlock block the player will be placed on
-	 */
-	public void moveToBlockCentered(Block locationBlock) {
-		moveToCentered(locationBlock.getRelative(BlockFace.UP).getLocation());
-	}
-	
-	/**
-	 * Initiates a pattern. Location is set to player eye location.
-	 * 
-	 * @param patternElement pattern element
-	 * @param patternLevel pattern level
-	 * @param orthogonalFlip if true, then the pattern will have a flip orthogonal to where the player is facing
-	 * @param blockLimit block limit to not let things out of control
-	 * @return true if there is a termination
-	 */
-	public boolean initiatePattern(SagaPatternElement patternElement, Short patternLevel, boolean orthogonalFlip, int blockLimit) {
-		
+	public void useStamina(Double useAmount) {
 
-		// Initiate only of the player is online:
-		if(isOnlinePlayer){
-			SagaPatternInitiator initiator = new SagaPatternInitiator(blockLimit, patternElement);
-			return initiator.initiateForPlayer(player.getEyeLocation(), calculatePlayerHorizontalDirection(), patternLevel, orthogonalFlip);
-		}
-		return true;
+		stamina -= useAmount;
+		sendMessage(PlayerMessages.staminaUsed(useAmount, getStamina(), getMaximumStamina()));
 		
 	}
 	
 	/**
-	 * Initiates a pattern from a target block.
-	 * 
-	 * @param location target
-	 * @param patternElement pattern element
-	 * @param patternLevel pattern level
-	 * @param orthogonalFlip if true, then the pattern will have a flip orthogonal to where the player is facing
-	 * @param blockLimit block limit to not let things out of control
-	 * @return true if there is a termination
-	 * 
+	 * Regenerates stamina.
 	 */
-	public boolean initiatePatternTarget(Location location, SagaPatternElement patternElement, Short patternLevel, boolean orthogonalFlip, int blockLimit) {
+	private void naturalStaminaRegenerate() {
 		
+		
+		if(stamina >= getMaximumStamina()){
+			return;
+		}
+		stamina += Saga.balanceInformation().staminaPerSecond;
+		if(stamina > getMaximumStamina()){
+			stamina = getMaximumStamina();
+		}
+		if(((int)(stamina - Saga.balanceInformation().staminaPerSecond)/10) != (int)(stamina/10)){
+			sendMessage(PlayerMessages.staminaRegeneration(stamina, getMaximumStamina()));
+		}
 
-		// Initiate only of the player is online:
-		if(isOnlinePlayer){
-			SagaPatternInitiator initiator = new SagaPatternInitiator(blockLimit, patternElement);
-			return initiator.initiateForPlayer(location, 0*calculatePlayerHorizontalDirection(), patternLevel, orthogonalFlip);
-		}
-		return true;
-		
-		
 	}
-	
-	/**
-	 * Calculates the player horizontal facing direction.
-	 * 
-	 * @return facing direction. 0 if not online
-	 */
-	public int calculatePlayerHorizontalDirection(){
-		
-		
-		if(!isOnlinePlayer()){
-			return 0;
-		}
-		
-		Location playerLocation = player.getEyeLocation();
-		double yaw = playerLocation.getYaw();
-		if( (yaw >= 315.0 && yaw <= 45.0) || (yaw >= -45.0 && yaw <= -315.0) ){
-			return 0;
-		}
-		if( (yaw >= 45.0 && yaw <= 135.0) || (yaw >= -315.0 && yaw <= -225.0) ){
-			return 1;
-		}
-		if( (yaw >= 135.0 && yaw <= 225.0) || (yaw >= -225.0 && yaw <= -135.0) ){
-			return 2;
-		}if( (yaw >= 225.0 && yaw <= 315.0) || (yaw >= -135.0 && yaw <= -45.0) ){
-			return 3;
-		}
-		return 0;
 
-		
-	}
 	
-	/**
-	 * Calculates player vertical facing direction.
-	 * 
-	 * @return true if facing up or not online
-	 */
-	public boolean calculatePlayerVerticalDirection() {
-		
-		
-		if(!isOnlinePlayer()){
-			return true;
-		}
-		
-		float pitch = player.getLocation().getPitch();
-		if(pitch>0){
-			return false;
-		}else{
-			return true;
-		}
-		
-		
-	}
-	
-	/**
-	 * Returns players professions.
-	 * 
-	 * @return players professions
-	 */
-	public Profession[] getProfessions() {
-		return professions;
-	}
-	
+	// Abilities:
 	/**
 	 * Deactivates an ability if possible.
 	 * 
@@ -539,6 +384,8 @@ public class SagaPlayer{
 		
 	}
 	
+	
+	// Attributes:
 	/**
 	 * Modifies an attribute. Should be only used for permanent modifications by professions.
 	 * 
@@ -626,6 +473,235 @@ public class SagaPlayer{
 		
 	}
 	
+	
+	// Player notification:
+	/**
+	 * Sends the player a message.
+	 * 
+	 * @param message message
+	 */
+	public void sendMessage(String message) {
+		
+            if(isOnlinePlayer()){
+            	PlayerMessages.sendMultipleLines(message, player);
+            }
+
+	}
+
+	/**
+	 * Plays an effect for the player.
+	 * 
+	 * @param effect effect
+	 * @param value effect value
+	 */
+	public void playEffect(Effect effect, int value) {
+
+		
+		// Ignore if the player isn't online:
+		if(!isOnlinePlayer()){
+			return;
+		}
+		
+		player.playEffect(player.getEyeLocation(), effect, value);
+		
+		
+	}
+
+	
+	// Teleport and patterns:
+	/**
+	 * Moves the player to the given location.
+	 * Must be used when the teleport is part of an ability.
+	 * 
+	 * @param location location
+	 */
+	public void moveTo(Location location) {
+
+		if(isOnlinePlayer()){
+        	player.teleport(location);
+        }
+		
+	}
+	
+	/**
+	 * Centers the location to the block and moves the player there.
+	 * 
+	 * @param location location
+	 */
+	public void moveToCentered(Location location) {
+		
+		moveTo(location.add(0.5, 0, 0.5));
+	}
+	
+	/**
+	 * Puts a player on the given blocks center.
+	 * 
+	 * @param locationBlock block the player will be placed on
+	 */
+	public void moveToBlockCentered(Block locationBlock) {
+		moveToCentered(locationBlock.getRelative(BlockFace.UP).getLocation());
+	}
+	
+	/**
+	 * Initiates a pattern. Location is set to player eye location.
+	 * 
+	 * @param patternElement pattern element
+	 * @param patternLevel pattern level
+	 * @param orthogonalFlip if true, then the pattern will have a flip orthogonal to where the player is facing
+	 * @param blockLimit block limit to not let things out of control
+	 * @return true if there is a termination
+	 */
+	public boolean initiatePattern(SagaPatternElement patternElement, Short patternLevel, boolean orthogonalFlip, int blockLimit) {
+		
+
+		// Initiate only of the player is online:
+		if(isOnlinePlayer){
+			SagaPatternInitiator initiator = new SagaPatternInitiator(blockLimit, patternElement);
+			return initiator.initiateForPlayer(player.getEyeLocation(), calculatePlayerHorizontalDirection(), patternLevel, orthogonalFlip);
+		}
+		return true;
+		
+		
+	}
+	
+	/**
+	 * Initiates a pattern from a target block.
+	 * 
+	 * @param location target
+	 * @param patternElement pattern element
+	 * @param patternLevel pattern level
+	 * @param orthogonalFlip if true, then the pattern will have a flip orthogonal to where the player is facing
+	 * @param blockLimit block limit to not let things out of control
+	 * @return true if there is a termination
+	 * 
+	 */
+	public boolean initiatePatternTarget(Location location, SagaPatternElement patternElement, Short patternLevel, boolean orthogonalFlip, int blockLimit) {
+		
+
+		// Initiate only of the player is online:
+		if(isOnlinePlayer){
+			SagaPatternInitiator initiator = new SagaPatternInitiator(blockLimit, patternElement);
+			return initiator.initiateForPlayer(location, 0*calculatePlayerHorizontalDirection(), patternLevel, orthogonalFlip);
+		}
+		return true;
+		
+		
+	}
+	
+	/**
+	 * Calculates the player horizontal facing direction.
+	 * 
+	 * @return facing direction. 0 if not online
+	 */
+	public int calculatePlayerHorizontalDirection(){
+		
+		
+		if(!isOnlinePlayer()){
+			return 0;
+		}
+		
+		Location playerLocation = player.getEyeLocation();
+		double yaw = playerLocation.getYaw();
+		if( (yaw >= 315.0 && yaw <= 45.0) || (yaw >= -45.0 && yaw <= -315.0) ){
+			return 0;
+		}
+		if( (yaw >= 45.0 && yaw <= 135.0) || (yaw >= -315.0 && yaw <= -225.0) ){
+			return 1;
+		}
+		if( (yaw >= 135.0 && yaw <= 225.0) || (yaw >= -225.0 && yaw <= -135.0) ){
+			return 2;
+		}if( (yaw >= 225.0 && yaw <= 315.0) || (yaw >= -135.0 && yaw <= -45.0) ){
+			return 3;
+		}
+		return 0;
+
+		
+	}
+	
+	/**
+	 * Calculates player vertical facing direction.
+	 * 
+	 * @return true if facing up or not online
+	 */
+	public boolean calculatePlayerVerticalDirection() {
+		
+		
+		if(!isOnlinePlayer()){
+			return true;
+		}
+		
+		float pitch = player.getLocation().getPitch();
+		if(pitch>0){
+			return false;
+		}else{
+			return true;
+		}
+		
+		
+	}
+	
+	// Projectile ability and attribute use:
+
+	/**
+	 * Shoots a fireball.
+	 * 
+	 * @param accuracy accuracy. Can be in the range 0-10
+	 */
+	public void shootFireball(Double accuracy) {
+
+		
+		// Ignore if the player isn't online:
+		if(!isOnlinePlayer()){
+			return;
+		}
+		
+		// Limit the accuracy to 0-10:
+		if(accuracy < 0.0){
+			accuracy = 0.0;
+		}
+		if(accuracy > 10.0){
+			accuracy = 10.0;
+		}
+		
+		EntityLiving shooter = ((CraftPlayer)player).getHandle();
+		WorldServer serverWorld = ((CraftWorld) player.getWorld()).getHandle();
+		Location shootLocation = player.getEyeLocation();
+
+		double startDistance = 3;
+		Vector aimVector = shootLocation.getDirection();
+		
+		shootLocation.add(aimVector.getX() * startDistance, aimVector.getY() * startDistance, aimVector.getZ() * startDistance);
+		EntityFireball fireball = new EntityFireball(serverWorld, shooter, aimVector.getX() * accuracy, aimVector.getY() * accuracy, aimVector.getZ() * accuracy);
+		fireball.getBukkitEntity().teleport(shootLocation);
+		serverWorld.addEntity(fireball);
+		
+		// Send the event:
+		SagaPlayerProjectileShotEvent event = new SagaPlayerProjectileShotEvent(this, ProjectileType.FIREBALL, 0);
+		Saga.playerListener().onSagaPlayerProjectileShot(event);
+		
+		// Cancel the event if needed:
+		if(event.isCancelled()){
+			fireball.getBukkitEntity().remove();
+			return;
+		}
+		
+		// Limit the speed to 0-4:
+		double speed = event.getSpeed();
+		if(speed < 0){
+			speed = 0;
+		}
+		if(speed > 4){
+			speed = 4;
+		}
+		
+		// Set speed:
+		fireball.getBukkitEntity().setVelocity(aimVector.multiply(speed));
+		
+		
+	}
+	
+	
+	// Other ability and attribute use:
 	/**
 	 * Tries to dodge.
 	 * 
@@ -726,26 +802,7 @@ public class SagaPlayer{
 		
 		
 	}
-	
-	/**
-	 * Plays an effect for the player.
-	 * 
-	 * @param effect effect
-	 * @param value effect value
-	 */
-	public void playEffect(Effect effect, int value) {
 
-		
-		// Ignore if the player isn't online:
-		if(!isOnlinePlayer()){
-			return;
-		}
-		
-		player.playEffect(player.getEyeLocation(), effect, value);
-		
-		
-	}
-	
 	/**
 	 * Checks if the location can be jumped to. Requires a surface under feet.
 	 * 
@@ -768,68 +825,16 @@ public class SagaPlayer{
 		
 		
 	}
+
 	
+	// General access:
 	/**
-	 * Shoots a fireball.
+	 * Returns players professions.
 	 * 
-	 * @param accuracy accuracy. Can be in the range 0-10
+	 * @return players professions
 	 */
-	public void shootFireball(Double accuracy) {
-
-		
-		// Ignore if the player isn't online:
-		if(!isOnlinePlayer()){
-			return;
-		}
-		
-		// Limit the accuracy to 0-10:
-		if(accuracy < 0.0){
-			accuracy = 0.0;
-		}
-		if(accuracy > 10.0){
-			accuracy = 10.0;
-		}
-		
-		
-		EntityLiving shooter = ((CraftPlayer)player).getHandle();
-		WorldServer serverWorld = ((CraftWorld) player.getWorld()).getHandle();
-		Location shootLocation = player.getEyeLocation();
-		
-
-		double startDistance = 3;
-		Vector aimVector = shootLocation.getDirection();
-		
-		
-		shootLocation.add(aimVector.getX() * startDistance, aimVector.getY() * startDistance, aimVector.getZ() * startDistance);
-		EntityFireball fireball = new EntityFireball(serverWorld, shooter, aimVector.getX() * accuracy, aimVector.getY() * accuracy, aimVector.getZ() * accuracy);
-		fireball.getBukkitEntity().teleport(shootLocation);
-		serverWorld.addEntity(fireball);
-		
-		
-		// Send the event:
-		SagaPlayerProjectileShotEvent event = new SagaPlayerProjectileShotEvent(this, ProjectileType.FIREBALL, 0);
-		Saga.playerListener().onSagaPlayerProjectileShot(event);
-		
-		// Cancel the event if needed:
-		if(event.isCancelled()){
-			fireball.getBukkitEntity().remove();
-			return;
-		}
-		
-		// Limit the speed to 0-4:
-		double speed = event.getSpeed();
-		if(speed < 0){
-			speed = 0;
-		}
-		if(speed > 4){
-			speed = 4;
-		}
-		
-		// Set speed:
-		fireball.getBukkitEntity().setVelocity(aimVector.multiply(speed));
-		
-		
-		
+	public Profession[] getProfessions() {
+		return professions;
 	}
 	
 	
@@ -1136,28 +1141,34 @@ public class SagaPlayer{
             this.isSavingEnabled = savingDisabled;
 	}
 
-        public void info(String message) {
+	
+	// Debuging:
+	public void info(String message) {
 
-            if ( isOnlinePlayer() ) {
-                this.player.sendMessage(PlayerMessages.infoColor + message);
-            }
-
+    	
+        if ( isOnlinePlayer() ) {
+            this.player.sendMessage(PlayerMessages.infoColor + message);
         }
 
-        public void warning(String message) {
+        
+    }
 
-            if ( isOnlinePlayer() ) {
-                this.player.sendMessage(PlayerMessages.warningColor + message);
-            }
+    public void warning(String message) {
 
+        if ( isOnlinePlayer() ) {
+            this.player.sendMessage(PlayerMessages.warningColor + message);
         }
 
-        public void severe(String message) {
+    }
 
-            if ( isOnlinePlayer() ) {
-                this.player.sendMessage(PlayerMessages.warningColor + message);
-            }
+    public void severe(String message) {
 
+        if ( isOnlinePlayer() ) {
+            this.player.sendMessage(PlayerMessages.warningColor + message);
         }
 
+    }
+
+	
+	
 }
