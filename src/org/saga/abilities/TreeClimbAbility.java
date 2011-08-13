@@ -88,7 +88,7 @@ public class TreeClimbAbility extends AbilityFunction {
 			sagaPlayer.sendMessage(PlayerMessages.usedAbility(this));
 			sagaPlayer.moveToCentered(location);
 		}else{
-			sagaPlayer.sendMessage(PlayerMessages.invalidAbilityUse(this));
+			sagaPlayer.sendMessage(PlayerMessages.abilityInvalidUse(this));
 		}
 		
 		

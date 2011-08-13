@@ -65,7 +65,7 @@ public class ChopDownAbility extends AbilityFunction {
 		termination = sagaPlayer.initiatePatternTarget(target, PATTERN, (short) (level * calculateFunctionValue(level)), false, 50);
 		sagaPlayer.sendMessage(PlayerMessages.usedAbility(this));
 		if(termination){
-			sagaPlayer.sendMessage(PlayerMessages.invalidAbilityUse(this));
+			sagaPlayer.sendMessage(PlayerMessages.abilityInvalidUse(this));
 		}
 		
 		

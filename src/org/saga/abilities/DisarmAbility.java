@@ -49,7 +49,7 @@ public class DisarmAbility extends Ability{
 		
 		// Return if the damaged can't be disarmed:
 		if(!(damaged instanceof Player)){
-			((Player) damager).sendMessage(PlayerMessages.cantUseAbilityOn(damaged, this));
+			((Player) damager).sendMessage(PlayerMessages.abilityUseFailedOn(damaged, this));
 			return false;
 		}
 		

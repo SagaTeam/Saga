@@ -99,7 +99,7 @@ public class PlayerAbilityManager {
 		
 		// Send message:
 		if(selectedNew==-1 && selectedAbility==-1){
-			sagaPlayer.sendMessage(PlayerMessages.noAbilitiesAvailable());
+			sagaPlayer.sendMessage(PlayerMessages.abilitiesNotAvailable());
 		}else if(selectedNew==-1){
 			sagaPlayer.sendMessage(PlayerMessages.abilitySelectNone());
 		}else{
@@ -149,7 +149,7 @@ public class PlayerAbilityManager {
 		// Check if there is enough stamina:
 		Double staminaUse = ability.calculateStaminaUse(level);
 		if(!sagaPlayer.enoughStamina(staminaUse)){
-			sagaPlayer.sendMessage(PlayerMessages.notEnoughStamina(ability, sagaPlayer.getStamina(), sagaPlayer.getMaximumStamina(), staminaUse));
+			sagaPlayer.sendMessage(PlayerMessages.staminaInsufficient(ability, sagaPlayer.getStamina(), sagaPlayer.getMaximumStamina(), staminaUse));
 			resetSelection();
 			return;
 		}

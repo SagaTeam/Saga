@@ -17,6 +17,8 @@ import org.saga.professions.Profession.ProfessionType;
 
 public class PlayerMessages {
 
+	
+	// Chunk colors:
 	/**
 	 * Info color.
 	 */
@@ -42,6 +44,7 @@ public class PlayerMessages {
 	 */
 	public static ChatColor arenaColor= ChatColor.RED;
 	
+	// Information colors:
 	public static ChatColor normalColor = ChatColor.WHITE;
 	
 	public static ChatColor positiveHighlightColor = ChatColor.GREEN;
@@ -57,10 +60,13 @@ public class PlayerMessages {
 	public static ChatColor frameColor = ChatColor.DARK_GREEN;
 	
 	
-	public static Effect ABILITY_ACTIVATE2_SOUND = Effect.CLICK1;
+	// Sounds:
+	public static Effect abilityActivateSound = Effect.CLICK1;
 	
-	public static Effect ABILITY_DEACTIVATE2_SOUND = Effect.CLICK2;
+	public static Effect abilityDeactivateSound = Effect.CLICK2;
 	
+	
+	// Error report:
 	/**
 	 * First line of the error report to the player.
 	 */
@@ -72,51 +78,44 @@ public class PlayerMessages {
 	public static String yourIformationWillNotBeSaved=errorColor+"Your player information will not be saved during this session.";
 	
 	
-	
-	/**
-	 * Stamina lost in the normal way.
-	 * 
-	 * @param sagaPlayer
-	 * @param usedStamina
-	 */
-	public static String staminaUsed(Double usedStamina, Double playerStamina, Double playerMaximumStamina) {
-
-		return "Used "+usedStamina.intValue()+" stamina. ("+playerStamina.intValue()+"/"+playerMaximumStamina.intValue()+")";
-		
-	}
-	
-	public static String notEnoughStamina(Ability activatedAbility, Double playerStamina, Double playerMaximumStamina, Double staminaRequired) {
-
-		return "You need "+staminaRequired.intValue()+" stamina to use "+activatedAbility.getAbilityName()+" ability. ("+playerStamina.intValue()+"/"+playerMaximumStamina.intValue()+")";
-		
-	}
-	
-	/**
-	 * Stamina gained in the normal way.
-	 * 
-	 * @param sagaPlayer
-	 * @param regeneratedStamina
-	 */
-	public static String staminaRegeneration(Double playerStamina, Double playerMaximumStamina) {
-
-		return "Stamina regeneration. ("+playerStamina.intValue()+"/"+playerMaximumStamina.intValue()+")";
-		
-	}
-	
-	/**
-	 * Health gained in the artificial way.
-	 * 
-	 * @param amount amount
-	 */
+	// Health:
 	public static String healthGain(int amount) {
 
 		return "Gained " + amount + " health.";
 		
 	}
 	
+	
+	// Stamina:
+	public static String staminaUsed(Double usedStamina, Double playerStamina, Double playerMaximumStamina) {
+
+		return "Used "+usedStamina.intValue()+" stamina. ("+playerStamina.intValue()+"/"+playerMaximumStamina.intValue()+")";
+		
+	}
+	
+	public static String staminaInsufficient(Ability activatedAbility, Double playerStamina, Double playerMaximumStamina, Double staminaRequired) {
+
+		return "You need "+staminaRequired.intValue()+" stamina to use "+activatedAbility.getAbilityName()+" ability. ("+playerStamina.intValue()+"/"+playerMaximumStamina.intValue()+")";
+		
+	}
+	
+	public static String staminaRegeneration(Double playerStamina, Double playerMaximumStamina) {
+
+		return "Stamina regeneration. ("+playerStamina.intValue()+"/"+playerMaximumStamina.intValue()+")";
+		
+	}
+	
+	
+	// Abilities:
 	public static String abilitySelect(Ability selectedAbility) {
 
 		return "Selected "+selectedAbility.getAbilityName()+" ability.";
+				
+	}
+
+	public static String abilitySelectNone() {
+
+		return "No ability selected.";
 				
 	}
 	
@@ -126,7 +125,7 @@ public class PlayerMessages {
 				
 	}
 	
-	public static String invalidAbilityUse(Ability activatedAbility) {
+	public static String abilityInvalidUse(Ability activatedAbility) {
 
 		return "Can't use "+activatedAbility.getAbilityName()+" ability.";
 				
@@ -137,26 +136,14 @@ public class PlayerMessages {
 		return "Deactivated "+activatedAbility.getAbilityName()+" ability.";
 				
 	}
-	
-	public static String abilitySelectNone() {
 
-		return "No ability selected.";
-				
-	}
-	
-	public static String noAbilitiesAvailable(Ability ability) {
-		
-		return "Selected "+ability.getAbilityName()+" ability.";
-
-	}
-	
 	public static String abilityAlreadyActive(Ability ability) {
 		
 		return ""+ability.getAbilityName().substring(0, 1).toUpperCase()+ability.getAbilityName().substring(1)+" ability is already active.";
 
 	}
 	
-	public static String noAbilitiesAvailable() {
+	public static String abilitiesNotAvailable() {
 		
 		return "You can't use any abilities yet.";
 
@@ -197,7 +184,7 @@ public class PlayerMessages {
 		
 	}
 	
-	public static String cantUseAbilityOn(Entity abilityUsedOn, Ability ability) {
+	public static String abilityUseFailedOn(Entity abilityUsedOn, Ability ability) {
 		
 		
 		String usedOnName;
@@ -213,6 +200,7 @@ public class PlayerMessages {
 	}
 	
 	
+	// Attributes:
 	public static String attributeIncreasedTo(String attributeRawName, Short increase){
 		
 		return capitalize(attributeRawName) + " attribute increased by " + increase + ".";
@@ -226,7 +214,7 @@ public class PlayerMessages {
 	}
 	
 	
-	
+	// Entity damage:
 	public static String meleeDamagedEntity(int damage, Entity entity) {
 
 		String name;
@@ -275,6 +263,8 @@ public class PlayerMessages {
 		
 	}
 	
+	
+	// Experience and leveling:
 	public static String experienceGain(Profession profession, int gain, int current, int required) {
 		
 		return capitalize(profession.getName()) + " profession got " + gain + " experience. (" +current+"/" + required+")";
@@ -286,16 +276,7 @@ public class PlayerMessages {
 		return capitalize(profession.getName()) + " is now level " + level + ".";
 		
 	}
-	
-	private static String capitalize(String string) {
 
-		if(string.length()>=1){
-			return string.substring(0, 1).toUpperCase() + string.substring(1);
-		}else{
-			return string.toUpperCase();
-		}
-		
-	}
 	
 	// Stats:
 	public static String playerStats(SagaPlayer sagaPlayer) {
@@ -679,13 +660,14 @@ public class PlayerMessages {
 		
 	}
 	
-	// Professions:
 	
+	// Professions:
 	public static String invalidProfession(String profession){
 		
 		return profession +" is not a valid profession.";
 		
 	}
+	
 	
 	// Attributes:
 	public static String attackWasBlocked(){
@@ -704,7 +686,8 @@ public class PlayerMessages {
 		return "You dodged an attack.";
 	}
 	
-	// Administrator only:
+	
+	// Administrator only commands:
 	/**
 	 * Message when unloading player information.
 	 * Should be used only when debuging is true.
@@ -755,6 +738,7 @@ public class PlayerMessages {
 		
 	}
 	
+	
 	// Utility:
 	public static void sendMultipleLines(String message, Player player) {
 
@@ -804,7 +788,16 @@ public class PlayerMessages {
 		
 		
 	}
-	
+
+	private static String capitalize(String string) {
+
+		if(string.length()>=1){
+			return string.substring(0, 1).toUpperCase() + string.substring(1);
+		}else{
+			return string.toUpperCase();
+		}
+		
+	}
 	
 	
 	

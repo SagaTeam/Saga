@@ -75,7 +75,7 @@ public class ResistLavaAbility extends Ability {
 		boolean termination = false;
 		termination = sagaPlayer.initiatePattern(ACTIVATE_CHECK_PATTERN, (short)0, false, 10);
 		if(termination){
-			sagaPlayer.sendMessage(PlayerMessages.invalidAbilityUse(this));
+			sagaPlayer.sendMessage(PlayerMessages.abilityInvalidUse(this));
 			sagaPlayer.deactivateAbility(this);
 		}
 		
