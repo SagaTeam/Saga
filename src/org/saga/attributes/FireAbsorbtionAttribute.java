@@ -1,5 +1,6 @@
 package org.saga.attributes;
 
+import org.bukkit.event.Event;
 import org.bukkit.event.entity.EntityDamageEvent;
 import org.bukkit.event.entity.EntityDamageEvent.DamageCause;
 import org.saga.SagaPlayer;
@@ -36,18 +37,23 @@ public class FireAbsorbtionAttribute extends Attribute {
 	 * Uses the attribute.
 	 * 
 	 */
-	public void use(Short attributeLevel, SagaPlayer sagaPlayer, EntityDamageEvent event) {
+	public void use(Short attributeLevel, SagaPlayer sagaPlayer, Event event) {
 		
 		
-		if(!event.getCause().equals(DamageCause.FIRE_TICK)){
+		// Ignore if not a damage event:
+		if(!(event instanceof EntityDamageEvent)){
 			return;
 		}
-		int damage = floor(event.getDamage() - calculateValue(attributeLevel));
+		
+		if(!((EntityDamageEvent) event).getCause().equals(DamageCause.FIRE_TICK)){
+			return;
+		}
+		int damage = floor(((EntityDamageEvent) event).getDamage() - calculateValue(attributeLevel));
 		if(damage < 0){
 			sagaPlayer.regenerateHealth(damage);
 			damage = 0;
 		}
-		event.setDamage(damage);
+		((EntityDamageEvent) event).setDamage(damage);
 		System.out.println("!used "+ATTRIBUTE_NAME+" attribute!");
 		
 		

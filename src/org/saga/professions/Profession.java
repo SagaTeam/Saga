@@ -502,14 +502,14 @@ public abstract class Profession {
 	 * 
 	 * @param ability ability
 	 */
-	public abstract void abilityActivateEvent(Ability ability) throws IndexOutOfBoundsException;
+	public abstract void abilityActivateEvent(Ability ability);
 	
 	/**
 	 * Deactivates an ability.
 	 * 
 	 * @param ability ability index
 	 */
-	public abstract void abilityDeactivateEvent(Ability ability) throws IndexOutOfBoundsException;
+	public abstract void abilityDeactivateEvent(Ability ability);
 	
 	
 	

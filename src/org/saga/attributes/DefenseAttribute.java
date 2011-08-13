@@ -2,14 +2,17 @@ package org.saga.attributes;
 
 import org.bukkit.ChatColor;
 import org.bukkit.Material;
+import org.bukkit.entity.Arrow;
 import org.bukkit.entity.Entity;
+import org.bukkit.entity.Fireball;
 import org.bukkit.entity.Monster;
 import org.bukkit.entity.Player;
+import org.bukkit.event.Event;
 import org.bukkit.event.entity.EntityDamageByEntityEvent;
 import org.bukkit.event.entity.EntityDamageByProjectileEvent;
-import org.bukkit.event.entity.EntityDamageEvent;
 import org.saga.Saga;
 import org.saga.SagaPlayer;
+import org.saga.attributes.AttackAttribute.AttackType;
 
 public class DefenseAttribute extends Attribute {
 
@@ -27,14 +30,14 @@ public class DefenseAttribute extends Attribute {
 	private Boolean acceptAllMaterials;
 	
 	/**
-	 * True, if a projectile attack must be considered.
-	 */
-	private Boolean mustBeProjectile;
-	
-	/**
 	 * Attacked type.
 	 */
 	private AttackerType attackerType;
+
+	/**
+	 * Attack type.
+	 */
+	private AttackType attackType;
 
 	
 	/**
@@ -43,15 +46,15 @@ public class DefenseAttribute extends Attribute {
 	 * @param name name
 	 * @param useMaterials materials that are required for use.
 	 * @param attackerType attacker type
-	 * @param mustBeProjectile true is the attack must be a projectile attack
+	 * @param attackType attack type
 	 */
-	public DefenseAttribute(String name, Material[] useMaterials, AttackerType attackerType, Boolean mustBeProjectile) {
+	public DefenseAttribute(String name, Material[] useMaterials, AttackerType attackerType, AttackType attackType) {
 		
 		
 		super(name);
 		this.useMaterials = useMaterials;
 		this.attackerType = attackerType;
-		this.mustBeProjectile = mustBeProjectile;
+		this.attackType = attackType;
 		
 		
 	}
@@ -85,9 +88,9 @@ public class DefenseAttribute extends Attribute {
 			integrity = false;
 		}
 		
-		if(mustBeProjectile==null){
-			mustBeProjectile = false;
-			Saga.info("Setting default value for "+getName()+" attribute mustBeProjectile.");
+		if(attackType==null){
+			attackType = AttackType.NONE;
+			Saga.info("Setting default value for "+getName()+" attribute attackType.");
 			integrity = false;
 		}
 		
@@ -101,7 +104,7 @@ public class DefenseAttribute extends Attribute {
 	 * Uses the attribute.
 	 * 
 	 */
-	public void use(Short attributeLevel, SagaPlayer sagaPlayer, EntityDamageEvent event) {
+	public void use(Short attributeLevel, SagaPlayer sagaPlayer, Event event) {
 		
 		
 		if(attributeLevel == 0){
@@ -116,11 +119,11 @@ public class DefenseAttribute extends Attribute {
 		if( ((EntityDamageByEntityEvent) event).getDamager() instanceof Player && !(checkMaterial(((Player) ((EntityDamageByEntityEvent) event).getDamager()).getItemInHand().getType())) ){
 			return;
 		}
-		if( !(checkProjectile((EntityDamageByEntityEvent) event))){
+		if( !(checkAttack((EntityDamageByEntityEvent) event))){
 			return;
 		}
 		
-		event.setDamage(floor(event.getDamage() - calculateValue(attributeLevel)));
+		((EntityDamageByEntityEvent) event).setDamage(floor(((EntityDamageByEntityEvent) event).getDamage() - calculateValue(attributeLevel)));
 		System.out.println("!"+sagaPlayer.getName()+" used "+getName()+" attribute!");
 		sagaPlayer.sendMessage(ChatColor.AQUA + "you used "+getName()+" attribute!");
 		
@@ -175,18 +178,50 @@ public class DefenseAttribute extends Attribute {
 	}
 	
 	/**
-	 * Does a projectile check.
+	 * Checks the attack
 	 * 
 	 * @param event event
-	 * @return true if the projectile check is correct and the use method can proceed
+	 * @return true if correct
 	 */
-	private boolean checkProjectile(EntityDamageByEntityEvent event) {
+	private boolean checkAttack(EntityDamageByEntityEvent event) {
+
 		
-		
-		if( event.getDamager().getLastDamageCause() instanceof EntityDamageByProjectileEvent ){
-			return mustBeProjectile;
+		if(attackType.equals(AttackType.ALL)){
+			return true;
 		}
-		return !mustBeProjectile;
+		
+		
+		
+		EntityDamageByProjectileEvent projectileEvent = null;
+		if(event.getEntity().getLastDamageCause() instanceof EntityDamageByProjectileEvent){
+			projectileEvent = (EntityDamageByProjectileEvent) event.getEntity().getLastDamageCause();
+		}
+		
+		// Melee or projectile:
+		if(projectileEvent == null){
+			if(attackType.equals(AttackType.MELEE)){
+				return true;
+			}
+			return false;
+		}
+		
+		// All projectiles:
+		if(attackType.equals(AttackType.PROJECTILE_ALL)){
+			return true;
+		}
+		
+		// Arrow:
+		if(attackType.equals(AttackType.PROJECTILE_ARROW) && projectileEvent.getProjectile() instanceof Arrow){
+			return true;
+		}
+		
+		// Fireball:
+		if(attackType.equals(AttackType.PROJECTILE_FIREBALL) && projectileEvent.getProjectile() instanceof Fireball){
+			return true;
+		}
+		
+		// Invalid projectile:
+		return false;
 		
 		
 	}

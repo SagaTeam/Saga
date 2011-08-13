@@ -5,10 +5,16 @@ import java.util.ArrayList;
 import java.util.Hashtable;
 import java.util.Random;
 
+import net.minecraft.server.EntityFireball;
+import net.minecraft.server.EntityLiving;
+import net.minecraft.server.WorldServer;
+
 import org.bukkit.Effect;
 import org.bukkit.Location;
 import org.bukkit.block.Block;
 import org.bukkit.block.BlockFace;
+import org.bukkit.craftbukkit.CraftWorld;
+import org.bukkit.craftbukkit.entity.CraftPlayer;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.Player;
 import org.bukkit.event.block.*;
@@ -20,6 +26,8 @@ import org.saga.pattern.SagaPatternElement;
 import org.saga.pattern.SagaPatternInitiator;
 import org.saga.professions.*;
 import org.saga.utility.WriterReader;
+import org.saga.SagaPlayerListener.SagaPlayerProjectileShotEvent;
+import org.saga.SagaPlayerListener.SagaPlayerProjectileShotEvent.ProjectileType;
 import org.saga.abilities.Ability;
 import org.saga.attributes.Attribute;
 import org.saga.constants.*;
@@ -740,7 +748,6 @@ public class SagaPlayer{
 		
 	}
 	
-	
 	/**
 	 * Plays an effect for the player.
 	 * 
@@ -759,7 +766,6 @@ public class SagaPlayer{
 		
 		
 	}
-	
 	
 	/**
 	 * Checks if the location can be jumped to. Requires a surface under feet.
@@ -783,6 +789,70 @@ public class SagaPlayer{
 		
 		
 	}
+	
+	/**
+	 * Shoots a fireball.
+	 * 
+	 * @param accuracy accuracy. Can be in the range 0-10
+	 */
+	public void shootFireball(Double accuracy) {
+
+		
+		// Ignore if the player isn't online:
+		if(!isOnlinePlayer()){
+			return;
+		}
+		
+		// Limit the accuracy to 0-10:
+		if(accuracy < 0.0){
+			accuracy = 0.0;
+		}
+		if(accuracy > 10.0){
+			accuracy = 10.0;
+		}
+		
+		
+		EntityLiving shooter = ((CraftPlayer)player).getHandle();
+		WorldServer serverWorld = ((CraftWorld) player.getWorld()).getHandle();
+		Location shootLocation = player.getEyeLocation();
+		
+
+		double startDistance = 3;
+		Vector aimVector = shootLocation.getDirection();
+		
+		
+		shootLocation.add(aimVector.getX() * startDistance, aimVector.getY() * startDistance, aimVector.getZ() * startDistance);
+		EntityFireball fireball = new EntityFireball(serverWorld, shooter, aimVector.getX() * accuracy, aimVector.getY() * accuracy, aimVector.getZ() * accuracy);
+		fireball.getBukkitEntity().teleport(shootLocation);
+		serverWorld.addEntity(fireball);
+		
+		
+		// Send the event:
+		SagaPlayerProjectileShotEvent event = new SagaPlayerProjectileShotEvent(this, ProjectileType.FIREBALL, 0);
+		Saga.playerListener().onSagaPlayerProjectileShot(event);
+		
+		// Cancel the event if needed:
+		if(event.isCancelled()){
+			fireball.getBukkitEntity().remove();
+			return;
+		}
+		
+		// Limit the speed to 0-4:
+		double speed = event.getSpeed();
+		if(speed < 0){
+			speed = 0;
+		}
+		if(speed > 4){
+			speed = 4;
+		}
+		
+		// Set speed:
+		fireball.getBukkitEntity().setVelocity(aimVector.multiply(speed));
+		
+		
+		
+	}
+	
 	
 	// Events:
 	/**
@@ -923,6 +993,24 @@ public class SagaPlayer{
 		}
 	}
 
+	/**
+	 * Saga player shoots a projectile.
+	 * 
+	 * @param event event
+	 */
+	public void sagaPlayerProjectileShotEvent(SagaPlayerProjectileShotEvent event) {
+		
+		
+		// Attributes:
+		Attribute[] projectileShotAttributes = Saga.attributeInformation().projectileShotAttributes;
+		for (int i = 0; i < projectileShotAttributes.length; i++) {
+			String attributeName = projectileShotAttributes[i].getName();
+			projectileShotAttributes[i].use(getAttributeUpgrade(attributeName), this, event);
+		}
+		
+		
+	}
+	
 	/**
 	 * Sends a clock tick.
 	 *

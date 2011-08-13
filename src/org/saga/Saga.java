@@ -56,7 +56,7 @@ public class Saga extends JavaPlugin {
     private boolean playerInformationSavingDisabled;
 
     private Hashtable<String,SagaPlayer> loadedPlayers;
-    private SagaPlayerListener playerListener;
+    private static SagaPlayerListener playerListener;
     private SagaEntityListener entityListener;
     private SagaBlockListener blockListener;
 
@@ -76,6 +76,10 @@ public class Saga extends JavaPlugin {
     	return debugging;
 	}
     
+    public static SagaPlayerListener playerListener() {
+    	return playerListener;
+	}
+    
     @Override
     public void onDisable() {
 
@@ -89,6 +93,7 @@ public class Saga extends JavaPlugin {
         Saga.instance = null;
         Saga.balanceInformation = null;
         Saga.attributeInformation = null;
+        Saga.playerListener = null;
         
     	//Say Goodbye
         Saga.info("Saga Goodbye!");

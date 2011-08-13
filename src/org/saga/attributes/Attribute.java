@@ -1,6 +1,6 @@
 package org.saga.attributes;
 
-import org.bukkit.event.entity.EntityDamageEvent;
+import org.bukkit.event.Event;
 import org.saga.Saga;
 import org.saga.SagaPlayer;
 
@@ -114,7 +114,7 @@ public abstract class Attribute {
 	 * @param sagaPlayer saga player
 	 * @param event event
 	 */
-	public abstract void use(Short attributeUpgrade, SagaPlayer sagaPlayer, EntityDamageEvent event);
+	public abstract void use(Short attributeUpgrade, SagaPlayer sagaPlayer, Event event);
 	
 	/**
 	 * Calculates the attribute value for the given upgraade level.

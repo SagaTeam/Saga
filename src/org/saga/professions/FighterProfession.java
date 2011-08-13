@@ -35,7 +35,7 @@ public class FighterProfession extends Profession {
 	
 	// Initialization:
 	/**
-	 * Sets the profession name.
+	 * Used by gson.
 	 * 
 	 */
 	public FighterProfession() {

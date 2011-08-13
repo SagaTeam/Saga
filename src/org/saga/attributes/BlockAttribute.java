@@ -4,9 +4,9 @@ import java.util.Random;
 
 import org.bukkit.Material;
 import org.bukkit.entity.Player;
+import org.bukkit.event.Event;
 import org.bukkit.event.entity.EntityDamageByEntityEvent;
 import org.bukkit.event.entity.EntityDamageByProjectileEvent;
-import org.bukkit.event.entity.EntityDamageEvent;
 import org.saga.Saga;
 import org.saga.SagaPlayer;
 import org.saga.constants.PlayerMessages;
@@ -75,7 +75,7 @@ public class BlockAttribute extends Attribute {
 	 * Uses the attribute.
 	 * 
 	 */
-	public void use(Short attributeLevel, SagaPlayer sagaPlayer, EntityDamageEvent event) {
+	public void use(Short attributeLevel, SagaPlayer sagaPlayer, Event event) {
 		
 		
 		// Cast to entity by entity:
