@@ -84,25 +84,6 @@ public class FarmerProfession extends Profession {
 	/* 
 	 * (non-Javadoc)
 	 * 
-	 * @see org.saga.professions.Profession#isAbilityActive(int)
-	 */
-	@Override
-	public boolean isAbilityActive(Ability ability) throws IndexOutOfBoundsException {
-
-		
-		for (int i = 0; i < activeAbilities.length; i++) {
-			if(ABILITIES[i].equals(ability)){
-				return activeAbilities[i];
-			}
-		}
-		return false;
-		
-		
-	}
-
-	/* 
-	 * (non-Javadoc)
-	 * 
 	 * @see org.saga.professions.Profession#getAbilityScrollMaterials()
 	 */
 	@Override
@@ -110,52 +91,6 @@ public class FarmerProfession extends Profession {
 		return ABILITY_SCROLL_MATERIALS;
 	}
 
-	
-	// Events:
-	/* 
-	 * (non-Javadoc)
-	 * 
-	 * @see org.saga.professions.Profession#abilityActivateEvent(int)
-	 */
-	@Override
-	public void abilityActivateEvent(Ability ability) throws IndexOutOfBoundsException {
-
-		
-		// Harvest:
-		if(ability.equals(ABILITIES[0])){
-			((HarvestAbility)ABILITIES[0]).use(getLevel(), sagaPlayer);
-			return;
-		}
-		
-		// All others:
-		for (int i = 0; i < activeAbilities.length; i++) {
-			if(ABILITIES[i].equals(ability)){
-				activeAbilities[i] = true;
-				return;
-			}
-		}
-		
-		
-	}
-
-	/* 
-	 * (non-Javadoc)
-	 * 
-	 * @see org.saga.professions.Profession#abilityDeactivateEvent(int)
-	 */
-	@Override
-	public void abilityDeactivateEvent(Ability ability) {
-    	
-		
-		for (int i = 0; i < activeAbilities.length; i++) {
-			if(ABILITIES[i].equals(ability)){
-				activeAbilities[i] = false;
-				return;
-			}
-		}
-		
-		
-	}
 
 
 }

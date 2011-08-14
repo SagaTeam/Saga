@@ -57,32 +57,10 @@ public class MageProfession extends Profession {
 	}
 
 	@Override
-	public boolean isAbilityActive(Ability ability) throws IndexOutOfBoundsException {
-		// TODO Auto-generated method stub
-		return false;
-	}
-
-	@Override
 	public Material[] getAbilityScrollMaterials() {
 		// TODO Auto-generated method stub
 		return ABILITY_SCROLL_MATERIALS;
 	}
 
-	@Override
-	public void abilityActivateEvent(Ability ability) {
-
-		// Fireball:
-		if(ability.equals(ABILITIES[0])){
-			((FireballAbility) ABILITIES[0]).use(getLevel(), sagaPlayer);
-		}
-		
-	}
-
-	@Override
-	public void abilityDeactivateEvent(Ability ability)
-			throws IndexOutOfBoundsException {
-		// TODO Auto-generated method stub
-
-	}
-
+	
 }

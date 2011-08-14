@@ -41,7 +41,6 @@ public class MinerProfession extends Profession {
 	transient private Boolean[] activeAbilities;
 	
 	
-	// Initialization:
 	/**
 	 * Used by gson.
 	 * 
@@ -79,7 +78,6 @@ public class MinerProfession extends Profession {
 		return ProfessionType.PROFESSION;
 	}
 	
-	// Interaction:
 	/* 
 	 * (non-Javadoc)
 	 * 
@@ -93,25 +91,6 @@ public class MinerProfession extends Profession {
 	/* 
 	 * (non-Javadoc)
 	 * 
-	 * @see org.saga.professions.Profession#isAbilityActive(int)
-	 */
-	@Override
-	public boolean isAbilityActive(Ability ability) throws IndexOutOfBoundsException {
-
-		
-		for (int i = 0; i < activeAbilities.length; i++) {
-			if(ABILITIES[i].equals(ability)){
-				return activeAbilities[i];
-			}
-		}
-		return false;
-		
-		
-	}
-
-	/* 
-	 * (non-Javadoc)
-	 * 
 	 * @see org.saga.professions.Profession#getAbilityScrollMaterials()
 	 */
 	@Override
@@ -120,85 +99,6 @@ public class MinerProfession extends Profession {
 	}
 
 	
-	// Events:
-	public void damagedByEnvironmentEvent(EntityDamageEvent pEvent) {
-		
-		
-		// Resist lava:
-		if(activeAbilities[1]){
-			((ResistLavaAbility)ABILITIES[1]).sustain(getLevel(), pEvent);
-		}
-		
-		
-	}
-	
-	/* 
-	 * (non-Javadoc)
-	 * 
-	 * @see org.saga.professions.Profession#damagedBlockEvent(org.bukkit.event.block.BlockDamageEvent)
-	 */
-	@Override
-	public void damagedBlockEvent(BlockDamageEvent pEvent) {
-		
-		
-		// Focused hits:
-		if(activeAbilities[2] && isMaterialCorrect(pEvent.getPlayer().getItemInHand().getType())){
-			((FocusedHitsAbility)ABILITIES[2]).use(getLevel(), sagaPlayer, pEvent);
-		}
-		
-		
-	}
-	
-	/* 
-	 * (non-Javadoc)
-	 * 
-	 * @see org.saga.professions.Profession#abilityActivateEvent(int)
-	 */
-	@Override
-	public void abilityActivateEvent(Ability ability) throws IndexOutOfBoundsException {
-
-		
-		// Heavy swings:
-		if(ability.equals(ABILITIES[0])){
-			((PowerfulSwings)ABILITIES[0]).use(getLevel(), sagaPlayer, orthogonalFlipState);
-			orthogonalFlipState = !orthogonalFlipState;
-			return;
-		}
-		
-		// Resist lava:
-		if(ability.equals(ABILITIES[1])){
-			((ResistLavaAbility)ABILITIES[1]).activate(getLevel(), sagaPlayer);
-		}
-		
-		// All others:
-		for (int i = 0; i < activeAbilities.length; i++) {
-			if(ABILITIES[i].equals(ability)){
-				activeAbilities[i] = true;
-				return;
-			}
-		}
-		
-		
-	}
-
-	/* 
-	 * (non-Javadoc)
-	 * 
-	 * @see org.saga.professions.Profession#abilityDeactivateEvent(int)
-	 */
-	@Override
-	public void abilityDeactivateEvent(Ability ability) {
-    	
-		
-		for (int i = 0; i < activeAbilities.length; i++) {
-			if(ABILITIES[i].equals(ability)){
-				activeAbilities[i] = false;
-				return;
-			}
-		}
-		
-		
-	}
 
 
 }

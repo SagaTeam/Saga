@@ -10,6 +10,7 @@ import java.util.logging.*;
 //imports from this project
 import org.sk89q.*;
 import org.saga.utility.*;
+import org.saga.utility.WriterReader.WriteType;
 import org.saga.constants.PlayerMessages;
 import org.saga.exceptions.SagaPlayerNotLoadedException;
 
@@ -48,6 +49,7 @@ public class Saga extends JavaPlugin {
     private static Saga instance;
     private static BalanceInformation balanceInformation;
     private static AttributeInformation  attributeInformation;
+    private static ProfessionInformation  professionInformation;
 
     //Instance Members
     private static CommandsManager<Player> commandMap;
@@ -70,6 +72,10 @@ public class Saga extends JavaPlugin {
 
     static public AttributeInformation attributeInformation(){
     	return attributeInformation;
+    }
+    
+    static public ProfessionInformation abilityInformation(){
+    	return professionInformation;
     }
     
     public static boolean debuging() {
@@ -148,6 +154,8 @@ public class Saga extends JavaPlugin {
         // Load attribute information:
         loadAttributeInformation();
 
+        // Load profession information:
+        professionInformation = ProfessionInformation.load();
         
         // Add all already online players:
         Player[] onlinePlayers = getServer().getOnlinePlayers();
@@ -224,7 +232,7 @@ public class Saga extends JavaPlugin {
         if(writeDefaultBalanceInfo){
             try {
             	Saga.info("Generating balance information file with new added default values. Edit and rename to use it.");
-                WriterReader.writeBalanceInformation(balanceInformation, WriterReader.SUFFIX_DEFAULT);
+                WriterReader.writeBalanceInformation(balanceInformation, WriteType.DEFAULTS);
             } catch (Exception e2) {
                 Saga.severe("Balance information file generation failure.");
             }
@@ -282,7 +290,7 @@ public class Saga extends JavaPlugin {
         if(writeInfo){
             try {
             	Saga.info("Generating attribute information file with new added default values. Edit and rename to use it.");
-                WriterReader.writeAttributeInformation(information, WriterReader.SUFFIX_DEFAULT);
+                WriterReader.writeAttributeInformation(information, WriteType.DEFAULTS);
             } catch (Exception e) {
                 Saga.severe("Attribute information file generation failure.");
             }

@@ -1,6 +1,7 @@
 package org.saga.professions;
 
 
+import java.util.ArrayList;
 import java.util.Enumeration;
 import java.util.Hashtable;
 
@@ -14,6 +15,14 @@ import org.bukkit.event.player.PlayerInteractEvent;
 import org.saga.Saga;
 import org.saga.SagaPlayer;
 import org.saga.abilities.Ability;
+import org.saga.abilities.Ability.AbilityActivateType;
+import org.saga.abilities.types.OnAbility;
+import org.saga.abilities.types.OnBlockDamage;
+import org.saga.abilities.types.OnDamagedLivingEntity;
+import org.saga.abilities.types.OnGotDamagedByLivingEntity;
+import org.saga.abilities.types.OnLeftClick;
+import org.saga.abilities.types.OnRightClick;
+import org.saga.abilities.types.OnActivateAbility;
 import org.saga.constants.PlayerDefaults;
 import org.saga.constants.PlayerMessages;
 
@@ -32,6 +41,13 @@ public abstract class Profession {
 	 */
 	transient private String professionName = "";
 
+	// Access:
+	/**
+	 * Saga player.
+	 */
+	transient protected SagaPlayer sagaPlayer= null;
+	
+	
 	// Player information:
 	/**
 	 * Profession level.
@@ -44,25 +60,56 @@ public abstract class Profession {
 	private Integer levelExperience;
 
 	
+	// Abilities:
+	/**
+	 * All abilities.
+	 */
+	transient private Ability[] abilities;
+
+	/**
+	 * Active abilities.
+	 */
+	transient private Boolean[] activeAbilities;
+	
+	/**
+	 * Damaged living entities abilities.
+	 */
+	transient private ArrayList<OnDamagedLivingEntity> damagedLivingEntityAbilities;
+	
+	/**
+	 * Damaged living entities abilities.
+	 */
+	transient private ArrayList<OnGotDamagedByLivingEntity> gotDamagedByLivingEntityAbilites;
+	
+	/**
+	 * Left click interact abilities.
+	 */
+	transient private ArrayList<OnLeftClick> leftClickInteractAbilities;
+	
+	/**
+	 * Right click interact abilities.
+	 */
+	transient private ArrayList<OnRightClick> rightClickInteractAbilities;
+	
+	/**
+	 * Abilities that will be used on activate event.
+	 */
+	transient private ArrayList<OnActivateAbility> onActivateAbilities;
+	
+	/**
+	 * Abilities that will be used on block damage.
+	 */
+	transient private ArrayList<OnBlockDamage> blockDamageAbilities;
+	
+	
 	// Calculated:
 	/**
 	 * Experience requirement for the next level.
 	 */
 	transient private Integer experienceRequirement;
+
 	
-	// Access:
-	/**
-	 * Saga player.
-	 */
-	transient protected SagaPlayer sagaPlayer= null;
-	
-	
-	// Main:
-	/**
-	 * All abilities.
-	 */
-	transient private Ability[] abilities;
-	
+	// Attributes:
 	/**
 	 * Attribute upgrades. Keeps a list of upgrade levels for the current level.
 	 */
@@ -80,6 +127,10 @@ public abstract class Profession {
 		this.professionName = professionName;
 	}
 	
+	/**
+	 * Used by gson.
+	 * 
+	 */
 	public Profession() {
 	}
 	
@@ -104,11 +155,51 @@ public abstract class Profession {
 		completeExtended();
 		
 		// Initialize dependent fields:
-		abilities = getAbilities();
+		
 		experienceRequirement = calculateExperienceRequirement(level);
 		
 		// Initiate attributes:
 		modifyAttributeUpgrades(getRawLevel());
+		
+		// Retrieve abilities:
+		abilities =  Saga.abilityInformation().getAbilities(getName());
+		
+		// Distribute abilities:
+		damagedLivingEntityAbilities = new ArrayList<OnDamagedLivingEntity>();
+		gotDamagedByLivingEntityAbilites = new ArrayList<OnGotDamagedByLivingEntity>();
+		leftClickInteractAbilities = new ArrayList<OnLeftClick>();
+		rightClickInteractAbilities = new ArrayList<OnRightClick>();
+		onActivateAbilities = new ArrayList<OnActivateAbility>();
+		blockDamageAbilities = new ArrayList<OnBlockDamage>();
+		
+		for (int i = 0; i < abilities.length; i++) {
+			
+			if(abilities[i] instanceof OnDamagedLivingEntity){
+				damagedLivingEntityAbilities.add((OnDamagedLivingEntity) abilities[i]);
+			}
+			else if(abilities[i] instanceof OnGotDamagedByLivingEntity){
+				gotDamagedByLivingEntityAbilites.add((OnGotDamagedByLivingEntity) abilities[i]);
+			}
+			else if(abilities[i] instanceof OnLeftClick){
+				leftClickInteractAbilities.add((OnLeftClick) abilities[i]);
+			}
+			else if(abilities[i] instanceof OnRightClick){
+				rightClickInteractAbilities.add((OnRightClick) abilities[i]);
+			}
+			else if(abilities[i] instanceof OnActivateAbility){
+				onActivateAbilities.add((OnActivateAbility) abilities[i]);
+			}
+			else if(abilities[i] instanceof OnBlockDamage){
+				blockDamageAbilities.add((OnBlockDamage) abilities[i]);
+			}
+			
+		}
+		
+		// Active abilities:
+		activeAbilities = new Boolean[abilities.length];
+		for (int i = 0; i < activeAbilities.length; i++) {
+			activeAbilities[i] = false;
+		}
 		
 		
 	}
@@ -155,41 +246,28 @@ public abstract class Profession {
 	 * 
 	 * @return all abilities
 	 */
-	public abstract Ability[] getAbilities();
-	
+	public Ability[] getAbilities(){
+		return abilities;
+	}
+
 	/**
-	 * Return the ability name.
+	 * Checks if the ability is already active.
 	 * 
 	 * @param ability ability
-	 * @return ability name
-	 * @throws IndexOutOfBoundsException when the given ability index is out of bounds
+	 * @return true, if active
 	 */
-	public String getAbilityName2222222(int ability) throws IndexOutOfBoundsException{
-		return abilities[ability].getAbilityName();
+	public boolean isAbilityActive(Ability ability){
+		
+		
+		for (int i = 0; i < activeAbilities.length; i++) {
+			if(abilities[i].equals(ability)){
+				return activeAbilities[i];
+			}
+		}
+		return false;
+		
+		
 	}
-	
-	/**
-	 * Gets the level requirement for the ability.
-	 * 
-	 * @param ability ability
-	 * @return level requirement
-	 * @throws IndexOutOfBoundsException when the given ability index is out of bounds
-	 */
-	public Short getAbilityLevelRequirement(int ability) throws IndexOutOfBoundsException{
-		return abilities[ability].getLevelRequirement();
-	}
-	
-	/**
-	 * Gets the stamina use for the ability.
-	 * 
-	 * @param ability ability
-	 * @return stamina requirement
-	 * @throws IndexOutOfBoundsException when the given ability index is out of bounds
-	 */
-	public Double getAbilityStaminaUse(int ability) throws IndexOutOfBoundsException{
-		return abilities[ability].calculateStaminaUse(getLevel());
-	}
-	
 	
 	/**
 	 * Checks if the ability is already active.
@@ -197,15 +275,17 @@ public abstract class Profession {
 	 * @param ability ability
 	 * @return true, if active
 	 */
-	public abstract boolean isAbilityActive(Ability ability) throws IndexOutOfBoundsException;
-	
-	/**
-	 * Returns the ability count.
-	 * 
-	 * @return ability count
-	 */
-	public int getAbilityCount() {
-		return abilities.length;
+	public boolean isAbilityActive(OnAbility ability){
+		
+		
+		for (int i = 0; i < activeAbilities.length; i++) {
+			if(abilities[i].equals(ability.getAbility())){
+				return activeAbilities[i];
+			}
+		}
+		return false;
+		
+		
 	}
 	
 	/**
@@ -404,8 +484,23 @@ public abstract class Profession {
 	 */
 	public void gotDamagedByLivingEntityEvent(EntityDamageByEntityEvent event) {
 
+		
+		// Abilities:
+		for (OnGotDamagedByLivingEntity ability : gotDamagedByLivingEntityAbilites) {
+			
+			// Check if active:
+			// Instantaneous:
+			if(ability.getActivateType().equals(AbilityActivateType.INSTANTANEOUS)){
+				ability.use(getLevel(), sagaPlayer, this, event);
+			}
+			// Toggle or timed:
+			else if(isAbilityActive(ability)){
+				ability.use(getLevel(), sagaPlayer, this, event);
+			}
+			
+		}
 
-
+		
 	}
 
 	/**
@@ -415,8 +510,23 @@ public abstract class Profession {
 	 */
 	public void damagedLivingEntityEvent(EntityDamageByEntityEvent event) {
 
+		
+		// Abilities:
+		for (OnGotDamagedByLivingEntity ability : gotDamagedByLivingEntityAbilites) {
+			
+			// Check if active:
+			// Instantaneous:
+			if(ability.getActivateType().equals(AbilityActivateType.INSTANTANEOUS)){
+				ability.use(getLevel(), sagaPlayer, this, event);
+			}
+			// Toggle or timed:
+			else if(isAbilityActive(ability)){
+				ability.use(getLevel(), sagaPlayer, this, event);
+			}
+			
+		}
 
-
+		
 	}
 	
 	/**
@@ -436,6 +546,23 @@ public abstract class Profession {
 	 * @param event event
 	 */
 	public void leftClickInteractEvent(PlayerInteractEvent event) {
+
+		
+		// Abilities:
+		for (OnLeftClick ability : leftClickInteractAbilities) {
+			
+			// Check if active:
+			// Instantaneous:
+			if(ability.getActivateType().equals(AbilityActivateType.INSTANTANEOUS)){
+				ability.use(getLevel(), sagaPlayer, this, event);
+			}
+			// Toggle or timed:
+			else if(isAbilityActive(ability)){
+				ability.use(getLevel(), sagaPlayer, this, event);
+			}
+			
+		}
+
 		
 	}
 
@@ -445,6 +572,23 @@ public abstract class Profession {
 	 * @param event event
 	 */
 	public void rightClickInteractEvent(PlayerInteractEvent event) {
+
+		
+		// Abilities:
+		for (OnRightClick ability : rightClickInteractAbilities) {
+			
+			// Check if active:
+			// Instantaneous:
+			if(ability.getActivateType().equals(AbilityActivateType.INSTANTANEOUS)){
+				ability.use(getLevel(), sagaPlayer, this, event);
+			}
+			// Toggle or timed:
+			else if(isAbilityActive(ability)){
+				ability.use(getLevel(), sagaPlayer, this, event);
+			}
+			
+		}
+
 		
 	}
 
@@ -476,7 +620,23 @@ public abstract class Profession {
 	 */
 	public void damagedBlockEvent(BlockDamageEvent event) {
 
+		
+		// Abilities:
+		for (OnBlockDamage ability : blockDamageAbilities) {
+			
+			// Check if active:
+			// Instantaneous:
+			if(ability.getActivateType().equals(AbilityActivateType.INSTANTANEOUS)){
+				ability.use(getLevel(), sagaPlayer, this, event);
+			}
+			// Toggle or timed:
+			else if(isAbilityActive(ability)){
+				ability.use(getLevel(), sagaPlayer, this, event);
+			}
+			
+		}
 
+		
 	}
 
 	/**
@@ -497,14 +657,54 @@ public abstract class Profession {
 	 * 
 	 * @param ability ability
 	 */
-	public abstract void abilityActivateEvent(Ability ability);
+	public void abilityActivateEvent(Ability ability2){
+
+		
+		// Activate if not a single use:
+		if(!ability2.getActivateType().equals(AbilityActivateType.INSTANTANEOUS)){
+			for (int i = 0; i < abilities.length; i++) {
+				if(abilities[i].equals(ability2)){
+					activeAbilities[i] = true;
+					return;
+				}
+			}
+		}
+		
+		// Abilities:
+		if(!(ability2 instanceof OnActivateAbility)){
+			return;
+		}
+		OnActivateAbility ability = (OnActivateAbility) ability2;
+		// Instantaneous:
+		if(ability.getActivateType().equals(AbilityActivateType.INSTANTANEOUS)){
+			ability.use(getLevel(), sagaPlayer, this);
+		}
+		// Toggle or timed:
+		else if(isAbilityActive(ability)){
+			ability.use(getLevel(), sagaPlayer, this);
+		}
+			
+			
+		
+	}
 	
 	/**
 	 * Deactivates an ability.
 	 * 
 	 * @param ability ability index
 	 */
-	public abstract void abilityDeactivateEvent(Ability ability);
+	public void abilityDeactivateEvent(Ability ability){
+		
+		
+		for (int i = 0; i < abilities.length; i++) {
+			if(abilities[i].equals(ability)){
+				activeAbilities[i] = false;
+				return;
+			}
+		}
+		
+		
+	}
 	
 	
 	/**
