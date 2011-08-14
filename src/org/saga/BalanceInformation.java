@@ -3,12 +3,7 @@ package org.saga;
 import java.util.*;
 
 import org.saga.abilities.*;
-import org.saga.professions.FarmerProfession;
-import org.saga.professions.FighterProfession;
-import org.saga.professions.MageProfession;
-import org.saga.professions.MinerProfession;
 import org.saga.professions.Profession;
-import org.saga.professions.WoodcutterProfession;
 
 public class BalanceInformation {
 
@@ -137,16 +132,16 @@ public class BalanceInformation {
 
 	}
 	
-	/**
-	 * Returns all available professions.
-	 * 
-	 * @return all professions
-	 */
-	public Profession[] getAllProfessions() {
-		
-		return new Profession[]{new FighterProfession(), new WoodcutterProfession(), new MinerProfession(), new FarmerProfession(), new MageProfession()};
-
-	}
+//	/**
+//	 * Returns all available professions.
+//	 * 
+//	 * @return all professions
+//	 */
+//	public Profession[] getAllProfessions() {
+//		
+//		return new Profession[]{new FighterProfession(), new WoodcutterProfession(), new MinerProfession(), new FarmerProfession(), new MageProfession()};
+//
+//	}
 	
 	/**
 	 * Returns all abilities.

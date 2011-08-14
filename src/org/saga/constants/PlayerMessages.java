@@ -77,6 +77,17 @@ public class PlayerMessages {
 	 */
 	public static String yourIformationWillNotBeSaved=errorColor+"Your player information will not be saved during this session.";
 	
+	public String error(String message) {
+
+		return playerErrorMessage + "\n" + message;
+		
+	}
+	
+	public String errorOnProfessionAdd(String professionName) {
+		
+		return error("Cant add "+professionName + " profession.");
+				
+	}
 	
 	// Health:
 	public static String healthGain(int amount) {
@@ -215,7 +226,7 @@ public class PlayerMessages {
 	
 	
 	// Entity damage:
-	public static String meleeDamagedEntity(int damage, Entity entity) {
+	public static String damagedEntity(int damage, Entity entity) {
 
 		String name;
 		if(entity instanceof Player){
@@ -223,11 +234,11 @@ public class PlayerMessages {
 		}else{
 			name = entity.getClass().getSimpleName().toLowerCase().replace("craft", "");
 		}
-		return "You melee damaged " + name + " for " + new Double(new Double(damage)/2) + " damage.";
+		return "You damaged " + name + " for " + new Double(new Double(damage)/2) + " damage.";
 		
 	}
 	
-	public static String gotMeleeDamagedByEntity(int damage, Entity entity) {
+	public static String gotDamagedByEntity(int damage, Entity entity) {
 
 		String name;
 		if(entity instanceof Player){
@@ -235,7 +246,7 @@ public class PlayerMessages {
 		}else{
 			name = entity.getClass().getSimpleName().toLowerCase().replace("craft", "");
 		}
-		return "You got melee damaged for " + new Double(new Double(damage)/2) + " by " + name + ".";
+		return "You got damaged for " + new Double(new Double(damage)/2) + " by " + name + ".";
 		
 	}
 	
@@ -321,7 +332,7 @@ public class PlayerMessages {
 		
 		
 		StringBuffer rString = new StringBuffer();
-		Profession[] allProfessions = sagaPlayer.getProfessions();
+		ArrayList<Profession> allProfessions = sagaPlayer.getProfessions();
 		ArrayList<String> classes = new ArrayList<String>();
 		ArrayList<String> professions = new ArrayList<String>();
 		ArrayList<String> specializations = new ArrayList<String>();
@@ -334,17 +345,17 @@ public class PlayerMessages {
 		rString.append(messageColor);
 		
 		// Loop trough and add all professions:
-		for (int i = 0; i < allProfessions.length; i++) {
-			if(allProfessions[i].getProfessionType().equals(ProfessionType.CLASS)){
-				classes.add(getProfessionElement(allProfessions[i], messageColor));
-			}else if(allProfessions[i].getProfessionType().equals(ProfessionType.PROFESSION)){
-				professions.add(getProfessionElement(allProfessions[i], messageColor));
-			}else if(allProfessions[i].getProfessionType().equals(ProfessionType.SPECIALIZATION)){
-				specializations.add(getProfessionElement(allProfessions[i], messageColor));
-			}else if(allProfessions[i].getProfessionType().equals(ProfessionType.ROLE)){
-				roles.add(getProfessionElement(allProfessions[i], messageColor));
+		for (int i = 0; i < allProfessions.size(); i++) {
+			if(allProfessions.get(i).getProfessionType().equals(ProfessionType.CLASS)){
+				classes.add(getProfessionElement(allProfessions.get(i), messageColor));
+			}else if(allProfessions.get(i).getProfessionType().equals(ProfessionType.PROFESSION)){
+				professions.add(getProfessionElement(allProfessions.get(i), messageColor));
+			}else if(allProfessions.get(i).getProfessionType().equals(ProfessionType.SPECIALIZATION)){
+				specializations.add(getProfessionElement(allProfessions.get(i), messageColor));
+			}else if(allProfessions.get(i).getProfessionType().equals(ProfessionType.ROLE)){
+				roles.add(getProfessionElement(allProfessions.get(i), messageColor));
 			}else{
-				neither.add(getProfessionElement(allProfessions[i], messageColor));
+				neither.add(getProfessionElement(allProfessions.get(i), messageColor));
 			}
 		}
 		
@@ -446,7 +457,13 @@ public class PlayerMessages {
 	
 	private static String getProfessionElement(Profession profession, ChatColor messageColor){
 		
-		return messageColor + profession.getName()+"("+profession.getLevel()+")";
+		
+		if(profession.getProfessionType().equals(ProfessionType.INVALID)){
+			return messageColor + profession.getName() + negativeHighlightColor +"("+ ProfessionType.INVALID.getName() +")" + messageColor;
+		}else{
+			return messageColor + profession.getName()+"("+profession.getLevel()+")" + messageColor;
+		}
+		
 		
 	}
 
@@ -631,7 +648,14 @@ public class PlayerMessages {
 		rString.append(messageColor);
 		
 		// Add frame:
-		return frame(profession.getName() + " " + profession.getProfessionType().getName(), rString.toString(), messageColor);
+		
+		if(profession.getProfessionType().equals(ProfessionType.INVALID)){
+			return frame(profession.getName() + negativeHighlightColor + "("+profession.getProfessionType().getName() + ")" + messageColor, rString.toString(), messageColor);
+		}else{
+			return frame(profession.getName() + " " + profession.getProfessionType().getName(), rString.toString(), messageColor);
+		}
+		
+		
 		
 		
 	}
@@ -662,9 +686,58 @@ public class PlayerMessages {
 	
 	
 	// Professions:
-	public static String invalidProfession(String profession){
+	public static String professionInvalid(String profession){
 		
 		return profession +" is not a valid profession.";
+		
+	}
+	
+	public static String professionSlotInUse(ProfessionType professionType){
+		
+		return "You already choosen a " + professionType.getName() + ".";
+		
+	}
+	
+	public static String professionCantBeAdded(String professionName){
+		
+		return "Can't add " + professionName + " profession.";
+		
+	}
+	
+	public static String professionCantBeRemoved(String professionName){
+		
+		return "Can't remove " + professionName + " profession.";
+		
+	}
+	
+	public static String professionsNotAvailable(){
+		
+		return "No professions are available.";
+		
+	}
+	
+
+	public static String professionsRecieved(Profession profession){
+		
+		return "You now have " + profession.getName() + " " + profession.getProfessionType().getName() + ".";
+		
+	}
+	
+	public static String professionsLost(Profession profession){
+		
+		return "You no longer have " + profession.getName() + " " + profession.getProfessionType().getName() + ".";
+		
+	}
+	
+	public static String professionsAdded(String professionName){
+		
+		return "You added a " + professionName + " profession.";
+		
+	}
+	
+	public static String professionsRemoved(String professionName){
+		
+		return "You removed a " + professionName + " profession.";
 		
 	}
 	

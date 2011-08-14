@@ -3,9 +3,9 @@ package org.saga;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Enumeration;
 import java.util.Hashtable;
 
+import org.bukkit.Material;
 import org.saga.abilities.Ability;
 import org.saga.abilities.ChopDownAbility;
 import org.saga.abilities.CounterattackAbility;
@@ -17,6 +17,7 @@ import org.saga.abilities.HeavyHitAbility;
 import org.saga.abilities.PowerfulSwings;
 import org.saga.abilities.ResistLavaAbility;
 import org.saga.abilities.TreeClimbAbility;
+import org.saga.professions.Profession.ProfessionType;
 import org.saga.utility.WriterReader;
 import org.saga.utility.WriterReader.WriteType;
 
@@ -35,18 +36,23 @@ public class ProfessionInformation {
 	 * Abilities.
 	 */
 	transient private ArrayList<Ability> abilities;
-	
+
 	/**
-	 * Ability and profession name associations.
+	 * Profession definitions.
 	 */
-	private Hashtable<String, String[]> abilitiAssociations;
-	
+	private ArrayList<ProfessionDefinition> professionDefinitions;
+
 	// Quick access:
 	/**
 	 * Quick access ability pool.
 	 */
 	transient private Hashtable<String, Ability> abilityPool;
 	
+	/**
+	 * Quick access profession definitions.
+	 */
+	transient private Hashtable<String, ProfessionDefinition> professionDefinitionPool;
+
 	
 	// Initialization:
 	/**
@@ -67,7 +73,6 @@ public class ProfessionInformation {
 		
 		
 		boolean integrity=true;
-		
 
 		// Load abilities:
 		if(abilityNames == null){
@@ -105,33 +110,6 @@ public class ProfessionInformation {
 			
 		}
 		
-		// Ability associations:
-		if(abilitiAssociations == null){
-			abilitiAssociations = new Hashtable<String, String[]>();
-			Saga.severe("Initializing abilitiAssociations field for profession information.");
-			Saga.info("Adding two example profession ability associations.");
-			abilitiAssociations.put("ProfessionName1", new String[]{"AbilityName1", "AbilityName2", "AbilityName3"});
-			abilitiAssociations.put("ProfessionName2", new String[]{"AbilityName1", "AbilityName2"});
-			integrity=false;
-		}
-		
-		Enumeration<String> keys= abilitiAssociations.keys();
-        while ( keys.hasMoreElements() ) {
-        	String key = keys.nextElement();
-        	String[] value = abilitiAssociations.get(key);
-        	if(value == null){
-        		Saga.severe("Profession ability associations has a null value. Setting empty value.");
-        		value = new String[0];
-        		abilitiAssociations.put(key, value);
-        	}
-        	for (int i = 0; i < value.length; i++) {
-				if(value[i] == null){
-					Saga.severe("Profession ability associations has a null value element. Setting empty element.");
-	        		value[i] = "";
-				}
-			}
-        }
-
         // Add default abilities if they don't exist:
         Ability[] defaultAbilities = getDefaultAbilities();
         for (int i = 0; i < defaultAbilities.length; i++) {
@@ -156,10 +134,53 @@ public class ProfessionInformation {
  			integrity = abilities.get(i).complete() && integrity;
  		}
         
-		// Fill ability pool:
+		// Fill ability quick access:
         abilityPool = new Hashtable<String, Ability>();
 		for (int i = 0; i < abilities.size(); i++) {
 			abilityPool.put(abilities.get(i).getAbilityName(), abilities.get(i));
+		}
+		
+		// Profession definitions:
+		if(professionDefinitions == null){
+			professionDefinitions = new ArrayList<ProfessionInformation.ProfessionDefinition>();
+			Saga.severe("profession information professionDefinitions field is not initialized. Adding two example definitions.");
+			professionDefinitions.add(new ProfessionDefinition("ProfessionName1", new Material[]{Material.WOOD_AXE, Material.INK_SACK}, ProfessionType.CLASS, new String[]{"Ability1", "Ability2", "Ability3"}));
+			professionDefinitions.add(new ProfessionDefinition("ProfessionName2", new Material[]{Material.LADDER, Material.SAND}, ProfessionType.CLASS, new String[]{"Ability1", "Ability2", "Ability3"}));
+			integrity=false;
+		}
+				
+		// Check definitions for null and integrity:		
+		for (int i = 0; i < professionDefinitions.size(); i++) {
+			if(professionDefinitions.get(i) == null){
+				Saga.severe("Found an undefined element in profession information professionDefinitions field. Removing element.");
+				professionDefinitions.remove(i);
+				i--;
+			}else{
+				integrity = professionDefinitions.get(i).complete() && integrity;
+			}
+		}
+				
+		// Add abilities to definitions:
+		for (ProfessionDefinition definition : professionDefinitions) {
+			
+			String[] abilityNames = definition.abilityNames;
+			ArrayList<Ability> abilities = new ArrayList<Ability>();
+			for (int i = 0; i < abilityNames.length; i++) {
+				Ability ability = abilityPool.get(abilityNames[i]);
+				if(ability == null){
+					Saga.severe("Could not find an ability named " + abilityNames[i] + ". Ignoring ability.");
+				}else{
+					abilities.add(ability);
+				}
+			}
+			definition.addAbilities(abilities.toArray(new Ability[abilities.size()]));
+			
+		}
+		
+		// Add definitions to quick access:
+		professionDefinitionPool = new Hashtable<String, ProfessionInformation.ProfessionDefinition>();
+		for (ProfessionDefinition definition : professionDefinitions) {
+			professionDefinitionPool.put(definition.getName(), definition);
 		}
         
 		return integrity;
@@ -170,33 +191,31 @@ public class ProfessionInformation {
 	
 	// Interaction:
 	/**
-	 * Gets abilities associated with the given profession name
+	 * Gets a profession definition.
 	 * 
-	 * @param professionName profession name
-	 * @return all abilities associated. Empty if none
+	 * @param name profession name.
+	 * @return definition. null if not found
 	 */
-	public Ability[] getAbilities(String professionName) {
+	public ProfessionDefinition getDefinition(String name){
 		
 		
-		String[] abilityNames = abilitiAssociations.get(professionName);
-		
-		// Return empty if no abilities found:
-		if(abilityNames == null){
-			return new Ability[0];
+		ProfessionDefinition definition = professionDefinitionPool.get(name);
+		if(definition == null){
+			return null;
 		}
-		
-		// Add abilities:
-		ArrayList<Ability> abilities = new ArrayList<Ability>();
-		for (int i = 0; i < abilityNames.length; i++) {
-			Ability ability = abilityPool.get(abilityNames[i]);
-			if(ability != null){
-				abilities.add(ability);
-			}
-		}
-		
-		return abilities.toArray(new Ability[abilities.size()]); 
+		return definition;
 		
 		
+	}
+	
+	/**
+	 * Creates a filler for an invalid definition.
+	 * 
+	 * @param name name
+	 * @return empty definition with {@link ProfessionType#INVALID} type
+	 */
+	public ProfessionDefinition createInvalidDefinition2(String name) {
+		return new ProfessionDefinition(name, new Material[0], ProfessionType.INVALID, new String[0]);
 	}
 	
 	/**
@@ -210,8 +229,11 @@ public class ProfessionInformation {
 		
 	}
 	
-	
-	// Saving and loading:
+	/**
+	 * Loads profession information.
+	 * 
+	 * @return profession information
+	 */
 	public static ProfessionInformation load(){
 		
 		
@@ -265,5 +287,175 @@ public class ProfessionInformation {
 		
 	}
 	
+	
+	/**
+	 * Defines a profession.
+	 * 
+	 * @author andf
+	 *
+	 */
+	public static class ProfessionDefinition{
+		
+		
+		/**
+		 * Profession name.
+		 */
+		private String name;
+		
+		/**
+		 * Profession materials.
+		 */
+		private Material[] materials;
+		
+		/**
+		 * Profession type.
+		 */
+		private ProfessionType type;
+		
+		/**
+		 * Ability names.
+		 */
+		private String[] abilityNames;
+		
+		/**
+		 * Abilities.
+		 */
+		transient private Ability[] abilities;
+		
+		
+		/**
+		 * Udes by gson.
+		 * 
+		 */
+		public ProfessionDefinition() {
+		}
+
+		/**
+		 * Creates definition.
+		 * 
+		 * @param name name
+		 * @param materials materials
+		 * @param type type
+		 * @param abilityNames ability names
+		 */
+		public ProfessionDefinition(String name, Material[] materials, ProfessionType type, String[] abilityNames) {
+			this.name = name;
+			this.materials = materials;
+			this.type = type;
+			this.abilityNames = abilityNames;
+		}
+		
+		/**
+		 * Completes the definition. Abilities need to be added.
+		 * 
+		 * @return integrity.
+		 */
+		private boolean complete() {
+
+			
+			boolean integrity=true;
+			
+			if(name == null){
+				name = "";
+				Saga.severe("Profession definition name field not initialized. Setting empty String.");
+				integrity=false;
+			}
+			if(materials == null){
+				materials = new Material[0];
+				Saga.severe("Profession definition type field not initialized. Setting empty array.");
+				integrity=false;
+			}
+			if(type == null){
+				type = ProfessionType.INVALID;
+				Saga.severe("Profession definition type field not initialized. Setting NEITHER.");
+				integrity=false;
+			}
+			if(abilityNames == null){
+				abilityNames = new String[0];
+				Saga.severe("Profession definition abilityNames field not initialized. Setting empty array.");
+				integrity=false;
+			}
+			
+			abilities = new Ability[0];
+			
+			return integrity;
+			
+			
+		}
+		
+		
+		/**
+		 * Adds abilities.
+		 * 
+		 * @param abilities abilities
+		 */
+		private void addAbilities(Ability[] abilities) {
+			this.abilities = abilities;
+		}
+		
+		/**
+		 * Gets abilities.
+		 * 
+		 * @return abilities.
+		 */
+		public Ability[] getAbilities() {
+			return abilities;
+		}
+		
+		/**
+		 * Gets ability name.
+		 * 
+		 * @return ability name.
+		 */
+		public String getName() {
+			return name;
+		}
+		
+		/**
+		 * Gets materials.
+		 * 
+		 * @return materials
+		 */
+		public Material[] getMaterials() {
+			return materials;
+		}
+		
+		/**
+		 * Gets profession type.
+		 * 
+		 * @return profession type
+		 */
+		public ProfessionType getType() {
+			return type;
+		}
+		
+		
+	}
+
+	
+	/**
+	 * Used when an invalid profession reqest is made.
+	 * 
+	 * @author andf
+	 *
+	 */
+	public static class InvalidProfessionException extends Exception{
+
+		/**
+		 * 
+		 */
+		private static final long serialVersionUID = 1L;
+		
+		/**
+		 * Sets a profession name.
+		 * 
+		 * @param name name
+		 */
+		public InvalidProfessionException(String name) {
+			super("profession name="+name);
+		}
+		
+		
+	}
 	
 }

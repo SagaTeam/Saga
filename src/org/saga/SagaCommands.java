@@ -5,6 +5,8 @@
 
 package org.saga;
 
+import java.util.ArrayList;
+
 import org.saga.constants.PlayerMessages;
 import org.saga.exceptions.SagaPlayerNotLoadedException;
 import org.saga.professions.Profession;
@@ -61,16 +63,20 @@ public class SagaCommands {
     		sagaPlayer.sendMessage(PlayerMessages.playerStats(sagaPlayer));
     		
     	}else{
-    		Profession[] professions = sagaPlayer.getProfessions();
-    		for (int i = 0; i < professions.length; i++) {
-				if(professions[i].getName().equalsIgnoreCase(args.getString(0))){
-					sagaPlayer.sendMessage(PlayerMessages.professionStats(professions[i]));
+    		ArrayList<Profession> professions = sagaPlayer.getProfessions();
+    		for (int i = 0; i < professions.size(); i++) {
+				if(professions.get(i).getName().equalsIgnoreCase(args.getString(0))){
+					sagaPlayer.sendMessage(PlayerMessages.professionStats(professions.get(i)));
 					break;
 				}
-				if(i == professions.length - 1){
-					sagaPlayer.sendMessage(PlayerMessages.invalidProfession(args.getString(0)));
+				if(i == professions.size() - 1){
+					sagaPlayer.sendMessage(PlayerMessages.professionInvalid(args.getString(0)));
 				}
 			}
+    		if(professions.size() == 0){
+    			sagaPlayer.sendMessage(PlayerMessages.professionsNotAvailable());
+    		}
+    		
     	}
 
     	
@@ -122,16 +128,19 @@ public class SagaCommands {
     		sagaPlayer.sendMessage(PlayerMessages.playerStats(otherSagaPlayer));
     		
     	}else{
-    		Profession[] otherProfessions = otherSagaPlayer.getProfessions();
-    		for (int i = 0; i < otherProfessions.length; i++) {
-				if(otherProfessions[i].getName().equalsIgnoreCase(args.getString(1))){
-					sagaPlayer.sendMessage(PlayerMessages.professionStats(otherProfessions[i]));
+    		ArrayList<Profession> otherProfessions = otherSagaPlayer.getProfessions();
+    		for (int i = 0; i < otherProfessions.size(); i++) {
+				if(otherProfessions.get(i).getName().equalsIgnoreCase(args.getString(1))){
+					sagaPlayer.sendMessage(PlayerMessages.professionStats(otherProfessions.get(i)));
 					break;
 				}
-				if(i == otherProfessions.length - 1){
-					sagaPlayer.sendMessage(PlayerMessages.invalidProfession(args.getString(1)));
+				if(i == otherProfessions.size() - 1){
+					sagaPlayer.sendMessage(PlayerMessages.professionInvalid(args.getString(1)));
 				}
 			}
+    		if(otherProfessions.size() == 0){
+    			sagaPlayer.sendMessage(PlayerMessages.professionsNotAvailable());
+    		}
     	}
     	
     	// Unload player if needed:
@@ -200,17 +209,20 @@ public class SagaCommands {
     	}
     	
     	// Execute the command:
-    	Profession[] othersProfessions = otherSagaPlayer.getProfessions();
-    	for (int i = 0; i < othersProfessions.length; i++) {
-			if(othersProfessions[i].getName().equalsIgnoreCase(args.getString(1))){
-				othersProfessions[i].setLevel(level);
-				sagaPlayer.sendMessage(PlayerMessages.setLevelTo(otherSagaPlayer.getName(), othersProfessions[i], level));
-				Saga.info(PlayerMessages.setLevelTo(otherSagaPlayer.getName(), othersProfessions[i], level) , sagaPlayer.getName());
+    	ArrayList<Profession> otherProfessions = otherSagaPlayer.getProfessions();
+    	for (int i = 0; i < otherProfessions.size(); i++) {
+			if(otherProfessions.get(i).getName().equalsIgnoreCase(args.getString(1))){
+				otherProfessions.get(i).setLevel(level);
+				sagaPlayer.sendMessage(PlayerMessages.setLevelTo(otherSagaPlayer.getName(), otherProfessions.get(i), level));
+				Saga.info(PlayerMessages.setLevelTo(otherSagaPlayer.getName(), otherProfessions.get(i), level) , sagaPlayer.getName());
 				break;
 			}
-			if(i == othersProfessions.length - 1){
-				sagaPlayer.sendMessage(PlayerMessages.invalidProfession(args.getString(1)));
+			if(i == otherProfessions.size() - 1){
+				sagaPlayer.sendMessage(PlayerMessages.professionInvalid(args.getString(1)));
 			}
+		}
+    	if(otherProfessions.size() == 0){
+			sagaPlayer.sendMessage(PlayerMessages.professionsNotAvailable());
 		}
     	
     	// Unload player if needed:
@@ -236,24 +248,26 @@ public class SagaCommands {
     public static void levelup(CommandContext args, Saga plugin, SagaPlayer sagaPlayer) {
     	
     	
-    	Profession[] professions = sagaPlayer.getProfessions();
-    	for (int i = 0; i < professions.length; i++) {
-			if(professions[i].getName().equalsIgnoreCase(args.getString(0))){
-				Short level = (short) (professions[i].getLevel() + 1);
+    	ArrayList<Profession> professions = sagaPlayer.getProfessions();
+    	for (int i = 0; i < professions.size(); i++) {
+			if(professions.get(i).getName().equalsIgnoreCase(args.getString(0))){
+				Short level = (short) (professions.get(i).getLevel() + 1);
 				if(level < 0 || level > Saga.balanceInformation().maximumLevel){
 					sagaPlayer.sendMessage(PlayerMessages.levelLimitReached(level));
 					return;
 				}
-				professions[i].setLevel(level);
-				sagaPlayer.sendMessage(PlayerMessages.setLevelTo(sagaPlayer.getName(), professions[i], level));
-				Saga.info(PlayerMessages.setLevelTo(sagaPlayer.getName(), professions[i], level) , sagaPlayer.getName());
+				professions.get(i).setLevel(level);
+				sagaPlayer.sendMessage(PlayerMessages.setLevelTo(sagaPlayer.getName(), professions.get(i), level));
+				Saga.info(PlayerMessages.setLevelTo(sagaPlayer.getName(), professions.get(i), level) , sagaPlayer.getName());
 				break;
 			}
-			if(i == professions.length - 1){
-				sagaPlayer.sendMessage(PlayerMessages.invalidProfession(args.getString(0)));
+			if(i == professions.size() - 1){
+				sagaPlayer.sendMessage(PlayerMessages.professionInvalid(args.getString(0)));
 			}
 		}
-    	
+    	if(professions.size() == 0){
+			sagaPlayer.sendMessage(PlayerMessages.professionsNotAvailable());
+		}
 
 	}
     
@@ -269,25 +283,200 @@ public class SagaCommands {
     public static void leveldown(CommandContext args, Saga plugin, SagaPlayer sagaPlayer) {
     	
     	
-    	Profession[] professions = sagaPlayer.getProfessions();
-    	for (int i = 0; i < professions.length; i++) {
-			if(professions[i].getName().equalsIgnoreCase(args.getString(0))){
-				Short level = (short) (professions[i].getLevel() - 1);
+    	ArrayList<Profession> professions = sagaPlayer.getProfessions();
+    	for (int i = 0; i < professions.size(); i++) {
+			if(professions.get(i).getName().equalsIgnoreCase(args.getString(0))){
+				Short level = (short) (professions.get(i).getLevel() - 1);
 				if(level<0 || level>Saga.balanceInformation().maximumLevel){
 					sagaPlayer.sendMessage(PlayerMessages.levelLimitReached(level));
 					return;
 				}
-				professions[i].setLevel(level);
-				sagaPlayer.sendMessage(PlayerMessages.setLevelTo(sagaPlayer.getName(), professions[i], level));
-				Saga.info(PlayerMessages.setLevelTo(sagaPlayer.getName(), professions[i], level) , sagaPlayer.getName());
+				professions.get(i).setLevel(level);
+				sagaPlayer.sendMessage(PlayerMessages.setLevelTo(sagaPlayer.getName(), professions.get(i), level));
+				Saga.info(PlayerMessages.setLevelTo(sagaPlayer.getName(), professions.get(i), level) , sagaPlayer.getName());
 				break;
 			}
-			if(i == professions.length-1){
-				sagaPlayer.sendMessage(PlayerMessages.invalidProfession(args.getString(0)));
+			if(i == professions.size()-1){
+				sagaPlayer.sendMessage(PlayerMessages.professionInvalid(args.getString(0)));
 			}
+		}
+    	if(professions.size() == 0){
+			sagaPlayer.sendMessage(PlayerMessages.professionsNotAvailable());
 		}
     	
 
 	}
+    
+    @Command(
+            aliases = {"addprofessionother", "addprofother"},
+            usage = " PlayerName ProfessionName",
+            flags = "",
+            desc = "Adds a profession to a player.",
+            min = 2,
+            max = 2
+        )
+    @CommandPermissions({"saga.admin.addProfessionOther"})
+    public static void addProfessionOther(CommandContext args, Saga plugin, SagaPlayer sagaPlayer) {
+    	
+    	
+    	// Check if the player is loaded and exists:
+    	SagaPlayer otherSagaPlayer;
+    	boolean loadedPlayer = false;
+    	if(!plugin.isSagaPlayerLoaded(args.getString(0))){
+    		if(!plugin.isSagaPlayerExistant(args.getString(0))){
+    			sagaPlayer.sendMessage(PlayerMessages.nonExistantPlayer(args.getString(0)));
+    			return;
+    		}
+    		if(Saga.debuging()) sagaPlayer.sendMessage(PlayerMessages.loadingPlayerInformation(args.getString(0)));
+    		Saga.info(PlayerMessages.loadingPlayerInformation(args.getString(0)), sagaPlayer.getName());
+    		plugin.loadSagaPlayer(args.getString(0));
+    		loadedPlayer = true;
+    		try {
+				otherSagaPlayer = plugin.getSagaPlayer(args.getString(0));
+			} catch (SagaPlayerNotLoadedException e) {
+				Saga.severe("Failed to use otherAddProfession command because the target player was not loaded.", args.getString(0));
+				return;
+			}
+    	}else{
+    		try {
+				otherSagaPlayer = plugin.getSagaPlayer(args.getString(0));
+			} catch (SagaPlayerNotLoadedException e) {
+				Saga.severe("Failed to use otherAddProfession command because the target player was not loaded.", args.getString(0));
+				return;
+			}
+    	}
+    	
+    	// Execute command:
+    	String name = args.getString(1);
+    	if(otherSagaPlayer.canAddProfession(name)){
+    		otherSagaPlayer.addProfession(name);
+    		sagaPlayer.sendMessage(PlayerMessages.professionsAdded(name));
+    		Saga.info("Added a profession named " + name + " to " + otherSagaPlayer.getName() + ".", sagaPlayer.getName());
+    	}else{
+    		sagaPlayer.sendMessage(PlayerMessages.professionCantBeAdded(name));
+    	}
+    	
+    	// Unload player if needed:
+    	if(!otherSagaPlayer.isOnlinePlayer() && loadedPlayer){
+    		if(Saga.debuging()) sagaPlayer.sendMessage(PlayerMessages.unloadingPlayerInformation(args.getString(0)));
+    		Saga.info(PlayerMessages.unloadingPlayerInformation(args.getString(0)), sagaPlayer.getName());
+    		plugin.unloadSagaPlayer(args.getString(0));
+    	}
+    	
+    	
+    	
+    }
+    
+    @Command(
+            aliases = {"addprofession", "addprof"},
+            usage = " ProfessionName",
+            flags = "",
+            desc = "Adds a profession.",
+            min = 1,
+            max = 1
+        )
+    @CommandPermissions({"saga.user.addProfessionOther"})
+    public static void addProfession(CommandContext args, Saga plugin, SagaPlayer sagaPlayer) {
+    	
+    	
+    	// Execute command:
+    	String name = args.getString(0);
+    	if(sagaPlayer.canAddProfession(name)){
+    		sagaPlayer.addProfession(name);
+    		sagaPlayer.sendMessage(PlayerMessages.professionsAdded(name));
+    		Saga.info("Added a profession named " + name + " to " + sagaPlayer.getName() + ".", sagaPlayer.getName());
+    	}else{
+    		sagaPlayer.sendMessage(PlayerMessages.professionCantBeAdded(name));
+    	}
+    	
+    	
+    }
+    
+    @Command(
+            aliases = {"removeprofessionother", "remprofother"},
+            usage = " PlayerName ProfessionName",
+            flags = "",
+            desc = "Removes a profession from a player.",
+            min = 2,
+            max = 2
+        )
+    @CommandPermissions({"saga.admin.addProfessionOther"})
+    public static void removeProfessionOther(CommandContext args, Saga plugin, SagaPlayer sagaPlayer) {
+    	
+    	
+    	// Check if the player is loaded and exists:
+    	SagaPlayer otherSagaPlayer;
+    	boolean loadedPlayer = false;
+    	if(!plugin.isSagaPlayerLoaded(args.getString(0))){
+    		if(!plugin.isSagaPlayerExistant(args.getString(0))){
+    			sagaPlayer.sendMessage(PlayerMessages.nonExistantPlayer(args.getString(0)));
+    			return;
+    		}
+    		if(Saga.debuging()) sagaPlayer.sendMessage(PlayerMessages.loadingPlayerInformation(args.getString(0)));
+    		Saga.info(PlayerMessages.loadingPlayerInformation(args.getString(0)), sagaPlayer.getName());
+    		plugin.loadSagaPlayer(args.getString(0));
+    		loadedPlayer = true;
+    		try {
+				otherSagaPlayer = plugin.getSagaPlayer(args.getString(0));
+			} catch (SagaPlayerNotLoadedException e) {
+				Saga.severe("Failed to use otherAddProfession command because the target player was not loaded.", args.getString(0));
+				return;
+			}
+    	}else{
+    		try {
+				otherSagaPlayer = plugin.getSagaPlayer(args.getString(0));
+			} catch (SagaPlayerNotLoadedException e) {
+				Saga.severe("Failed to use otherAddProfession command because the target player was not loaded.", args.getString(0));
+				return;
+			}
+    	}
+    	
+    	// Execute command:
+    	String name = args.getString(1);
+    	if(otherSagaPlayer.canRemoveProfession(name)){
+    		otherSagaPlayer.removeProfession(name);
+    		sagaPlayer.sendMessage(PlayerMessages.professionsRemoved(name));
+    		Saga.info("Removed a profession named " + name + " from " + otherSagaPlayer.getName() + ".", sagaPlayer.getName());
+    	}else{
+    		sagaPlayer.sendMessage(PlayerMessages.professionCantBeRemoved(name));
+    	}
+    	
+    	// Unload player if needed:
+    	if(!otherSagaPlayer.isOnlinePlayer() && loadedPlayer){
+    		if(Saga.debuging()) sagaPlayer.sendMessage(PlayerMessages.unloadingPlayerInformation(args.getString(0)));
+    		Saga.info(PlayerMessages.unloadingPlayerInformation(args.getString(0)), sagaPlayer.getName());
+    		plugin.unloadSagaPlayer(args.getString(0));
+    	}
+    	
+    	
+    	
+    }
+    
+    @Command(
+            aliases = {"removeprofession", "remprof"},
+            usage = " PlayerName",
+            flags = "",
+            desc = "Removes a profession.",
+            min = 1,
+            max = 1
+        )
+    @CommandPermissions({"saga.user.addProfessionOther"})
+    public static void removeProfession(CommandContext args, Saga plugin, SagaPlayer sagaPlayer) {
+    	
+    	
+    	// Execute command:
+    	String name = args.getString(0);
+    	if(sagaPlayer.canRemoveProfession(name)){
+    		sagaPlayer.removeProfession(name);
+    		sagaPlayer.sendMessage(PlayerMessages.professionsRemoved(name));
+    		Saga.info("Removed a profession named " + name + " from himself.", sagaPlayer.getName());
+    	}else{
+    		sagaPlayer.sendMessage(PlayerMessages.professionCantBeRemoved(name));
+    	}
+    	
+    	
+    }
+    
+    
     
 }

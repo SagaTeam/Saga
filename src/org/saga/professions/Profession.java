@@ -12,6 +12,8 @@ import org.bukkit.event.block.BlockPlaceEvent;
 import org.bukkit.event.entity.EntityDamageByEntityEvent;
 import org.bukkit.event.entity.EntityDamageEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
+import org.saga.ProfessionInformation.InvalidProfessionException;
+import org.saga.ProfessionInformation.ProfessionDefinition;
 import org.saga.Saga;
 import org.saga.SagaPlayer;
 import org.saga.abilities.Ability;
@@ -26,7 +28,7 @@ import org.saga.abilities.types.OnActivateAbility;
 import org.saga.constants.PlayerDefaults;
 import org.saga.constants.PlayerMessages;
 
-public abstract class Profession {
+public class Profession {
 
 	
 	// General:
@@ -39,8 +41,13 @@ public abstract class Profession {
 	/**
 	 * Profession name.
 	 */
-	transient private String professionName = "";
+	private String professionName;
 
+	/**
+	 * Contains all information needed for the profession.
+	 */
+	transient private ProfessionDefinition professionDefinition;
+	
 	// Access:
 	/**
 	 * Saga player.
@@ -61,11 +68,6 @@ public abstract class Profession {
 
 	
 	// Abilities:
-	/**
-	 * All abilities.
-	 */
-	transient private Ability[] abilities;
-
 	/**
 	 * Active abilities.
 	 */
@@ -131,14 +133,16 @@ public abstract class Profession {
 	 * Used by gson.
 	 * 
 	 */
-	public Profession() {
+	@SuppressWarnings("unused")
+	private Profession() {
 	}
 	
 	/**
 	 * Goes trough all the fields and makes sure everything has been set after gson load.
 	 * If not, it fills the field with defaults.
+	 * @throws InvalidProfessionException thrown when the profession has an invalid name
 	 */
-	public void complete() {
+	public void complete() throws InvalidProfessionException {
 		
 		
 		// Fields:
@@ -151,18 +155,17 @@ public abstract class Profession {
 			Saga.info("Setting default value for profession levelExperience.", sagaPlayer.getName());
 		}
 		
-		// Inheriting class:
-		completeExtended();
-		
 		// Initialize dependent fields:
-		
 		experienceRequirement = calculateExperienceRequirement(level);
 		
 		// Initiate attributes:
 		modifyAttributeUpgrades(getRawLevel());
 		
-		// Retrieve abilities:
-		abilities =  Saga.abilityInformation().getAbilities(getName());
+		// Retrieve definition and abilities:
+		professionDefinition = Saga.professionInformation().getDefinition(getName());
+		if(professionDefinition == null){
+			throw new InvalidProfessionException(getName());
+		}
 		
 		// Distribute abilities:
 		damagedLivingEntityAbilities = new ArrayList<OnDamagedLivingEntity>();
@@ -172,6 +175,7 @@ public abstract class Profession {
 		onActivateAbilities = new ArrayList<OnActivateAbility>();
 		blockDamageAbilities = new ArrayList<OnBlockDamage>();
 		
+		Ability[] abilities = professionDefinition.getAbilities();
 		for (int i = 0; i < abilities.length; i++) {
 			
 			if(abilities[i] instanceof OnDamagedLivingEntity){
@@ -203,12 +207,7 @@ public abstract class Profession {
 		
 		
 	}
-	
-	/**
-	 * Does a complete for an extended classes.
-	 */
-	public abstract void completeExtended();
-	
+
 	/**
 	 * Wraps all required variables.
 	 * 
@@ -239,7 +238,9 @@ public abstract class Profession {
 	 * 
 	 * @return profession type
 	 */
-	public abstract ProfessionType getProfessionType();
+	public ProfessionType getProfessionType(){
+		return professionDefinition.getType();
+	}
 	
 	/**
 	 * Returns all abilities for the profession.
@@ -247,7 +248,7 @@ public abstract class Profession {
 	 * @return all abilities
 	 */
 	public Ability[] getAbilities(){
-		return abilities;
+		return professionDefinition.getAbilities();
 	}
 
 	/**
@@ -260,7 +261,7 @@ public abstract class Profession {
 		
 		
 		for (int i = 0; i < activeAbilities.length; i++) {
-			if(abilities[i].equals(ability)){
+			if(professionDefinition.getAbilities()[i].equals(ability)){
 				return activeAbilities[i];
 			}
 		}
@@ -279,7 +280,7 @@ public abstract class Profession {
 		
 		
 		for (int i = 0; i < activeAbilities.length; i++) {
-			if(abilities[i].equals(ability.getAbility())){
+			if(professionDefinition.getAbilities()[i].equals(ability.getAbility())){
 				return activeAbilities[i];
 			}
 		}
@@ -293,7 +294,9 @@ public abstract class Profession {
 	 * 
 	 * @return ability scroll materials
 	 */
-	public abstract Material[] getAbilityScrollMaterials();
+	public Material[] getAbilityScrollMaterials(){
+		return professionDefinition.getMaterials();
+	}
 	
 	/**
 	 * Adds experience
@@ -642,9 +645,9 @@ public abstract class Profession {
 	/**
 	 * Sends a clock tick.
 	 *
-	 * @param pTick tick number
+	 * @param tick tick number
 	 */
-	public void clockTickEvent(int pTick) {
+	public void clockTickEvent(int tick) {
 
 		
 		
@@ -662,8 +665,8 @@ public abstract class Profession {
 		
 		// Activate if not a single use:
 		if(!ability2.getActivateType().equals(AbilityActivateType.INSTANTANEOUS)){
-			for (int i = 0; i < abilities.length; i++) {
-				if(abilities[i].equals(ability2)){
+			for (int i = 0; i < professionDefinition.getAbilities().length; i++) {
+				if(professionDefinition.getAbilities()[i].equals(ability2)){
 					activeAbilities[i] = true;
 					return;
 				}
@@ -696,8 +699,8 @@ public abstract class Profession {
 	public void abilityDeactivateEvent(Ability ability){
 		
 		
-		for (int i = 0; i < abilities.length; i++) {
-			if(abilities[i].equals(ability)){
+		for (int i = 0; i < professionDefinition.getAbilities().length; i++) {
+			if(professionDefinition.getAbilities()[i].equals(ability)){
 				activeAbilities[i] = false;
 				return;
 			}
@@ -715,7 +718,7 @@ public abstract class Profession {
 	 */
 	public enum ProfessionType{
 		
-		NEITHER("neither"),
+		INVALID("invalid"),
 		PROFESSION("profession"),
 		CLASS("class"),
 		SPECIALIZATION("specialization"),

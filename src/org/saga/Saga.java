@@ -74,7 +74,7 @@ public class Saga extends JavaPlugin {
     	return attributeInformation;
     }
     
-    static public ProfessionInformation abilityInformation(){
+    static public ProfessionInformation professionInformation(){
     	return professionInformation;
     }
     

@@ -34,15 +34,15 @@ public class PlayerAbilityManager {
 	 * @param sagaPlayer saga player
 	 * @param activeProfessions active professions
 	 */
-	public PlayerAbilityManager(SagaPlayer sagaPlayer, Profession[] activeProfessions) {
+	public PlayerAbilityManager(SagaPlayer sagaPlayer, ArrayList<Profession> activeProfessions) {
 	
 		
 		this.sagaPlayer = sagaPlayer;
 		
-		for (int i = 0; i < activeProfessions.length; i++) {
+		for (int i = 0; i < activeProfessions.size(); i++) {
 			
-			Ability[] abilities = activeProfessions[i].getAbilities();
-			Material[] materials = activeProfessions[i].getAbilityScrollMaterials(); 
+			Ability[] abilities = activeProfessions.get(i).getAbilities();
+			Material[] materials = activeProfessions.get(i).getAbilityScrollMaterials(); 
 			
 			// Associate each material with an ability:
 			for (int j = 0; j < materials.length; j++) {
@@ -58,7 +58,7 @@ public class PlayerAbilityManager {
 			
 			// Associate each ability with a profession:
 			for (int j = 0; j < abilities.length; j++) {
-				abilityProfessions.put(abilities[j], activeProfessions[i]);
+				abilityProfessions.put(abilities[j], activeProfessions.get(i));
 			}
 			
 		}

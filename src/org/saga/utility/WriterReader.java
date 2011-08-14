@@ -14,8 +14,6 @@ import org.saga.abilities.AbilityDeserializer;
 import org.saga.attributes.Attribute;
 import org.saga.attributes.AttributeDeserializer;
 import org.saga.constants.*;
-import org.saga.professions.Profession;
-import org.saga.professions.ProfessionDeserializer;
 
 public class WriterReader {
 
@@ -78,9 +76,9 @@ public class WriterReader {
             }
             fin.close();
 
-            GsonBuilder gsonBuilder= new GsonBuilder();
-            gsonBuilder.registerTypeAdapter(Profession.class, new ProfessionDeserializer());
-            Gson gson = gsonBuilder.create();
+//            GsonBuilder gsonBuilder= new GsonBuilder();
+//            gsonBuilder.registerTypeAdapter(Profession.class, new ProfessionDeserializer());
+            Gson gson = new Gson();
             return gson.fromJson(strContent.toString(), SagaPlayer.class);
 		
 		

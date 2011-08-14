@@ -26,6 +26,8 @@ import org.saga.pattern.SagaPatternElement;
 import org.saga.pattern.SagaPatternInitiator;
 import org.saga.professions.*;
 import org.saga.utility.WriterReader;
+import org.saga.ProfessionInformation.InvalidProfessionException;
+import org.saga.ProfessionInformation.ProfessionDefinition;
 import org.saga.SagaPlayerListener.SagaPlayerProjectileShotEvent;
 import org.saga.SagaPlayerListener.SagaPlayerProjectileShotEvent.ProjectileType;
 import org.saga.abilities.Ability;
@@ -58,13 +60,7 @@ public class SagaPlayer{
 	/**
 	 * All professions.
 	 */
-	public Profession[] professions;
-	
-	/**
-	 * Professions that the player can interact with.
-	 */
-	private Boolean[] selectedProfessions;
-	
+	private ArrayList<Profession> professions;
 	
 	// Abilities:
 	/**
@@ -138,51 +134,176 @@ public class SagaPlayer{
 		}
 		
 		// Professions field is null:
-		Profession[] allProfessions = Saga.balanceInformation().getAllProfessions();
 		if(professions == null){
-			Saga.info("Initializing new player professions field.", name);
-			professions = allProfessions;
+			Saga.info("Initializing an empty professions field.", name);
+			professions = new ArrayList<Profession>();
 		}
 		
-		// Selected professions field is null or wrong length:
-		if(selectedProfessions == null || selectedProfessions.length!=allProfessions.length){
-			Saga.info("Initializing new player selected professions field.", name);
-			selectedProfessions = new Boolean[allProfessions.length];
-			for (int i = 0; i < selectedProfessions.length; i++) {
-				selectedProfessions[i] = true; // TODO Profession filter here
-			}
-		}
-		
-		// Professions field wrong length:
-		if(professions.length != allProfessions.length){
-			Saga.info("Initializing new player professions field.", name);
-			Profession[] professionsCorected = new Profession[allProfessions.length];
-			for (int i = 0; i < professions.length; i++) {
-				professionsCorected[i] = professions[i];
-			}
-			professions = professionsCorected;
-		}
-		
-		// All professions:
-		for (int i = 0; i < allProfessions.length; i++) {
-			Profession profession = professions[i];
-			if(profession == null || (!profession.getClass().equals(allProfessions[i].getClass()))){
-				profession = allProfessions[i];
-				professions[i] = profession;
-				Saga.info("Adding "+profession.getClass().getSimpleName() + " player profession and setting default values.", name);
-			}
+		// Complete and give access to professions:
+		for (int i = 0; i < professions.size(); i++) {
+			Profession profession = professions.get(i);
 			profession.setAccess(this);
-			profession.complete();
-			
-			
+			try {
+				profession.complete();
+			} catch (InvalidProfessionException e) {
+				Saga.severe(profession.getName() + " is an invalid profession name. Disabling player information saving and removing the element.", getName());
+				professions.remove(i);
+				i--;
+				setSavingEnabled(false);
+			}
 		}
 		
-		// Initiate ability manager:
-		abilityManager = new PlayerAbilityManager(this, professions);
+		// Update ability manager:
+		updateAbilityManager();
 		
 		
 	}
 	
+	/**
+	 * Updates the ability manager.
+	 * 
+	 */
+	private void updateAbilityManager() {
+		
+		abilityManager = new PlayerAbilityManager(this, professions);
+		
+	}
+	
+	
+	// Professions:
+	/**
+	 * Adds a profession.
+	 * 
+	 * @param professionName name
+	 */
+	public void addProfession(String professionName) {
+
+		
+		// Check if can be added:
+		if(!canAddProfession(professionName)){
+			Saga.severe("Cant add a profassion named " + professionName+ ".", getName());
+			return;
+		}
+		
+		// Create a profession.
+		Profession profession = new Profession(professionName);
+		profession.setAccess(this);
+		try {
+			profession.complete();
+			
+		} catch (InvalidProfessionException e) {
+			Saga.severe("" + professionName+ " is an invalid profession name. Ignoring profession add.", getName());
+			return;
+		}
+		
+		// Add:
+		professions.add(profession);
+		
+		// Update ability manager:
+		updateAbilityManager();
+		
+		
+	}
+
+	/**
+	 * Checks if the profession can be added.
+	 * 
+	 * @param professionName profession name
+	 * @return true if the profession can be added
+	 */
+	public boolean canAddProfession(String professionName){
+
+		
+		// Check if already exists:
+		for (Profession profession : professions) {
+			if(profession.getName().equals(professionName)){
+				return false;
+			}
+		}
+		
+		// Retrieve definition and check if it exists:
+		ProfessionDefinition definition = Saga.professionInformation().getDefinition(professionName);
+		if(definition == null){
+			return false;
+		}
+		
+		// Check open slots:
+		for (int i = 0; i < professions.size(); i++) {
+			if (professions.get(i).getProfessionType().equals(definition.getType())) {
+				return false;
+			}
+		}
+		
+		return true;
+		
+		
+	}
+
+	/**
+	 * Removes a profession.
+	 * 
+	 * @param professionName name
+	 */
+	public void removeProfession(String professionName) {
+
+		
+		// Remove element:
+		int oldSize = professions.size();
+		for (int i = 0; i < professions.size(); i++) {
+			if(professions.get(i).getName().equals(professionName)){
+				professions.remove(i);
+				i--;
+			}
+		}
+		if(professions.size() == oldSize){
+			Saga.severe("Tried to remove a non existing profession named " + professionName+ ".", getName());
+		}
+		
+		// Update ability manager:
+		updateAbilityManager();
+		
+		
+	}
+	
+	/**
+	 * Checks if the profession can be removed.
+	 * 
+	 * @param professionName profession name
+	 * @return true if can be removed.
+	 */
+	public boolean canRemoveProfession(String professionName) {
+	
+		
+		// Check if exists:
+		for (Profession profession : professions) {
+			if(profession.getName().equals(professionName)){
+				return true;
+			}
+		}
+		return false;
+		
+		
+	}
+	
+	/**
+	 * Checks if the saga player has a profession with the given name.
+	 * 
+	 * @param professionName name
+	 * @return true if the player has the profession
+	 */
+	public boolean hasProfession(String professionName) {
+
+		
+		for (int i = 0; i < professions.size(); i++) {
+			if(professions.get(i).getName().equals(professionName)){
+				return true;
+			}
+		}
+		return false;
+		
+		
+	}
+
 	
 	// Player entity management:
 	/**
@@ -640,8 +761,8 @@ public class SagaPlayer{
 		
 	}
 	
+	
 	// Projectile ability and attribute use:
-
 	/**
 	 * Shoots a fireball.
 	 * 
@@ -667,7 +788,7 @@ public class SagaPlayer{
 		WorldServer serverWorld = ((CraftWorld) player.getWorld()).getHandle();
 		Location shootLocation = player.getEyeLocation();
 
-		double startDistance = 3;
+		double startDistance = 2;
 		Vector aimVector = shootLocation.getDirection();
 		
 		shootLocation.add(aimVector.getX() * startDistance, aimVector.getY() * startDistance, aimVector.getZ() * startDistance);
@@ -833,7 +954,7 @@ public class SagaPlayer{
 	 * 
 	 * @return players professions
 	 */
-	public Profession[] getProfessions() {
+	public ArrayList<Profession> getProfessions() {
 		return professions;
 	}
 	
@@ -855,10 +976,10 @@ public class SagaPlayer{
 		}
 		
 		// Forward to all professions:
-		for (int i = 0; i < professions.length; i++) {
-			professions[i].gotDamagedByLivingEntityEvent(event);
+		for (Profession profession : professions) {
+			profession.gotDamagedByLivingEntityEvent(event);
 		}
-		sendMessage(PlayerMessages.gotMeleeDamagedByEntity(event.getDamage(), event.getDamager()));
+		sendMessage(PlayerMessages.gotDamagedByEntity(event.getDamage(), event.getDamager()));
 		
 		
 	}
@@ -879,10 +1000,10 @@ public class SagaPlayer{
 		}
 		
 		// Forward to all professions:
-		for (int i = 0; i < professions.length; i++) {
-			professions[i].damagedLivingEntityEvent(event);
+		for (Profession profession : professions) {
+			profession.damagedLivingEntityEvent(event);
 		}
-		sendMessage(PlayerMessages.meleeDamagedEntity(event.getDamage(), event.getEntity()));
+		sendMessage(PlayerMessages.damagedEntity(event.getDamage(), event.getEntity()));
 		
 		
 	}
@@ -890,14 +1011,14 @@ public class SagaPlayer{
 	/**
 	 * Damaged by the environment.
 	 *
-	 * @param pEvent event
+	 * @param event event
 	 */
-	public void damagedByEnvironmentEvent(EntityDamageEvent pEvent) {
+	public void damagedByEnvironmentEvent(EntityDamageEvent event) {
 		
 		
 		// Forward to all professions:
-		for (int i = 0; i < professions.length; i++) {
-			professions[i].damagedByEnvironmentEvent(pEvent);
+		for (Profession profession : professions) {
+			profession.damagedByEnvironmentEvent(event);
 		}
 		
 		
@@ -915,8 +1036,8 @@ public class SagaPlayer{
 		abilityManager.leftClickInteractEvent(event);
 		
 		// Forward to all professions:
-		for (int i = 0; i < professions.length; i++) {
-			professions[i].leftClickInteractEvent(event);
+		for (Profession profession : professions) {
+			profession.leftClickInteractEvent(event);
 		}
 		
 		
@@ -934,8 +1055,8 @@ public class SagaPlayer{
 		abilityManager.rightClickInteractEvent(event);
 		
 		// Forward to all professions:
-		for (int i = 0; i < professions.length; i++) {
-			professions[i].rightClickInteractEvent(event);
+		for (Profession profession : professions) {
+			profession.rightClickInteractEvent(event);
 		}
 		
 		
@@ -944,36 +1065,36 @@ public class SagaPlayer{
 	/**
 	 * Player placed a block event.
 	 *
-	 * @param pEvent event
+	 * @param event event
 	 */
-	public void placedBlockEvent(BlockPlaceEvent pEvent) {
+	public void placedBlockEvent(BlockPlaceEvent event) {
 		// Forward to all professions:
-		for (int i = 0; i < professions.length; i++) {
-			professions[i].placedBlockEvent(pEvent);
+		for (Profession profession : professions) {
+			profession.placedBlockEvent(event);
 		}
 	}
 
 	/**
 	 * Player broke a block event.
 	 *
-	 * @param pEvent event
+	 * @param event event
 	 */
-	public void brokeBlockEvent(BlockBreakEvent pEvent) {
+	public void brokeBlockEvent(BlockBreakEvent event) {
 		// Forward to all professions:
-		for (int i = 0; i < professions.length; i++) {
-			professions[i].brokeBlockEvent(pEvent);
+		for (Profession profession : professions) {
+			profession.brokeBlockEvent(event);
 		}
 	}
 	
 	/**
 	 * Player damaged a block event.
 	 *
-	 * @param pEvent event
+	 * @param event event
 	 */
-	public void damagedBlockEvent(BlockDamageEvent pEvent) {
+	public void damagedBlockEvent(BlockDamageEvent event) {
 		// Forward to all professions:
-		for (int i = 0; i < professions.length; i++) {
-			professions[i].damagedBlockEvent(pEvent);
+		for (Profession profession : professions) {
+			profession.damagedBlockEvent(event);
 		}
 	}
 
@@ -1028,8 +1149,8 @@ public class SagaPlayer{
 		}
 		
 		// Forward to all professions:
-		for (int i = 0; i < professions.length; i++) {
-			professions[i].clockTickEvent(tick);
+		for (Profession profession : professions) {
+			profession.clockTickEvent(tick);
 		}
 		
 		// Send to ability manager:

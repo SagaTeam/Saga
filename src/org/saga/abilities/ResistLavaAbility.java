@@ -6,7 +6,6 @@ import org.bukkit.event.entity.EntityDamageEvent.DamageCause;
 import org.saga.Saga;
 import org.saga.SagaPlayer;
 import org.saga.constants.PlayerMessages;
-import org.saga.pattern.SagaPatternListElement;
 import org.saga.pattern.SagaPatternLogicElement;
 import org.saga.pattern.SagaPatternLogicElement.LogicAction;
 import org.saga.pattern.SagaPatternLogicElement.LogicType;
