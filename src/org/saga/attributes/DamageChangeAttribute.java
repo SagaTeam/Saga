@@ -7,9 +7,11 @@ import org.bukkit.entity.Entity;
 import org.bukkit.entity.Fireball;
 import org.bukkit.entity.Monster;
 import org.bukkit.entity.Player;
+import org.bukkit.entity.Projectile;
 import org.bukkit.event.Event;
 import org.bukkit.event.entity.EntityDamageByEntityEvent;
 import org.bukkit.event.entity.EntityDamageByProjectileEvent;
+import org.bukkit.event.entity.EntityDamageEvent.DamageCause;
 import org.saga.Saga;
 import org.saga.SagaPlayer;
 
@@ -142,7 +144,7 @@ public class DamageChangeAttribute extends Attribute {
 			user = other;
 			other = temp;
 		}
-		modifyDamage(attributeLevel, sagaPlayer, (EntityDamageByEntityEvent) event, user, other, isAttack);	
+		modifyDamage(attributeLevel, sagaPlayer, (EntityDamageByEntityEvent) event, isAttack);	
 			
 		
 	}
@@ -157,7 +159,7 @@ public class DamageChangeAttribute extends Attribute {
 	 * @param other other entity
 	 * @param oppositeSign damage sign will be opposite if true
 	 */
-	private void modifyDamage(Short attributeLevel, SagaPlayer sagaPlayer, EntityDamageByEntityEvent event, Entity user, Entity other, boolean oppositeSign) {
+	private void modifyDamage(Short attributeLevel, SagaPlayer sagaPlayer, EntityDamageByEntityEvent event, boolean oppositeSign) {
 
 		
 		// Level:
@@ -181,7 +183,7 @@ public class DamageChangeAttribute extends Attribute {
 		}
 		
 		// Attack type:
-		if( !(checkAttack(event.getEntity())) ){
+		if( !(checkAttack(event.getEntity(), event.getCause())) ){
 			return;
 		}
 		
@@ -195,9 +197,10 @@ public class DamageChangeAttribute extends Attribute {
 		if(damage < Saga.attributeInformation().minimumAttributeDamage){
 			damage = Saga.attributeInformation().minimumAttributeDamage;
 		}
+		
 		event.setDamage(damage);
 		System.out.println("!"+sagaPlayer.getName()+" used "+getName()+" attribute!");
-		sagaPlayer.sendMessage(ChatColor.AQUA + "you used "+getName()+" attribute! me="+user+" other="+other);
+		sagaPlayer.sendMessage(ChatColor.AQUA + "you used "+getName()+" attribute! damaged="+event.getEntity()+" damager="+event.getDamager());
 
 		
 	}
@@ -264,23 +267,46 @@ public class DamageChangeAttribute extends Attribute {
 	 * @param damaged damaged
 	 * @return true if correct
 	 */
-	private boolean checkAttack(Entity damaged) {
+	private boolean checkAttack(Entity damaged, DamageCause damageCause) {
 
 		
 		if(attackType.equals(AttackType.ALL)){
 			return true;
 		}
 		
-		EntityDamageByProjectileEvent projectileEvent = null;
+		Projectile projectile = null;
 		if(damaged.getLastDamageCause() instanceof EntityDamageByProjectileEvent){
-			projectileEvent = (EntityDamageByProjectileEvent) damaged.getLastDamageCause();
+			projectile = ((EntityDamageByProjectileEvent) damaged.getLastDamageCause()).getProjectile();
 		}
 		
-		// Melee or projectile:
-		if(projectileEvent == null){
-			if(attackType.equals(AttackType.MELEE)){
-				return true;
-			}
+		
+		// Melee:
+		if(projectile == null && attackType.equals(AttackType.MELEE) && damageCause.equals(DamageCause.ENTITY_ATTACK)){
+			return true;
+		}
+		
+		// Elemental all:
+		if( attackType.equals(AttackType.ELEMENTAL_ALL) && (damageCause.equals(DamageCause.FIRE) || damageCause.equals(DamageCause.LIGHTNING)) ){
+			return true;
+		}
+		
+		// Fire:
+		if( attackType.equals(AttackType.ELEMENTAL_FIRE) && damageCause.equals(DamageCause.FIRE) ){
+			return true;
+		}
+		
+		// Lightning:
+		if( attackType.equals(AttackType.ELEMENTAL_LIGHTNING) && damageCause.equals(DamageCause.LIGHTNING) ){
+			return true;
+		}
+		
+		// Fireball:
+		if(attackType.equals(AttackType.ELEMENTAL_FIRE) && projectile!=null && projectile instanceof Fireball){
+			return true;
+		}
+		
+		// Projectiles:
+		if(projectile == null){
 			return false;
 		}
 		
@@ -290,16 +316,17 @@ public class DamageChangeAttribute extends Attribute {
 		}
 		
 		// Arrow:
-		if(attackType.equals(AttackType.PROJECTILE_ARROW) && projectileEvent.getProjectile() instanceof Arrow){
+		if(attackType.equals(AttackType.PROJECTILE_ARROW) && projectile instanceof Arrow){
 			return true;
 		}
 		
 		// Fireball:
-		if(attackType.equals(AttackType.PROJECTILE_FIREBALL) && projectileEvent.getProjectile() instanceof Fireball){
+		if(attackType.equals(AttackType.PROJECTILE_FIREBALL) && projectile instanceof Fireball){
 			return true;
 		}
 		
-		// Invalid projectile:
+		
+		// Invalid:
 		return false;
 		
 		

@@ -3,7 +3,6 @@ package org.saga;
 import java.util.*;
 
 import org.saga.abilities.*;
-import org.saga.professions.Profession;
 
 public class BalanceInformation {
 
@@ -47,10 +46,15 @@ public class BalanceInformation {
 	public Short abilitySelectedTime;
 	
 	/**
+	 * Time in seconds that the an ability remains active.
+	 */
+	public Integer baseLightningDamage;
+	
+	
+	/**
 	 * Used by gson.
 	 */
 	public BalanceInformation() {
-		
 		
 	}
 	
@@ -96,6 +100,11 @@ public class BalanceInformation {
 		if(abilitySelectedTime == null){
 			Saga.warning("Setting default value for balance information abilitySelectedTime.");
 			abilitySelectedTime= 3;
+			integrity=false;
+		}
+		if(baseLightningDamage == null){
+			Saga.warning("Setting default value for balance information baseLightningDamage.");
+			baseLightningDamage= 1;
 			integrity=false;
 		}
 		

@@ -59,7 +59,7 @@ public class Saga extends JavaPlugin {
 
     private Hashtable<String,SagaPlayer> loadedPlayers;
     private static SagaPlayerListener playerListener;
-    private SagaEntityListener entityListener;
+    private static SagaEntityListener entityListener;
     private SagaBlockListener blockListener;
 
     static public Saga plugin() {
@@ -86,6 +86,10 @@ public class Saga extends JavaPlugin {
     	return playerListener;
 	}
     
+    public static SagaEntityListener entityListener() {
+    	return entityListener;
+	}
+    
     @Override
     public void onDisable() {
 
@@ -100,6 +104,7 @@ public class Saga extends JavaPlugin {
         Saga.balanceInformation = null;
         Saga.attributeInformation = null;
         Saga.playerListener = null;
+        Saga.entityListener = null;
         
     	//Say Goodbye
         Saga.info("Saga Goodbye!");

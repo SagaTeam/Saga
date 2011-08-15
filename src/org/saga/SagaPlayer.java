@@ -7,9 +7,9 @@ import java.util.Random;
 
 import net.minecraft.server.EntityFireball;
 import net.minecraft.server.EntityLiving;
-import net.minecraft.server.EntityWeatherStorm;
 import net.minecraft.server.WorldServer;
 
+import org.bukkit.Bukkit;
 import org.bukkit.Effect;
 import org.bukkit.Location;
 import org.bukkit.Material;
@@ -18,11 +18,12 @@ import org.bukkit.block.BlockFace;
 import org.bukkit.craftbukkit.CraftWorld;
 import org.bukkit.craftbukkit.entity.CraftPlayer;
 import org.bukkit.entity.Entity;
-import org.bukkit.entity.LightningStrike;
+import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Player;
 import org.bukkit.event.block.*;
 import org.bukkit.event.entity.EntityDamageByEntityEvent;
 import org.bukkit.event.entity.EntityDamageEvent;
+import org.bukkit.event.entity.EntityDamageEvent.DamageCause;
 import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.util.Vector;
 import org.saga.pattern.SagaPatternElement;
@@ -833,6 +834,51 @@ public class SagaPlayer{
 		
 	}
 	
+	/**
+	 * Shoots lightning at the target.
+	 * 
+	 * @param targetLocation target
+	 * @param selfDamage if true, the shooter may also be damaged
+	 */
+	public void shootLightning(Location targetLocation, boolean selfDamage) {
+
+		
+		// Ignore if the player isn't online:
+		if(!isOnlinePlayer()){
+			return;
+		}
+		Entity damager = player;
+		
+		// Get the craftworld.
+		CraftWorld craftWorld = (CraftWorld) player.getWorld();
+		
+		// Strike lightning effect and get the resulting entity:
+		Entity craftLightning = craftWorld.strikeLightningEffect(targetLocation);
+		
+		// Send damage events:
+		java.util.List<Entity> damagedEntities = craftLightning.getNearbyEntities(1, 5, 1);
+		ArrayList<EntityDamageByEntityEvent> damageEvents = new ArrayList<EntityDamageByEntityEvent>();
+		for (int i = 0; i < damagedEntities.size(); i++) {
+			EntityDamageByEntityEvent event = new EntityDamageByEntityEvent(damager, damagedEntities.get(i), DamageCause.LIGHTNING, Saga.balanceInformation().baseLightningDamage);
+			// Don't add self if damage self is false:
+			if(selfDamage || !damagedEntities.get(i).equals(damager)){
+				Bukkit.getServer().getPluginManager().callEvent(event);
+			damageEvents.add(event);
+			}
+		}
+		
+		// Damage the puny eldar if the event is not canceled:
+		for (EntityDamageByEntityEvent entityDamageByEntityEvent : damageEvents) {
+			if(!entityDamageByEntityEvent.isCancelled()){
+				Entity damaged = entityDamageByEntityEvent.getEntity();
+				if(damaged instanceof LivingEntity){
+					((LivingEntity) damaged).damage(entityDamageByEntityEvent.getDamage());
+				}
+			}
+		}
+		
+		
+	}
 	
 	// Other ability and attribute use:
 	/**
@@ -1053,8 +1099,7 @@ public class SagaPlayer{
 		
 		
 		if(event.getPlayer().getItemInHand().getType().equals(Material.BOOK)){
-			System.out.println("OI");
-			shootLightning();
+			shootLightning(player.getTargetBlock(null, 100).getLocation(), true);
 		}
 		
 	}
