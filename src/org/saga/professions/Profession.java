@@ -220,6 +220,24 @@ public class Profession {
 		
 	}
 	
+	/**
+	 * Prepares for the removal of the profession from the player.
+	 * 
+	 */
+	public void prepareForRemoval() {
+
+		
+		// Remove upgrades:
+		Enumeration<String> allAttributeNames= attributeUpgrades.keys();
+		while ( allAttributeNames.hasMoreElements() ) {
+            String attributeName = allAttributeNames.nextElement();
+            Short attributeUpgrade = (short) -attributeUpgrades.get(attributeName);
+            sagaPlayer.modifyAttributes(attributeName, attributeUpgrade);
+		}
+            
+            
+	}
+	
 	
 	// Interaction:
 	/**

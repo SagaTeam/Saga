@@ -4,26 +4,29 @@ import java.util.Hashtable;
 
 import org.bukkit.Material;
 import org.saga.SagaPlayerListener.SagaPlayerProjectileShotEvent.ProjectileType;
-import org.saga.attributes.AttackAttribute;
-import org.saga.attributes.AttackAttribute.AttackType;
-import org.saga.attributes.AttackAttribute.AttackedType;
 import org.saga.attributes.Attribute;
-import org.saga.attributes.DefenseAttribute;
-import org.saga.attributes.DefenseAttribute.AttackerType;
+import org.saga.attributes.Attribute.DisplayType;
+import org.saga.attributes.DamageChangeAttribute;
+import org.saga.attributes.DamageChangeAttribute.AttackType;
+import org.saga.attributes.DamageChangeAttribute.EntityType;
 import org.saga.attributes.ProjectileShotAttribute;
 
 public class AttributeInformation {
 
+	/**
+	 * Minimum damage that an attribute can reduce to.
+	 */
+	public Integer minimumAttributeDamage;
 	
 	/**
 	 * Attack attributes.
 	 */
-	public AttackAttribute[] attackAttributes;
+	public DamageChangeAttribute[] attackAttributes;
 	
 	/**
 	 * Defense attributes.
 	 */
-	public DefenseAttribute[] defenseAttributes;
+	public DamageChangeAttribute[] defenseAttributes;
 	
 	/**
 	 * Resistance attributes.
@@ -58,19 +61,26 @@ public class AttributeInformation {
 	 * 
 	 */
 	public boolean complete() {
-
+		
 		
 		boolean integrity = true;
 		
+		// General fields:
+		if(minimumAttributeDamage==null){
+			minimumAttributeDamage = 1;
+			Saga.info("minimumAttributeDamage field not defined. Setting default.");
+			integrity = false;
+		}
+		
 		// Attack attributes:
 		if(attackAttributes==null){
-			attackAttributes = new AttackAttribute[2];
+			attackAttributes = new DamageChangeAttribute[2];
 			Saga.info("Initializing attackAttributes. Adding two example attributes.");
 			integrity = false;
 			// Add examples:
 			Saga.info("Adding two example attributes to attackAttributes.");
-			attackAttributes[0] = new AttackAttribute( "ExampleAttackAttribute1", new Material[]{Material.STONE, Material.DIRT}, AttackedType.ALL, AttackType.ALL );
-			attackAttributes[1] = new AttackAttribute( "ExampleAttackAttribute2", new Material[]{}, AttackedType.MONSTER,  AttackType.ALL );
+			attackAttributes[0] = new DamageChangeAttribute(false, "ExampleAttackAttribute1", new Material[]{Material.STONE, Material.DIRT}, EntityType.ALL, EntityType.ALL, AttackType.ALL, DisplayType.DEFENSE);
+			attackAttributes[1] = new DamageChangeAttribute(false, "ExampleAttackAttribute2", new Material[]{Material.WOOD, Material.DIRT}, EntityType.ALL, EntityType.ALL, AttackType.MELEE, DisplayType.DEFENSE);
 		}
 		for (int i = 0; i < attackAttributes.length; i++) {
 			integrity = attackAttributes[i].complete() && integrity;
@@ -78,13 +88,13 @@ public class AttributeInformation {
 		
 		// Defense attributes:
 		if(defenseAttributes==null){
-			defenseAttributes = new DefenseAttribute[2];
+			defenseAttributes = new DamageChangeAttribute[2];
 			Saga.info("Initializing defenseAttributes. Adding two example attributes.");
 			integrity = false;
 			// Add examples:
 			Saga.info("Adding two example attributes to defenseAttributes.");
-			defenseAttributes[0] = new DefenseAttribute( "ExampleDefenseAttribute1", new Material[]{Material.WOOD, Material.AIR}, AttackerType.MONSTER,  AttackType.ALL );
-			defenseAttributes[1] = new DefenseAttribute( "ExampleDefenseAttribute2", new Material[]{}, AttackerType.PLAYER,  AttackType.ALL );
+			defenseAttributes[0] = new DamageChangeAttribute(true, "ExampleAttackAttribute1", new Material[]{Material.STONE, Material.DIRT}, EntityType.ALL, EntityType.ALL, AttackType.ALL, DisplayType.DEFENSE);
+			defenseAttributes[1] = new DamageChangeAttribute(true, "ExampleAttackAttribute2", new Material[]{Material.WOOD, Material.DIRT}, EntityType.ALL, EntityType.ALL, AttackType.MELEE, DisplayType.DEFENSE);
 		}
 		for (int i = 0; i < defenseAttributes.length; i++) {
 			integrity = defenseAttributes[i].complete() && integrity;

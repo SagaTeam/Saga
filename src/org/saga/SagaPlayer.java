@@ -247,10 +247,19 @@ public class SagaPlayer{
 	public void removeProfession(String professionName) {
 
 		
+		// Check if can be removed:
+		if(!canRemoveProfession(professionName)){
+			Saga.severe("Cant remove a profassion named " + professionName+ ".", getName());
+			return;
+		}
+		
 		// Remove element:
 		int oldSize = professions.size();
 		for (int i = 0; i < professions.size(); i++) {
 			if(professions.get(i).getName().equals(professionName)){
+				// Prepare for removal:
+				professions.get(i).prepareForRemoval();
+				// Remove:
 				professions.remove(i);
 				i--;
 			}
