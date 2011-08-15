@@ -503,7 +503,7 @@ public class Profession {
 	 *
 	 * @param event event
 	 */
-	public void gotDamagedByLivingEntityEvent(EntityDamageByEntityEvent event) {
+	public void gotDamagedByEntityEvent(EntityDamageByEntityEvent event) {
 
 		
 		// Abilities:
@@ -529,7 +529,7 @@ public class Profession {
 	 *
 	 * @param event event
 	 */
-	public void damagedLivingEntityEvent(EntityDamageByEntityEvent event) {
+	public void damagedEntityEvent(EntityDamageByEntityEvent event) {
 
 		
 		// Abilities:

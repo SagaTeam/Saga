@@ -7,15 +7,18 @@ import java.util.Random;
 
 import net.minecraft.server.EntityFireball;
 import net.minecraft.server.EntityLiving;
+import net.minecraft.server.EntityWeatherStorm;
 import net.minecraft.server.WorldServer;
 
 import org.bukkit.Effect;
 import org.bukkit.Location;
+import org.bukkit.Material;
 import org.bukkit.block.Block;
 import org.bukkit.block.BlockFace;
 import org.bukkit.craftbukkit.CraftWorld;
 import org.bukkit.craftbukkit.entity.CraftPlayer;
 import org.bukkit.entity.Entity;
+import org.bukkit.entity.LightningStrike;
 import org.bukkit.entity.Player;
 import org.bukkit.event.block.*;
 import org.bukkit.event.entity.EntityDamageByEntityEvent;
@@ -974,9 +977,9 @@ public class SagaPlayer{
 	 *
 	 * @param event event
 	 */
-	public void gotDamagedByLivingEntityEvent(EntityDamageByEntityEvent event) {
+	public void gotDamagedByEntityEvent(EntityDamageByEntityEvent event) {
 
-		
+
 		// Attributes:
 		Attribute[] defenseAttributes = Saga.attributeInformation().defenseAttributes;
 		for (int i = 0; i < defenseAttributes.length; i++) {
@@ -986,7 +989,7 @@ public class SagaPlayer{
 		
 		// Forward to all professions:
 		for (Profession profession : professions) {
-			profession.gotDamagedByLivingEntityEvent(event);
+			profession.gotDamagedByEntityEvent(event);
 		}
 		sendMessage(PlayerMessages.gotDamagedByEntity(event.getDamage(), event.getDamager()));
 		
@@ -998,7 +1001,7 @@ public class SagaPlayer{
 	 *
 	 * @param event event
 	 */
-	public void damagedLivingEntityEvent(EntityDamageByEntityEvent event) {
+	public void damagedEntityEvent(EntityDamageByEntityEvent event) {
 		
 		
 		// Attributes:
@@ -1010,7 +1013,7 @@ public class SagaPlayer{
 		
 		// Forward to all professions:
 		for (Profession profession : professions) {
-			profession.damagedLivingEntityEvent(event);
+			profession.damagedEntityEvent(event);
 		}
 		sendMessage(PlayerMessages.damagedEntity(event.getDamage(), event.getEntity()));
 		
@@ -1040,7 +1043,6 @@ public class SagaPlayer{
 	 */
 	public void leftClickInteractEvent(PlayerInteractEvent event) {
 		
-		
 		// Send to ability manager:
 		abilityManager.leftClickInteractEvent(event);
 		
@@ -1049,6 +1051,11 @@ public class SagaPlayer{
 			profession.leftClickInteractEvent(event);
 		}
 		
+		
+		if(event.getPlayer().getItemInHand().getType().equals(Material.BOOK)){
+			System.out.println("OI");
+			shootLightning();
+		}
 		
 	}
 

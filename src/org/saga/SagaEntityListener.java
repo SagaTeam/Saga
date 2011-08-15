@@ -42,10 +42,10 @@ public class SagaEntityListener extends EntityListener{
 		if(pEvent instanceof EntityDamageByEntityEvent && damaged instanceof LivingEntity && ((LivingEntity) damaged).getNoDamageTicks()<=((LivingEntity) damaged).getMaximumNoDamageTicks()/2F && ((LivingEntity) damaged).getHealth()>0){
 			Entity damager = ((EntityDamageByEntityEvent)pEvent).getDamager();
 			
-			if(damager instanceof Player && damaged instanceof LivingEntity){
+			if(damager instanceof Player){
 				if(Saga.plugin().isSagaPlayerLoaded(((Player) damager).getName())){
 					try {
-						Saga.plugin().getSagaPlayer(((Player) damager).getName()).damagedLivingEntityEvent((EntityDamageByEntityEvent) pEvent);
+						Saga.plugin().getSagaPlayer(((Player) damager).getName()).damagedEntityEvent((EntityDamageByEntityEvent) pEvent);
 					} catch (SagaPlayerNotLoadedException e) {
 						e.printStackTrace();
 					}
@@ -54,10 +54,10 @@ public class SagaEntityListener extends EntityListener{
 				}
 			}
 			
-			if(damaged instanceof Player && damager instanceof LivingEntity){
+			if(damaged instanceof Player){
 				if(Saga.plugin().isSagaPlayerLoaded(((Player) damaged).getName())){
 					try {
-						Saga.plugin().getSagaPlayer(((Player) damaged).getName()).gotDamagedByLivingEntityEvent((EntityDamageByEntityEvent) pEvent);
+						Saga.plugin().getSagaPlayer(((Player) damaged).getName()).gotDamagedByEntityEvent((EntityDamageByEntityEvent) pEvent);
 					} catch (SagaPlayerNotLoadedException e) {
 						e.printStackTrace();
 					}
