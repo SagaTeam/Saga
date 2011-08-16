@@ -60,7 +60,7 @@ public class HeavyHitAbility extends AbilityFunction implements OnDamagedEntity{
 			((Player) damaged).sendMessage(PlayerMessages.entityUsedNegativeAbilityOnYou(damager, this));
 		}
 		
-		event.setDamage((new Double(event.getDamage()*calculateFunctionValue(level))).intValue());
+		event.setDamage((new Double(event.getDamage() + calculateFunctionValue(level))).intValue());
 		
 		return;
 		
