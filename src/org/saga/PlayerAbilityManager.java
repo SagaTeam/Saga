@@ -144,8 +144,6 @@ public class PlayerAbilityManager {
 		Profession abilityProfession = abilityProfessions.get(ability);
 		Short level = abilityProfession.getLevel();
 		
-		
-		
 		// Check if there is enough stamina:
 		Double staminaUse = ability.calculateStaminaUse(level);
 		if(!sagaPlayer.enoughStamina(staminaUse)){
@@ -155,7 +153,7 @@ public class PlayerAbilityManager {
 		}
 		
 		// Add timer:
-		if(ability.getActivateType().equals(AbilityActivateType.TIMER)){
+		if( ability.getActivateType().equals(AbilityActivateType.TIMER) || ability.getActivateType().equals(AbilityActivateType.TRIGGER) ){
 			abilityTimers.put(ability, ability.calculateAbilityActiveTime(abilityProfession.getLevel()));
 		}
 		

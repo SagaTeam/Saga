@@ -289,6 +289,7 @@ public abstract class Ability implements OnAbility{
 	public enum AbilityActivateType{
 		
 		TIMER,
+		TRIGGER,
 		INSTANTANEOUS,
 		TOGGLE;
 		

@@ -514,6 +514,11 @@ public class Profession {
 			if(ability.getActivateType().equals(AbilityActivateType.INSTANTANEOUS)){
 				ability.use(getLevel(), sagaPlayer, this, event);
 			}
+			// Trigger:
+			else if(ability.getActivateType().equals(AbilityActivateType.TRIGGER)){
+				sagaPlayer.deactivateAbility(ability.getAbility());
+				ability.use(level, sagaPlayer, this, event);
+			}
 			// Toggle or timed:
 			else if(isAbilityActive(ability)){
 				ability.use(getLevel(), sagaPlayer, this, event);
@@ -539,6 +544,11 @@ public class Profession {
 			// Instantaneous:
 			if(ability.getActivateType().equals(AbilityActivateType.INSTANTANEOUS)){
 				ability.use(getLevel(), sagaPlayer, this, event);
+			}
+			// Trigger:
+			else if(ability.getActivateType().equals(AbilityActivateType.TRIGGER)){
+				sagaPlayer.deactivateAbility(ability.getAbility());
+				ability.use(level, sagaPlayer, this, event);
 			}
 			// Toggle or timed:
 			else if(isAbilityActive(ability)){
@@ -577,6 +587,11 @@ public class Profession {
 			if(ability.getActivateType().equals(AbilityActivateType.INSTANTANEOUS)){
 				ability.use(getLevel(), sagaPlayer, this, event);
 			}
+			// Trigger:
+			else if(ability.getActivateType().equals(AbilityActivateType.TRIGGER)){
+				sagaPlayer.deactivateAbility(ability.getAbility());
+				ability.use(level, sagaPlayer, this, event);
+			}
 			// Toggle or timed:
 			else if(isAbilityActive(ability)){
 				ability.use(getLevel(), sagaPlayer, this, event);
@@ -602,6 +617,11 @@ public class Profession {
 			// Instantaneous:
 			if(ability.getActivateType().equals(AbilityActivateType.INSTANTANEOUS)){
 				ability.use(getLevel(), sagaPlayer, this, event);
+			}
+			// Trigger:
+			else if(ability.getActivateType().equals(AbilityActivateType.TRIGGER)){
+				sagaPlayer.deactivateAbility(ability.getAbility());
+				ability.use(level, sagaPlayer, this, event);
 			}
 			// Toggle or timed:
 			else if(isAbilityActive(ability)){
@@ -650,6 +670,11 @@ public class Profession {
 			if(ability.getActivateType().equals(AbilityActivateType.INSTANTANEOUS)){
 				ability.use(getLevel(), sagaPlayer, this, event);
 			}
+			// Trigger:
+			else if(ability.getActivateType().equals(AbilityActivateType.TRIGGER)){
+				sagaPlayer.deactivateAbility(ability.getAbility());
+				ability.use(level, sagaPlayer, this, event);
+			}
 			// Toggle or timed:
 			else if(isAbilityActive(ability)){
 				ability.use(getLevel(), sagaPlayer, this, event);
@@ -678,13 +703,13 @@ public class Profession {
 	 * 
 	 * @param ability ability
 	 */
-	public void abilityActivateEvent(Ability ability2){
+	public void abilityActivateEvent(Ability ability){
 
 		
 		// Activate if not a single use:
-		if(!ability2.getActivateType().equals(AbilityActivateType.INSTANTANEOUS)){
+		if(!ability.getActivateType().equals(AbilityActivateType.INSTANTANEOUS)){
 			for (int i = 0; i < professionDefinition.getAbilities().length; i++) {
-				if(professionDefinition.getAbilities()[i].equals(ability2)){
+				if(professionDefinition.getAbilities()[i].equals(ability)){
 					activeAbilities[i] = true;
 					return;
 				}
@@ -692,17 +717,22 @@ public class Profession {
 		}
 		
 		// Abilities:
-		if(!(ability2 instanceof OnActivateAbility)){
+		if(!(ability instanceof OnActivateAbility)){
 			return;
 		}
-		OnActivateAbility ability = (OnActivateAbility) ability2;
+		OnActivateAbility onActivateAbility = (OnActivateAbility) ability;
 		// Instantaneous:
-		if(ability.getActivateType().equals(AbilityActivateType.INSTANTANEOUS)){
-			ability.use(getLevel(), sagaPlayer, this);
+		if(onActivateAbility.getActivateType().equals(AbilityActivateType.INSTANTANEOUS)){
+			onActivateAbility.use(getLevel(), sagaPlayer, this);
+		}
+		// Trigger:
+		else if(onActivateAbility.getActivateType().equals(AbilityActivateType.TRIGGER)){
+			sagaPlayer.deactivateAbility(onActivateAbility.getAbility());
+			onActivateAbility.use(level, sagaPlayer, this);
 		}
 		// Toggle or timed:
-		else if(isAbilityActive(ability)){
-			ability.use(getLevel(), sagaPlayer, this);
+		else if(isAbilityActive(onActivateAbility)){
+			onActivateAbility.use(getLevel(), sagaPlayer, this);
 		}
 			
 			
