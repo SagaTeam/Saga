@@ -21,6 +21,7 @@ public class BlockConstants {
 	
 	private static Hashtable<MaterialData, ItemStack[]> secondDrops = createSecondItemDrops();
 	
+	public static Material[] rightClickInUseMaterials = new Material[]{Material.BOW, Material.WOOD_HOE, Material.STONE_HOE, Material.IRON_HOE, Material.GOLD_HOE, Material.DIAMOND_HOE};
 	
 	// Normal:
 	/**
@@ -186,6 +187,19 @@ public class BlockConstants {
 			y--;
 		}
 		return currentBlock.getLocation();
+		
+		
+	}
+	
+	public static boolean checkRightClickInUse(Material material) {
+		
+		
+		for (int i = 0; i < rightClickInUseMaterials.length; i++) {
+			if(rightClickInUseMaterials[i].equals(material)){
+				return true;
+			}
+		}
+		return false;
 		
 		
 	}

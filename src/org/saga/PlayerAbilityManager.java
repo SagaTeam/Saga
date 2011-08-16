@@ -8,6 +8,7 @@ import org.bukkit.Material;
 import org.bukkit.event.player.PlayerInteractEvent;
 import org.saga.abilities.Ability;
 import org.saga.abilities.Ability.AbilityActivateType;
+import org.saga.constants.BlockConstants;
 import org.saga.constants.PlayerMessages;
 import org.saga.professions.Profession;
 
@@ -232,6 +233,13 @@ public class PlayerAbilityManager {
 	public void leftClickInteractEvent(PlayerInteractEvent event) {
 		
 		
+		// Invert if right click in use:
+		if(BlockConstants.checkRightClickInUse(event.getPlayer().getItemInHand().getType())){
+			// Scroll:
+			scroll(event.getPlayer().getItemInHand().getType());
+			return;
+		}
+		
 		// Activate
 		activateAbility(event.getPlayer().getItemInHand().getType());
 		
@@ -244,7 +252,15 @@ public class PlayerAbilityManager {
 	 * @param event event
 	 */
 	public void rightClickInteractEvent(PlayerInteractEvent event) {
-	
+
+		
+		// Invert if right click in use:
+		if(BlockConstants.checkRightClickInUse(event.getPlayer().getItemInHand().getType())){
+			// Activate
+			activateAbility(event.getPlayer().getItemInHand().getType());
+			return;
+		}
+		
 		
 		// Scroll:
 		scroll(event.getPlayer().getItemInHand().getType());
