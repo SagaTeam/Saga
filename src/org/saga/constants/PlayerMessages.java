@@ -62,6 +62,11 @@ public class PlayerMessages {
 	
 	public static ChatColor frameColor = ChatColor.DARK_GREEN;
 	
+	// Strings:
+	/**
+	 * Determines the point to cut off a proceeding part from.
+	 */
+	public static String cutoffSymbol = "_";
 	
 	// Sounds:
 	public static Effect abilityActivateSound = Effect.CLICK1;
@@ -640,6 +645,7 @@ public class PlayerMessages {
 	private static String getAttributeElement(SagaPlayer sagaPlayer, Attribute attribute, ChatColor messageColor){
 		
 		
+		StringBuffer rString = new StringBuffer();
 		Short upgrade = sagaPlayer.getAttributeUpgrade(attribute.getName());
 		Short temporaryUpgrade =  sagaPlayer.getAttributeTemporaryUpgrade(attribute.getName());;
 		ChatColor attributeColor = normalColor;
@@ -658,7 +664,22 @@ public class PlayerMessages {
 			attributeColor = messageColor;
 		}
 		
-		return attributeColor + attribute.getName(upgrade, temporaryUpgrade) + messageColor;
+		// Add name:
+		String name = attribute.getName();
+		int cutOff = name.indexOf(cutoffSymbol);
+		if(cutOff != -1){
+			name = name.substring(0, cutOff);
+		}
+		rString.append(name);
+		
+		// Add upgrade:
+		rString.append("(x" + upgrade + ")");
+		
+		// Color:
+		rString.insert(0, attributeColor);
+		rString.append(messageColor);
+		
+		return rString.toString();
 		
 		
 	}

@@ -172,17 +172,6 @@ public abstract class Attribute {
 	}
 	
 	/**
-	 * Gets the name how it should be show to the player
-	 * 
-	 * @param upgradeLevel level
-	 * @param temporaryUpgradeLevel temporary upgrade level
-	 * @return ability name
-	 */
-	public String getName(Short upgradeLevel, Short temporaryUpgradeLevel) {
-		return name+"(x" + upgradeLevel + ")";
-	}
-	
-	/**
 	 * Gets the display type.
 	 * 
 	 * @return display type.
