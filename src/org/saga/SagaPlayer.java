@@ -909,6 +909,51 @@ public class SagaPlayer{
 	
 	// Player entity interaction:
 	/**
+	 * Sets player horizontal speed. Direction is where the player is looking at.
+	 * 
+	 * @param speed speed
+	 */
+	public void addLeapHorizontalSpeed(double speed) {
+		
+		
+		// Ignore if not online:
+		if(!isOnlinePlayer()){
+			return;
+		}
+		
+		Vector direction = player.getLocation().getDirection();
+		direction.setY(0);
+		direction.normalize();
+		direction.multiply(speed);
+		
+		Vector velocity = player.getVelocity();
+		velocity.add(direction);
+		player.setVelocity(velocity);
+		
+		
+	}
+	
+	/**
+	 * Sets player vertical speed.
+	 * 
+	 * @param speed speed
+	 */
+	public void addLeapVerticalSpeed(double speed) {
+		
+		
+		// Ignore if not online:
+		if(!isOnlinePlayer()){
+			return;
+		}
+		
+		Vector velocity = player.getVelocity();
+		velocity.add(new Vector(0, speed, 0));
+		player.setVelocity(velocity);
+		
+		
+	}
+	
+	/**
 	 * Returns the player distance to a location
 	 * 
 	 * @param location location
@@ -947,6 +992,7 @@ public class SagaPlayer{
 
 		
 	}
+	
 	/**
 	 * Tries to dodge.
 	 * 
