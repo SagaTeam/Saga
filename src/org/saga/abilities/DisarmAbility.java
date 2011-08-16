@@ -9,11 +9,11 @@ import org.bukkit.event.entity.EntityDamageByEntityEvent;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.PlayerInventory;
 import org.saga.SagaPlayer;
-import org.saga.abilities.types.OnDamagedLivingEntity;
+import org.saga.abilities.types.OnDamagedEntity;
 import org.saga.constants.PlayerMessages;
 import org.saga.professions.Profession;
 
-public class DisarmAbility extends Ability implements OnDamagedLivingEntity{
+public class DisarmAbility extends Ability implements OnDamagedEntity{
 
 	/**
 	 * Ability name.

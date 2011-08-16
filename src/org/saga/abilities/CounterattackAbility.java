@@ -5,11 +5,11 @@ import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Player;
 import org.bukkit.event.entity.EntityDamageByEntityEvent;
 import org.saga.SagaPlayer;
-import org.saga.abilities.types.OnGotDamagedByLivingEntity;
+import org.saga.abilities.types.OnGotDamagedByEntity;
 import org.saga.constants.PlayerMessages;
 import org.saga.professions.Profession;
 
-public class CounterattackAbility extends AbilityFunction implements OnGotDamagedByLivingEntity{
+public class CounterattackAbility extends AbilityFunction implements OnGotDamagedByEntity{
 
 	
 	/**

@@ -4,7 +4,7 @@ import org.bukkit.event.entity.EntityDamageByEntityEvent;
 import org.saga.SagaPlayer;
 import org.saga.professions.Profession;
 
-public interface OnGotDamagedByLivingEntity extends OnAbility{
+public interface OnDamagedEntity extends OnAbility{
 
 	
 	/**

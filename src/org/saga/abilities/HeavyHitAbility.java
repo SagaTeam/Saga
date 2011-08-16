@@ -4,13 +4,13 @@ import org.bukkit.entity.Entity;
 import org.bukkit.entity.Player;
 import org.bukkit.event.entity.EntityDamageByEntityEvent;
 import org.saga.SagaPlayer;
-import org.saga.abilities.types.OnDamagedLivingEntity;
-import org.saga.attributes.DamageChangeAttribute.AttackType;
+import org.saga.abilities.types.OnDamagedEntity;
 import org.saga.constants.PlayerMessages;
 import org.saga.professions.Profession;
 
-public class HeavyHitAbility extends AbilityFunction implements OnDamagedLivingEntity{
+public class HeavyHitAbility extends AbilityFunction implements OnDamagedEntity{
 
+	
 	/**
 	 * Ability name.
 	 */
@@ -23,7 +23,7 @@ public class HeavyHitAbility extends AbilityFunction implements OnDamagedLivingE
 	 */
 	public HeavyHitAbility() {
 		
-		super(ABILITY_NAME, AbilityActivateType.TIMER);
+		super(ABILITY_NAME, AbilityActivateType.TRIGGER);
 		
 	}
 
@@ -51,7 +51,6 @@ public class HeavyHitAbility extends AbilityFunction implements OnDamagedLivingE
 	public void use(Short level, SagaPlayer sagaPlayer, Profession profession, EntityDamageByEntityEvent event) {
 
 		
-		System.out.println("use");
 		Entity damager = event.getDamager();
 		Entity damaged = event.getEntity();
 		

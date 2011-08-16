@@ -20,8 +20,8 @@ import org.saga.abilities.Ability;
 import org.saga.abilities.Ability.AbilityActivateType;
 import org.saga.abilities.types.OnAbility;
 import org.saga.abilities.types.OnBlockDamage;
-import org.saga.abilities.types.OnDamagedLivingEntity;
-import org.saga.abilities.types.OnGotDamagedByLivingEntity;
+import org.saga.abilities.types.OnDamagedEntity;
+import org.saga.abilities.types.OnGotDamagedByEntity;
 import org.saga.abilities.types.OnLeftClick;
 import org.saga.abilities.types.OnRightClick;
 import org.saga.abilities.types.OnActivateAbility;
@@ -76,12 +76,12 @@ public class Profession {
 	/**
 	 * Damaged living entities abilities.
 	 */
-	transient private ArrayList<OnDamagedLivingEntity> damagedLivingEntityAbilities;
+	transient private ArrayList<OnDamagedEntity> damagedEntityAbilities;
 	
 	/**
 	 * Damaged living entities abilities.
 	 */
-	transient private ArrayList<OnGotDamagedByLivingEntity> gotDamagedByLivingEntityAbilites;
+	transient private ArrayList<OnGotDamagedByEntity> gotDamagedByEntityAbilites;
 	
 	/**
 	 * Left click interact abilities.
@@ -168,8 +168,8 @@ public class Profession {
 		}
 		
 		// Distribute abilities:
-		damagedLivingEntityAbilities = new ArrayList<OnDamagedLivingEntity>();
-		gotDamagedByLivingEntityAbilites = new ArrayList<OnGotDamagedByLivingEntity>();
+		damagedEntityAbilities = new ArrayList<OnDamagedEntity>();
+		gotDamagedByEntityAbilites = new ArrayList<OnGotDamagedByEntity>();
 		leftClickInteractAbilities = new ArrayList<OnLeftClick>();
 		rightClickInteractAbilities = new ArrayList<OnRightClick>();
 		onActivateAbilities = new ArrayList<OnActivateAbility>();
@@ -178,11 +178,11 @@ public class Profession {
 		Ability[] abilities = professionDefinition.getAbilities();
 		for (int i = 0; i < abilities.length; i++) {
 			
-			if(abilities[i] instanceof OnDamagedLivingEntity){
-				damagedLivingEntityAbilities.add((OnDamagedLivingEntity) abilities[i]);
+			if(abilities[i] instanceof OnDamagedEntity){
+				damagedEntityAbilities.add((OnDamagedEntity) abilities[i]);
 			}
-			else if(abilities[i] instanceof OnGotDamagedByLivingEntity){
-				gotDamagedByLivingEntityAbilites.add((OnGotDamagedByLivingEntity) abilities[i]);
+			else if(abilities[i] instanceof OnGotDamagedByEntity){
+				gotDamagedByEntityAbilites.add((OnGotDamagedByEntity) abilities[i]);
 			}
 			else if(abilities[i] instanceof OnLeftClick){
 				leftClickInteractAbilities.add((OnLeftClick) abilities[i]);
@@ -507,7 +507,7 @@ public class Profession {
 
 		
 		// Abilities:
-		for (OnGotDamagedByLivingEntity ability : gotDamagedByLivingEntityAbilites) {
+		for (OnGotDamagedByEntity ability : gotDamagedByEntityAbilites) {
 			
 			// Check if active:
 			// Instantaneous:
@@ -515,7 +515,7 @@ public class Profession {
 				ability.use(getLevel(), sagaPlayer, this, event);
 			}
 			// Trigger:
-			else if(ability.getActivateType().equals(AbilityActivateType.TRIGGER)){
+			else if(ability.getActivateType().equals(AbilityActivateType.TRIGGER) && isAbilityActive(ability)){
 				sagaPlayer.deactivateAbility(ability.getAbility());
 				ability.use(level, sagaPlayer, this, event);
 			}
@@ -538,7 +538,7 @@ public class Profession {
 
 		
 		// Abilities:
-		for (OnGotDamagedByLivingEntity ability : gotDamagedByLivingEntityAbilites) {
+		for (OnDamagedEntity ability : damagedEntityAbilities) {
 			
 			// Check if active:
 			// Instantaneous:
@@ -546,7 +546,7 @@ public class Profession {
 				ability.use(getLevel(), sagaPlayer, this, event);
 			}
 			// Trigger:
-			else if(ability.getActivateType().equals(AbilityActivateType.TRIGGER)){
+			else if(ability.getActivateType().equals(AbilityActivateType.TRIGGER) && isAbilityActive(ability)){
 				sagaPlayer.deactivateAbility(ability.getAbility());
 				ability.use(level, sagaPlayer, this, event);
 			}
@@ -588,7 +588,7 @@ public class Profession {
 				ability.use(getLevel(), sagaPlayer, this, event);
 			}
 			// Trigger:
-			else if(ability.getActivateType().equals(AbilityActivateType.TRIGGER)){
+			else if(ability.getActivateType().equals(AbilityActivateType.TRIGGER) && isAbilityActive(ability)){
 				sagaPlayer.deactivateAbility(ability.getAbility());
 				ability.use(level, sagaPlayer, this, event);
 			}
@@ -619,7 +619,7 @@ public class Profession {
 				ability.use(getLevel(), sagaPlayer, this, event);
 			}
 			// Trigger:
-			else if(ability.getActivateType().equals(AbilityActivateType.TRIGGER)){
+			else if(ability.getActivateType().equals(AbilityActivateType.TRIGGER) && isAbilityActive(ability)){
 				sagaPlayer.deactivateAbility(ability.getAbility());
 				ability.use(level, sagaPlayer, this, event);
 			}
@@ -671,7 +671,7 @@ public class Profession {
 				ability.use(getLevel(), sagaPlayer, this, event);
 			}
 			// Trigger:
-			else if(ability.getActivateType().equals(AbilityActivateType.TRIGGER)){
+			else if(ability.getActivateType().equals(AbilityActivateType.TRIGGER) && isAbilityActive(ability)){
 				sagaPlayer.deactivateAbility(ability.getAbility());
 				ability.use(level, sagaPlayer, this, event);
 			}
