@@ -10,6 +10,7 @@ import org.bukkit.entity.Player;
 import org.saga.Saga;
 import org.saga.SagaPlayer;
 import org.saga.abilities.Ability;
+import org.saga.abilities.Ability.AbilityActivateType;
 import org.saga.attributes.Attribute;
 import org.saga.attributes.Attribute.DisplayType;
 import org.saga.professions.Profession;
@@ -620,7 +621,7 @@ public class PlayerMessages {
 		
 	}
 
-	public static String professionStats(Profession profession) {
+	public static String professionStats(SagaPlayer sagaPlayer, Profession profession) {
 
 		
 		StringBuffer rString = new StringBuffer();
@@ -643,7 +644,7 @@ public class PlayerMessages {
 			if(i != 0){
 				rString.append("\n");
 			}
-			rString.append(getAbilityElement(profession, abilities[i], abilitiesColor));
+			rString.append(getAbilityElement(sagaPlayer, profession, abilities[i], abilitiesColor));
 		}
 		rString.append(messageColor);
 		
@@ -660,7 +661,7 @@ public class PlayerMessages {
 		
 	}
 	
-	private static String getAbilityElement(Profession profession, Ability ability, ChatColor messageColor) {
+	private static String getAbilityElement(SagaPlayer sagaPlayer, Profession profession, Ability ability, ChatColor messageColor) {
 
 		
 		StringBuffer rString = new StringBuffer();
@@ -677,6 +678,30 @@ public class PlayerMessages {
 		}else{
 			rString.append("(lvl"+requiredLevel+")");
 			abilityColor = unavailableHighlightColor;
+		}
+		
+		// Ability details:
+		StringBuffer details = new StringBuffer();
+		
+		// Active for:
+		if(ability.getActivateType().equals(AbilityActivateType.TIMER) && sagaPlayer.getAbilityRemainingTime(ability) > 0){
+			if(details.length() != 0){
+				details.append(", ");
+			}
+			details.append(positiveHighlightColor + "active for " + sagaPlayer.getAbilityRemainingTime(ability) + "s" + messageColor);
+		}
+		// Ready for:
+		else if(ability.getActivateType().equals(AbilityActivateType.TRIGGER) && sagaPlayer.getAbilityRemainingTime(ability) > 0){
+			if(details.length() != 0){
+				details.append(", ");
+			}
+			details.append(positiveHighlightColor + "ready for " + sagaPlayer.getAbilityRemainingTime(ability) + "s"  + messageColor);
+		}
+		
+		// Add details:
+		if(details.length() != 0){
+			rString.append(": ");
+			rString.append(details);
 		}
 		
 		return abilityColor + rString.toString() + messageColor;

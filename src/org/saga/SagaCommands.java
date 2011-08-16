@@ -66,7 +66,7 @@ public class SagaCommands {
     		ArrayList<Profession> professions = sagaPlayer.getProfessions();
     		for (int i = 0; i < professions.size(); i++) {
 				if(professions.get(i).getName().equalsIgnoreCase(args.getString(0))){
-					sagaPlayer.sendMessage(PlayerMessages.professionStats(professions.get(i)));
+					sagaPlayer.sendMessage(PlayerMessages.professionStats(sagaPlayer, professions.get(i)));
 					break;
 				}
 				if(i == professions.size() - 1){
@@ -131,7 +131,7 @@ public class SagaCommands {
     		ArrayList<Profession> otherProfessions = otherSagaPlayer.getProfessions();
     		for (int i = 0; i < otherProfessions.size(); i++) {
 				if(otherProfessions.get(i).getName().equalsIgnoreCase(args.getString(1))){
-					sagaPlayer.sendMessage(PlayerMessages.professionStats(otherProfessions.get(i)));
+					sagaPlayer.sendMessage(PlayerMessages.professionStats(otherSagaPlayer, otherProfessions.get(i)));
 					break;
 				}
 				if(i == otherProfessions.size() - 1){
