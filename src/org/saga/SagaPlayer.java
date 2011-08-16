@@ -3,6 +3,7 @@ package org.saga;
 import java.io.*;
 import java.util.ArrayList;
 import java.util.Hashtable;
+import java.util.List;
 import java.util.Random;
 
 import net.minecraft.server.EntityFireball;
@@ -12,7 +13,6 @@ import net.minecraft.server.WorldServer;
 import org.bukkit.Bukkit;
 import org.bukkit.Effect;
 import org.bukkit.Location;
-import org.bukkit.Material;
 import org.bukkit.block.Block;
 import org.bukkit.block.BlockFace;
 import org.bukkit.craftbukkit.CraftWorld;
@@ -849,6 +849,9 @@ public class SagaPlayer{
 		}
 		Entity damager = player;
 		
+		// Ground location:
+		targetLocation = BlockConstants.groundLocation(targetLocation);
+		
 		// Get the craftworld.
 		CraftWorld craftWorld = (CraftWorld) player.getWorld();
 		
@@ -880,7 +883,70 @@ public class SagaPlayer{
 		
 	}
 	
-	// Other ability and attribute use:
+
+	/**
+	 * Shoots lightning relative to the player.
+	 * 
+	 * @param relativeLocation location relative to the player
+	 * @param selfDamage if true, the shooter may also be damaged
+	 */
+	public void shootLightning(Vector relativeLocation, boolean selfDamage) {
+
+		
+		// Ignore if the player isn't online:
+		if(!isOnlinePlayer()){
+			return;
+		}
+		Entity damager = player;
+		
+		Location target = damager.getLocation().clone().add(relativeLocation.getX(), 0, relativeLocation.getZ());
+		
+		shootLightning(target, selfDamage);
+		
+		
+	}
+	
+	
+	// Player entity interaction:
+	/**
+	 * Returns the player distance to a location
+	 * 
+	 * @param location location
+	 * @return distance. 0 if player not online
+	 */
+	public Double getDistance(Location location) {
+		
+		
+		// Zero loaction if the player isn't online:
+		if(!isOnlinePlayer()){
+			return 0.0;
+		}
+		
+		return player.getLocation().distance(location);
+
+		
+	}
+	
+	/**
+	 * Gets nearby entities
+	 * 
+	 * @param x x radius
+	 * @param y y radius
+	 * @param z z radius
+	 * @return nearby entities. emplty if player isn't online.
+	 */
+	public List<Entity> getNearbyEntities(double x, double y, double z) {
+		
+		
+		// Ignore if the player isn't online:
+		if(!isOnlinePlayer()){
+			return new ArrayList<Entity>();
+		}
+		
+		return player.getNearbyEntities(x, y, z);
+
+		
+	}
 	/**
 	 * Tries to dodge.
 	 * 
@@ -1089,6 +1155,7 @@ public class SagaPlayer{
 	 */
 	public void leftClickInteractEvent(PlayerInteractEvent event) {
 		
+		
 		// Send to ability manager:
 		abilityManager.leftClickInteractEvent(event);
 		
@@ -1097,10 +1164,6 @@ public class SagaPlayer{
 			profession.leftClickInteractEvent(event);
 		}
 		
-		
-		if(event.getPlayer().getItemInHand().getType().equals(Material.BOOK)){
-			shootLightning(player.getTargetBlock(null, 100).getLocation(), true);
-		}
 		
 	}
 

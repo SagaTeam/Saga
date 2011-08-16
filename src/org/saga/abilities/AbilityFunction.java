@@ -75,6 +75,9 @@ public abstract class AbilityFunction extends Ability {
 		// Set fields:
 		functionX1 = minimumLevel();
 		
+		// Second extended:
+		integrity = completeSecondExtended() && integrity;
+		
 		return integrity;
 		
 		

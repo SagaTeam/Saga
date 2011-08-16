@@ -6,12 +6,13 @@ import java.util.Random;
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.block.Block;
+import org.bukkit.block.BlockFace;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.material.MaterialData;
 
 public class BlockConstants {
 
-	
+
 	public static final Material[] TRANSPARENT_MATERIALS = new Material[]{Material.AIR, Material.LONG_GRASS, Material.WATER};
 	
 	private static final Random RANDOM = new Random();
@@ -166,5 +167,28 @@ public class BlockConstants {
 		
 	}
 	
+	public static Location groundLocation(Location location) {
+
+		int highestY = location.getWorld().getHighestBlockYAt(location);
+		location = location.clone();
+		location.setY(highestY);
+		Block currentBlock = location.getBlock();
+		
+		Block previousBlock = currentBlock;
+		int y = highestY;
+		// Loop down:
+		while(y > 1){
+			previousBlock = currentBlock;
+			currentBlock = currentBlock.getRelative(BlockFace.DOWN);
+			if( !currentBlock.getType().equals(Material.AIR) || !isTransparent(currentBlock.getType()) ){
+				return previousBlock.getLocation();
+			}
+			y--;
+		}
+		return currentBlock.getLocation();
+		
+		
+	}
 	
+
 }

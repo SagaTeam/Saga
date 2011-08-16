@@ -10,6 +10,7 @@ import org.saga.abilities.Ability;
 import org.saga.abilities.ChopDownAbility;
 import org.saga.abilities.CounterattackAbility;
 import org.saga.abilities.DisarmAbility;
+import org.saga.abilities.DischargeAbility;
 import org.saga.abilities.FireballAbility;
 import org.saga.abilities.FocusedHitsAbility;
 import org.saga.abilities.HarvestAbility;
@@ -225,7 +226,7 @@ public class ProfessionInformation {
 	 */
 	private Ability[] getDefaultAbilities() {
 
-		return new Ability[]{new HeavyHitAbility(), new CounterattackAbility(), new DisarmAbility(), new PowerfulSwings(), new ResistLavaAbility(), new FocusedHitsAbility(), new ChopDownAbility(), new TreeClimbAbility(), new HarvestAbility(), new FireballAbility()};
+		return new Ability[]{new HeavyHitAbility(), new CounterattackAbility(), new DisarmAbility(), new PowerfulSwings(), new ResistLavaAbility(), new FocusedHitsAbility(), new ChopDownAbility(), new TreeClimbAbility(), new HarvestAbility(), new FireballAbility(), new DischargeAbility()};
 		
 	}
 	
