@@ -59,7 +59,6 @@ public class LeapAbility extends AbilityFunction implements OnActivateAbility{
 	 */
 	public void use(Short level, SagaPlayer sagaPlayer, Profession profession) {
 		
-		System.out.println("leap");
 		
 		// Set speeds:
 		sagaPlayer.addLeapHorizontalSpeed(calculateFunctionValue(level));
