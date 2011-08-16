@@ -57,7 +57,7 @@ public class HeavyHitAbility extends AbilityFunction implements OnDamagedEntity{
 		sagaPlayer.sendMessage(PlayerMessages.youUsedAbilityOnEntity(damaged, this));
 		
 		if(damaged instanceof Player){
-			((Player) damaged).sendMessage(PlayerMessages.entityUsedAbilityOnYou(damager, this));
+			((Player) damaged).sendMessage(PlayerMessages.entityUsedNegativeAbilityOnYou(damager, this));
 		}
 		
 		event.setDamage((new Double(event.getDamage()*calculateFunctionValue(level))).intValue());

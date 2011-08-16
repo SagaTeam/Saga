@@ -104,7 +104,7 @@ public class DisarmAbility extends Ability implements OnDamagedEntity{
 			((Player) damager).sendMessage(PlayerMessages.youUsedAbilityOnEntity(damaged, this));
 		}
 		if(damaged instanceof Player){
-			((Player) damaged ).sendMessage(PlayerMessages.entityUsedAbilityOnYou(damager, this));
+			((Player) damaged ).sendMessage(PlayerMessages.entityUsedNegativeAbilityOnYou(damager, this));
 		}
 		
 		

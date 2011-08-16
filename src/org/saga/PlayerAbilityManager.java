@@ -194,7 +194,9 @@ public class PlayerAbilityManager {
 		abilityTimers.remove(ability);
 		
 		// Notify player:
-		sagaPlayer.sendMessage(PlayerMessages.abilityDeactivate(ability));
+		if(!ability.getActivateType().equals(AbilityActivateType.TRIGGER)){
+			sagaPlayer.sendMessage(PlayerMessages.abilityDeactivate(ability));
+		}
 		
 		// Send a deactivate event:
 		profession.abilityDeactivateEvent(ability);

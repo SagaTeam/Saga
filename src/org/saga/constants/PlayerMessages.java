@@ -50,6 +50,8 @@ public class PlayerMessages {
 	
 	public static ChatColor positiveHighlightColor = ChatColor.GREEN;
 	
+	public static ChatColor neutralHighlightColor = ChatColor.YELLOW;
+	
 	public static ChatColor negativeHighlightColor = ChatColor.RED;
 	
 	public static ChatColor unavailableHighlightColor = ChatColor.DARK_GRAY;
@@ -131,21 +133,34 @@ public class PlayerMessages {
 				
 	}
 	
-	public static String abilityActivate(Ability activatedAbility) {
+	/**
+	 * Message when an ability is activated.
+	 * 
+	 * @param ability ability
+	 * @return message
+	 */
+	public static String abilityActivate(Ability ability) {
 
-		return "Activated "+activatedAbility.getAbilityName()+" ability.";
+		return neutralHighlightColor + "Activated "+ability.getAbilityName()+" ability.";
 				
 	}
 	
-	public static String abilityInvalidUse(Ability activatedAbility) {
+	
+	public static String abilityInvalidUse(Ability ability) {
 
-		return "Can't use "+activatedAbility.getAbilityName()+" ability.";
+		return "Can't use "+ability.getAbilityName()+" ability.";
 				
 	}
 	
-	public static String abilityDeactivate(Ability activatedAbility) {
+	/**
+	 * Message when an ability is activated.
+	 * 
+	 * @param ability ability
+	 * @return message
+	 */
+	public static String abilityDeactivate(Ability ability) {
 
-		return "Deactivated "+activatedAbility.getAbilityName()+" ability.";
+		return neutralHighlightColor + "Deactivated "+ability.getAbilityName()+" ability.";
 				
 	}
 
@@ -161,6 +176,13 @@ public class PlayerMessages {
 
 	}
 	
+	/**
+	 * Message when the player uses an ability on someone else
+	 * 
+	 * @param abilityUser ability user
+	 * @param ability ability
+	 * @return
+	 */
 	public static String youUsedAbilityOnEntity(Entity abilityUsedOn, Ability ability) {
 		
 		
@@ -171,12 +193,19 @@ public class PlayerMessages {
 			usedOnName = abilityUsedOn.getClass().getSimpleName().replace("Craft", "");
 		}
 		
-		return "You used " + ability.getAbilityName()+ " ability on "+ usedOnName + ".";
+		return positiveHighlightColor + "You used " + ability.getAbilityName()+ " ability on "+ usedOnName + ".";
 		
 		
 	}
 	
-	public static String entityUsedAbilityOnYou(Entity abilityUser, Ability ability) {
+	/**
+	 * Message when an entity uses a negative ability on the player
+	 * 
+	 * @param abilityUser ability user
+	 * @param ability ability
+	 * @return
+	 */
+	public static String entityUsedNegativeAbilityOnYou(Entity abilityUser, Ability ability) {
 		
 		String userOnName;
 		if(abilityUser instanceof Player){
@@ -185,17 +214,30 @@ public class PlayerMessages {
 			userOnName = capitalize(abilityUser.getClass().getSimpleName().replace("Craft", ""));
 		}
 		
-		return userOnName + " used " + ability.getAbilityName()+ " on you.";
+		return negativeHighlightColor + userOnName + " used " + ability.getAbilityName()+ " on you.";
 		
 		
 	}
 	
+	/**
+	 * Message when an ability is used.
+	 * 
+	 * @param ability ability
+	 * @return
+	 */
 	public static String usedAbility(Ability ability) {
 		
-		return "Used " + ability.getAbilityName()+ " ability.";
+		return positiveHighlightColor + "Used " + ability.getAbilityName()+ " ability.";
 		
 	}
 	
+	/**
+	 * Message when an ability use fails.
+	 * 
+	 * @param abilityUsedOn ability used on
+	 * @param ability ability
+	 * @return message
+	 */
 	public static String abilityUseFailedOn(Entity abilityUsedOn, Ability ability) {
 		
 		
@@ -206,7 +248,7 @@ public class PlayerMessages {
 			usedOnName = abilityUsedOn.getClass().getSimpleName().replace("Craft", "");
 		}
 		
-		return "Failed to use " + ability.getAbilityName()+ " ability on "+ usedOnName + ".";
+		return negativeHighlightColor + "Failed to use " + ability.getAbilityName()+ " ability on "+ usedOnName + ".";
 		
 		
 	}
