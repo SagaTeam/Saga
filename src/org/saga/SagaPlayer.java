@@ -16,6 +16,7 @@ import org.bukkit.Location;
 import org.bukkit.block.Block;
 import org.bukkit.block.BlockFace;
 import org.bukkit.craftbukkit.CraftWorld;
+import org.bukkit.craftbukkit.entity.CraftEntity;
 import org.bukkit.craftbukkit.entity.CraftPlayer;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.LivingEntity;
@@ -908,6 +909,86 @@ public class SagaPlayer{
 	
 	
 	// Player entity interaction:
+	/**
+	 * Returns players yaw.
+	 * 
+	 * @return yaw. 0 if not online
+	 */
+	public double getYaw() {
+		
+		
+		// Ignore if not online:
+		if(!isOnlinePlayer()){
+			return 0.0;
+		}
+		return player.getLocation().getYaw();
+		
+		
+	}
+	
+	/**
+	 * Returns players pitch.
+	 * 
+	 * @return pitch. 0 if not online
+	 */
+	public double getPithc() {
+		
+		
+		// Ignore if not online:
+		if(!isOnlinePlayer()){
+			return 0.0;
+		}
+		return player.getLocation().getPitch();
+		
+		
+	}
+	
+	/**
+	 * Changes pitch and yaw.
+	 * 
+	 * @param yaw yaw 
+	 * @param pitch pitch
+	 */
+	public void setLookingAt(float yaw, float pitch) {
+		
+		
+		// Ignore if not online:
+		if(!isOnlinePlayer()){
+			return;
+		}
+		Entity entity = player;
+		
+		// Correct yaw:
+		if(yaw > 360){
+			while(yaw > 360){
+				yaw -= 360;
+			}
+		}else if(yaw < 360){
+			while(yaw < 360){
+				yaw += 360;
+			}
+		}
+		
+		// Correct pitch:
+		if(pitch > 360){
+			while(pitch > 360){
+				pitch -= 360;
+			}
+		}else if(pitch < 360){
+			while(pitch < 360){
+				pitch += 360;
+			}
+		}
+		
+		// Change direction:
+		Location location = entity.getLocation();
+		location.setPitch(pitch);
+		location.setYaw(yaw);
+		player.teleport(location);
+		
+		
+	}
+	
 	/**
 	 * Sets player horizontal speed. Direction is where the player is looking at.
 	 * 
