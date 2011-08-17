@@ -10,13 +10,15 @@ import java.util.logging.*;
 //imports from this project
 import org.sk89q.*;
 import org.saga.utility.*;
-import org.saga.utility.WriterReader.WriteType;
+import org.saga.config.AttributeConfiguration;
+import org.saga.config.BalanceConfiguration;
+import org.saga.config.ExperienceConfiguration;
+import org.saga.config.ProfessionConfiguration;
 import org.saga.constants.PlayerMessages;
 import org.saga.exceptions.SagaPlayerNotLoadedException;
 
 //External Imports
 import java.util.*;
-import java.io.*;
 
 
 import org.anjocaido.groupmanager.GroupManager;
@@ -34,8 +36,6 @@ import org.bukkit.entity.*;
 import org.bukkit.plugin.*;
 import org.bukkit.plugin.java.*;
 
-import com.google.gson.JsonParseException;
-
 
 /**
  *
@@ -47,9 +47,6 @@ public class Saga extends JavaPlugin {
     private static final Logger log = Logger.getLogger("Saga");
     private static boolean debugging = true;
     private static Saga instance;
-    private static BalanceInformation balanceInformation;
-    private static AttributeInformation  attributeInformation;
-    private static ProfessionInformation  professionInformation;
 
     //Instance Members
     private static CommandsManager<Player> commandMap;
@@ -64,18 +61,6 @@ public class Saga extends JavaPlugin {
 
     static public Saga plugin() {
         return instance;
-    }
-    
-    static public BalanceInformation balanceInformation() {
-        return balanceInformation;
-    }
-
-    static public AttributeInformation attributeInformation(){
-    	return attributeInformation;
-    }
-    
-    static public ProfessionInformation professionInformation(){
-    	return professionInformation;
     }
     
     public static boolean debuging() {
@@ -101,14 +86,17 @@ public class Saga extends JavaPlugin {
 
         //Remove global instances
         Saga.instance = null;
-        Saga.balanceInformation = null;
-        Saga.attributeInformation = null;
         Saga.playerListener = null;
         Saga.entityListener = null;
+        ExperienceConfiguration.unload();
+        ProfessionConfiguration.unload();
+        AttributeConfiguration.load();
+        BalanceConfiguration.unload();
         
     	//Say Goodbye
         Saga.info("Saga Goodbye!");
 
+        
     }
 
     @Override
@@ -153,14 +141,11 @@ public class Saga extends JavaPlugin {
 
         };
 
-        // Load balance information:
-        loadBalanceInformation();
-
-        // Load attribute information:
-        loadAttributeInformation();
-
-        // Load profession information:
-        professionInformation = ProfessionInformation.load();
+        // Configuration:
+        BalanceConfiguration.load();
+        AttributeConfiguration.load();
+        ProfessionConfiguration.load();
+        ExperienceConfiguration.load();
         
         // Add all already online players:
         Player[] onlinePlayers = getServer().getOnlinePlayers();
@@ -190,122 +175,6 @@ public class Saga extends JavaPlugin {
         commandMap.register(SagaCommands.class);
 
         
-    }
-
-    /**
-     * Loads balance information to the static field.
-     * 
-     */
-    private void loadBalanceInformation(){
-    	
-    	
-    	// Read balance information:
-        BalanceInformation balanceInformation;
-        boolean writeDefaultBalanceInfo = false;
-        try {
-
-            balanceInformation = WriterReader.readBalanceInformation();
-
-        } catch (FileNotFoundException e) {
-
-            Saga.severe("Missing balance information. Loading defaults.");
-
-            balanceInformation = new BalanceInformation();
-            writeDefaultBalanceInfo = true;
-            
-        }catch (IOException e) {
-
-            Saga.exception("Balance information load failure. Loading defaults.",e);
-            balanceInformation = new BalanceInformation();
-            writeDefaultBalanceInfo = true;
-
-        }catch (JsonParseException e) {
-        	
-        	Saga.exception("Balance information parse failure. Loading defaults.",e);
-            balanceInformation = new BalanceInformation();
-            writeDefaultBalanceInfo = true;
-
-        }
-        
-        // Complete balance information:
-        if(!balanceInformation.complete()){
-        	Saga.severe("Balance information integrity check failed. Update balance information file.");
-        	writeDefaultBalanceInfo = true;
-        }
-        
-        // Generate default balance information:
-        if(writeDefaultBalanceInfo){
-            try {
-            	Saga.info("Generating balance information file with new added default values. Edit and rename to use it.");
-                WriterReader.writeBalanceInformation(balanceInformation, WriteType.DEFAULTS);
-            } catch (Exception e2) {
-                Saga.severe("Balance information file generation failure.");
-            }
-
-        }
-        
-        // Set global balance information:
-        Saga.balanceInformation = balanceInformation;
-    	
-    	
-    }
-
-    /**
-     * Loads balance information to the static field.
-     * 
-     */
-    private void loadAttributeInformation(){
-    	
-    	
-    	// Read balance information:
-        AttributeInformation information;
-        boolean writeInfo = false;
-        try {
-
-            information = WriterReader.readAttributeInformation();
-
-        } catch (FileNotFoundException e) {
-
-            Saga.severe("Missing attribute information. Loading defaults.");
-
-            information = new AttributeInformation();
-            writeInfo = true;
-            
-        }catch (IOException e) {
-
-            Saga.exception("Attribute information load failure. Loading defaults.",e);
-            information = new AttributeInformation();
-            writeInfo = true;
-
-        }catch (JsonParseException e) {
-        	
-        	Saga.exception("Attribute information parse failure. Loading defaults.",e);
-            information = new AttributeInformation();
-            writeInfo = true;
-
-        }
-        
-        // Complete information:
-        if(!information.complete()){
-        	Saga.severe("Attribute information integrity check failed. Update attribute information file.");
-        	writeInfo = true;
-        }
-        
-        // Generate default information:
-        if(writeInfo){
-            try {
-            	Saga.info("Generating attribute information file with new added default values. Edit and rename to use it.");
-                WriterReader.writeAttributeInformation(information, WriteType.DEFAULTS);
-            } catch (Exception e) {
-                Saga.severe("Attribute information file generation failure.");
-            }
-
-        }
-        
-        // Set global balance information:
-        Saga.attributeInformation = information;
-    	
-    	
     }
     
     
@@ -674,46 +543,40 @@ public class Saga extends JavaPlugin {
 
     }
 
+    
     //Debug/Log Output Functions
     static public void info(String string) {
         log.info(string);
     }
 
-    
     static public void info(String string, String playerName) {
         string = "(" + playerName + ")" + string;
         log.info(string);
     }
 
-    
     static public void severe(String string) {
         log.severe(string);
     }
 
-    
     static public void severe(String string, String playerName) {
         string = "(" + playerName+ ")" + string;
         log.severe(string);
     }
 
-    
     static public void warning(String string) {
         log.warning(string);
     }
 
-    
     static public void warning(String string, String playerName) {
         string = "(" + playerName + ")" + string;
         log.warning(string);
     }
-
     
     static public void exception(String string, Exception e) {
         string = string + " [" + e.getClass().getSimpleName() + "]" + e.getMessage();
         log.severe(string);
     }
 
-    
     static public void debug(String string) {
 
         if ( !debugging ) {
@@ -728,7 +591,6 @@ public class Saga extends JavaPlugin {
         log.info(string);
 
     }
-
     
     static public void debug(String string, String playerName) {
 
@@ -742,46 +604,5 @@ public class Saga extends JavaPlugin {
         log.info(string);
 
     }
-
-    /*
-    public static void main(String[] args) {
-
-        ArrayList<Profession> professionList = new ArrayList<Profession>();
-
-        //Load up some professions
-        professionList.add(new WoodcutterProfession());
-        professionList.add(new FighterProfession());
-
-        GsonBuilder gsonBuilder  = new GsonBuilder();
-        gsonBuilder.registerTypeAdapter(Profession.class, new ProfessionDeserializer());
-
-        Gson gson = gsonBuilder.create();
-
-        Type type = new TypeToken<ArrayList<Profession>>(){}.getType();
-        String json = gson.toJson(professionList,type);
-
-        //Read the json data
-        professionList = gson.fromJson(json, type);
-
-        if ( professionList == null ) {
-            info("List is null!");
-            return;
-        }
-
-        for ( int i = 0; i < professionList.size(); i++ ) {
-
-            Profession prof = professionList.get(i);
-
-            if ( prof == null ) {
-                info("prof is null : " + i);
-            } else {
-                info("Got Class " + prof.getClass().getName());
-            }
-
-            //info("Got class: " + prof.getClass().getSimpleName() );
-
-        }
-
-    }*/
 
 }

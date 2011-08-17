@@ -8,6 +8,7 @@ import org.bukkit.Material;
 import org.bukkit.event.player.PlayerInteractEvent;
 import org.saga.abilities.Ability;
 import org.saga.abilities.Ability.AbilityActivateType;
+import org.saga.config.BalanceConfiguration;
 import org.saga.constants.BlockConstants;
 import org.saga.constants.PlayerMessages;
 import org.saga.professions.Profession;
@@ -293,7 +294,7 @@ public class PlayerAbilityManager {
         	}
         }
 		abilitySelectedFor++;
-		if(abilitySelectedFor >= Saga.balanceInformation().abilitySelectedTime){
+		if(abilitySelectedFor >= BalanceConfiguration.getConfig().abilitySelectedTime){
 			abilitySelectedFor = 0;
 			resetSelection();
 		}

@@ -16,7 +16,6 @@ import org.bukkit.Location;
 import org.bukkit.block.Block;
 import org.bukkit.block.BlockFace;
 import org.bukkit.craftbukkit.CraftWorld;
-import org.bukkit.craftbukkit.entity.CraftEntity;
 import org.bukkit.craftbukkit.entity.CraftPlayer;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.LivingEntity;
@@ -31,12 +30,15 @@ import org.saga.pattern.SagaPatternElement;
 import org.saga.pattern.SagaPatternInitiator;
 import org.saga.professions.*;
 import org.saga.utility.WriterReader;
-import org.saga.ProfessionInformation.InvalidProfessionException;
-import org.saga.ProfessionInformation.ProfessionDefinition;
 import org.saga.SagaPlayerListener.SagaPlayerProjectileShotEvent;
 import org.saga.SagaPlayerListener.SagaPlayerProjectileShotEvent.ProjectileType;
 import org.saga.abilities.Ability;
 import org.saga.attributes.Attribute;
+import org.saga.config.AttributeConfiguration;
+import org.saga.config.BalanceConfiguration;
+import org.saga.config.ProfessionConfiguration;
+import org.saga.config.ProfessionConfiguration.InvalidProfessionException;
+import org.saga.config.ProfessionConfiguration.ProfessionDefinition;
 import org.saga.constants.*;
 
 import com.google.gson.JsonParseException;
@@ -227,7 +229,7 @@ public class SagaPlayer{
 		}
 		
 		// Retrieve definition and check if it exists:
-		ProfessionDefinition definition = Saga.professionInformation().getDefinition(professionName);
+		ProfessionDefinition definition = ProfessionConfiguration.getConfig().getDefinition(professionName);
 		if(definition == null){
 			return false;
 		}
@@ -441,7 +443,7 @@ public class SagaPlayer{
 	 */
 	public double getMaximumStamina() {
 		
-		return Saga.balanceInformation().maximumStamina+0;
+		return BalanceConfiguration.getConfig().maximumStamina+0;
 
 	}
 	
@@ -478,11 +480,11 @@ public class SagaPlayer{
 		if(stamina >= getMaximumStamina()){
 			return;
 		}
-		stamina += Saga.balanceInformation().staminaPerSecond;
+		stamina += BalanceConfiguration.getConfig().staminaPerSecond;
 		if(stamina > getMaximumStamina()){
 			stamina = getMaximumStamina();
 		}
-		if(((int)(stamina - Saga.balanceInformation().staminaPerSecond)/10) != (int)(stamina/10)){
+		if(((int)(stamina - BalanceConfiguration.getConfig().staminaPerSecond)/10) != (int)(stamina/10)){
 			sendMessage(PlayerMessages.staminaRegeneration(stamina, getMaximumStamina()));
 		}
 
@@ -863,7 +865,7 @@ public class SagaPlayer{
 		java.util.List<Entity> damagedEntities = craftLightning.getNearbyEntities(1, 5, 1);
 		ArrayList<EntityDamageByEntityEvent> damageEvents = new ArrayList<EntityDamageByEntityEvent>();
 		for (int i = 0; i < damagedEntities.size(); i++) {
-			EntityDamageByEntityEvent event = new EntityDamageByEntityEvent(damager, damagedEntities.get(i), DamageCause.LIGHTNING, Saga.balanceInformation().baseLightningDamage);
+			EntityDamageByEntityEvent event = new EntityDamageByEntityEvent(damager, damagedEntities.get(i), DamageCause.LIGHTNING, BalanceConfiguration.getConfig().baseLightningDamage);
 			// Don't add self if damage self is false:
 			if(selfDamage || !damagedEntities.get(i).equals(damager)){
 				Bukkit.getServer().getPluginManager().callEvent(event);
@@ -1220,7 +1222,7 @@ public class SagaPlayer{
 
 
 		// Attributes:
-		Attribute[] defenseAttributes = Saga.attributeInformation().defenseAttributes;
+		Attribute[] defenseAttributes = AttributeConfiguration.getConfig().defenseAttributes;
 		for (int i = 0; i < defenseAttributes.length; i++) {
 			String attributeName = defenseAttributes[i].getName();
 			defenseAttributes[i].use(getAttributeUpgrade(attributeName), this, event);
@@ -1244,7 +1246,7 @@ public class SagaPlayer{
 		
 		
 		// Attributes:
-		Attribute[] attackAtributes = Saga.attributeInformation().attackAttributes;
+		Attribute[] attackAtributes = AttributeConfiguration.getConfig().attackAttributes;
 		for (int i = 0; i < attackAtributes.length; i++) {
 			String attributeName = attackAtributes[i].getName();
 			attackAtributes[i].use(getAttributeUpgrade(attributeName), this, event);
@@ -1358,7 +1360,7 @@ public class SagaPlayer{
 		
 		
 		// Attributes:
-		Attribute[] projectileShotAttributes = Saga.attributeInformation().projectileShotAttributes;
+		Attribute[] projectileShotAttributes = AttributeConfiguration.getConfig().projectileShotAttributes;
 		for (int i = 0; i < projectileShotAttributes.length; i++) {
 			String attributeName = projectileShotAttributes[i].getName();
 			projectileShotAttributes[i].use(getAttributeUpgrade(attributeName), this, event);

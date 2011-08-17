@@ -9,6 +9,7 @@ import org.bukkit.event.entity.EntityDamageByEntityEvent;
 import org.saga.Saga;
 import org.saga.SagaPlayer;
 import org.saga.abilities.types.OnDamagedEntity;
+import org.saga.config.AttributeConfiguration;
 import org.saga.constants.PlayerMessages;
 import org.saga.professions.Profession;
 
@@ -107,8 +108,8 @@ public class DisorientAbility extends AbilityFunction implements OnDamagedEntity
 		
 		// Modify damage:
 		int damage = new Double(event.getDamage() + calculateFunctionValue(level)).intValue();
-		if(damage < Saga.attributeInformation().minimumAttributeDamage){
-			damage = Saga.attributeInformation().minimumAttributeDamage;
+		if(damage < AttributeConfiguration.getConfig().minimumAttributeDamage){
+			damage = AttributeConfiguration.getConfig().minimumAttributeDamage;
 		}
 		event.setDamage(damage);
 		

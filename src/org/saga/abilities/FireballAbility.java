@@ -30,8 +30,7 @@ public class FireballAbility extends AbilityFunction implements OnActivateAbilit
 	 */
 	@Override
 	public boolean completeSecondExtended() {
-		// TODO Auto-generated method stub
-		return false;
+		return true;
 	}
 
 	

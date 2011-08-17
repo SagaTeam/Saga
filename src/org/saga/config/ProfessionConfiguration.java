@@ -1,4 +1,4 @@
-package org.saga;
+package org.saga.config;
 
 import java.io.FileNotFoundException;
 import java.io.IOException;
@@ -6,6 +6,7 @@ import java.util.ArrayList;
 import java.util.Hashtable;
 
 import org.bukkit.Material;
+import org.saga.Saga;
 import org.saga.abilities.Ability;
 import org.saga.abilities.ChopDownAbility;
 import org.saga.abilities.CounterattackAbility;
@@ -20,14 +21,29 @@ import org.saga.abilities.LeapAbility;
 import org.saga.abilities.PowerfulSwings;
 import org.saga.abilities.ResistLavaAbility;
 import org.saga.abilities.TreeClimbAbility;
+import org.saga.constants.IOConstants.WriteReadType;
 import org.saga.professions.Profession.ProfessionType;
 import org.saga.utility.WriterReader;
-import org.saga.utility.WriterReader.WriteType;
 
 import com.google.gson.JsonParseException;
 
-public class ProfessionInformation {
+public class ProfessionConfiguration {
+	
 
+	/**
+	 * Instance of the configuration.
+	 */
+	transient private static ProfessionConfiguration instance;
+	
+	/**
+	 * Gets the instance.
+	 * 
+	 * @return instance
+	 */
+	public static ProfessionConfiguration getConfig() {
+		return instance;
+	}
+	
 	
 	// Profession Information.
 	/**
@@ -62,7 +78,7 @@ public class ProfessionInformation {
 	 * Used by gson.
 	 * 
 	 */
-	public ProfessionInformation() {
+	public ProfessionConfiguration() {
 	}
 	
 	/**
@@ -83,34 +99,16 @@ public class ProfessionInformation {
 			Saga.severe("profession information abilityNames field is not initialized.");
 			integrity=false;
 		}
+		if(abilities == null){
+			abilities = new ArrayList<Ability>();
+			Saga.severe("profession information abilities field is not initialized.");
+			integrity=false;
+		}
 		for (int i = 0; i < abilityNames.size(); i++) {
 			if(abilityNames.get(i) == null){
 				Saga.severe("Ability name null. Setting empty.");
 				abilityNames.set(i, "");
 			}
-		}
-		
-		// Read abilities based on the names:
-		abilities = new ArrayList<Ability>();
-		for (int i = 0; i < abilityNames.size(); i++) {
-			String name = abilityNames.get(i);
-			if(name.length() > 0){
-				try {
-					Ability ability = WriterReader.readAbilityInformation(name);
-					abilities.add(ability);
-				} catch (FileNotFoundException e) {
-					Saga.severe(name + "ability file not found. Ignoring ability.");
-					integrity = false;
-				}catch (IOException e) {
-					Saga.severe(name + "ability file read failure. Ignoring ability.");
-					integrity = false;
-				}catch (JsonParseException e) {
-					Saga.severe(name + "ability file parse failure. Ignoring ability.");
-					integrity = false;
-				}
-				
-			}
-			
 		}
 		
         // Add default abilities if they don't exist:
@@ -132,11 +130,6 @@ public class ProfessionInformation {
 			
 		}
         
-        // Ability integrity check:
-        for (int i = 0; i < abilities.size(); i++) {
- 			integrity = abilities.get(i).complete() && integrity;
- 		}
-        
 		// Fill ability quick access:
         abilityPool = new Hashtable<String, Ability>();
 		for (int i = 0; i < abilities.size(); i++) {
@@ -145,7 +138,7 @@ public class ProfessionInformation {
 		
 		// Profession definitions:
 		if(professionDefinitions == null){
-			professionDefinitions = new ArrayList<ProfessionInformation.ProfessionDefinition>();
+			professionDefinitions = new ArrayList<ProfessionConfiguration.ProfessionDefinition>();
 			Saga.severe("profession information professionDefinitions field is not initialized. Adding two example definitions.");
 			professionDefinitions.add(new ProfessionDefinition("ProfessionName1", new Material[]{Material.WOOD_AXE, Material.INK_SACK}, ProfessionType.CLASS, new String[]{"Ability1", "Ability2", "Ability3"}));
 			professionDefinitions.add(new ProfessionDefinition("ProfessionName2", new Material[]{Material.LADDER, Material.SAND}, ProfessionType.CLASS, new String[]{"Ability1", "Ability2", "Ability3"}));
@@ -181,7 +174,7 @@ public class ProfessionInformation {
 		}
 		
 		// Add definitions to quick access:
-		professionDefinitionPool = new Hashtable<String, ProfessionInformation.ProfessionDefinition>();
+		professionDefinitionPool = new Hashtable<String, ProfessionConfiguration.ProfessionDefinition>();
 		for (ProfessionDefinition definition : professionDefinitions) {
 			professionDefinitionPool.put(definition.getName(), definition);
 		}
@@ -189,6 +182,15 @@ public class ProfessionInformation {
 		return integrity;
 		
 		
+	}
+	
+	/**
+	 * Sets abilities.
+	 * 
+	 * @param abilities abilities
+	 */
+	public void setAbilities(ArrayList<Ability> abilities) {
+		this.abilities = abilities;
 	}
 
 	
@@ -212,16 +214,6 @@ public class ProfessionInformation {
 	}
 	
 	/**
-	 * Creates a filler for an invalid definition.
-	 * 
-	 * @param name name
-	 * @return empty definition with {@link ProfessionType#INVALID} type
-	 */
-	public ProfessionDefinition createInvalidDefinition2(String name) {
-		return new ProfessionDefinition(name, new Material[0], ProfessionType.INVALID, new String[0]);
-	}
-	
-	/**
 	 * Returns all abilities.
 	 * 
 	 * @return all abilities
@@ -231,66 +223,7 @@ public class ProfessionInformation {
 		return new Ability[]{new HeavyHitAbility(), new CounterattackAbility(), new DisarmAbility(), new PowerfulSwings(), new ResistLavaAbility(), new FocusedHitsAbility(), new ChopDownAbility(), new TreeClimbAbility(), new HarvestAbility(), new FireballAbility(), new DischargeAbility(), new LeapAbility(), new DisorientAbility()};
 		
 	}
-	
-	/**
-	 * Loads profession information.
-	 * 
-	 * @return profession information
-	 */
-	public static ProfessionInformation load(){
-		
-		
-		boolean integrityCheck = true;
-		
-		// Load profession information:
-		ProfessionInformation professionInformation;
-		try {
-			professionInformation = WriterReader.readProfessionInformation();
-		} catch (FileNotFoundException e) {
-			 Saga.severe("Missing profession information. Loading defaults.");
-			 professionInformation= new ProfessionInformation();
-			 integrityCheck = false;
-		} catch (IOException e) {
-			Saga.severe("Profession information load failure. Loading defaults.");
-			professionInformation= new ProfessionInformation();
-			integrityCheck = false;
-		} catch (JsonParseException e) {
-			Saga.severe("Profession information parse failure. Loading defaults.");
-			professionInformation= new ProfessionInformation();
-			integrityCheck = false;
-		}
-		
-		// Integrity check and complete:
-		integrityCheck = professionInformation.complete() && integrityCheck;
-		
-		// Write default if the integrity check failed:
-		if (!integrityCheck) {
-			Saga.severe("Integrity check failure.");
-			Saga.info("Writing profession information with fixed default values. Edit and rename to use it.");
-			try {
-				WriterReader.writeProfessionInformation(professionInformation, WriteType.DEFAULTS);
-			} catch (IOException e) {
-				Saga.severe("Profession information write failure. Ignoring write.");
-			}
-			
-			Saga.info("Writing abilities with fixed default values. Edit and rename to use them.");
-			ArrayList<Ability> abilities = professionInformation.abilities;
-			for (Ability ability : abilities) {
-				try {
-					WriterReader.writeAbilityInformation(ability, WriteType.DEFAULTS);
-				} catch (IOException e) {
-					Saga.severe("Writing failed for "+ability.getAbilityName() +" ability. Ignoring write.");
-				}
-			}
-			
-		}
-		
-		return professionInformation;
-		
-		
-	}
-	
-	
+
 	/**
 	 * Defines a profession.
 	 * 
@@ -435,7 +368,131 @@ public class ProfessionInformation {
 		
 	}
 
+	// Load unload:
+	/**
+	 * Loads profession information.
+	 * 
+	 * @return profession information
+	 */
+	public static ProfessionConfiguration load(){
+		
+		
+		boolean integrityCheck = true;
+		
+		// Load:
+		String configName = "profession configuration";
+		ProfessionConfiguration config;
+		try {
+			config = WriterReader.readProfessionConfig();
+		} catch (FileNotFoundException e) {
+			Saga.severe("Missing " + configName + ". Loading defaults.");
+			config = new ProfessionConfiguration();
+			integrityCheck = false;
+		} catch (IOException e) {
+			Saga.severe("Failed to load " + configName + ". Loading defaults.");
+			config = new ProfessionConfiguration();
+			integrityCheck = false;
+		} catch (JsonParseException e) {
+			Saga.severe("Failed to parse " + configName + ". Loading defaults.");
+			Saga.info("Parse message :" + e.getMessage());
+			config = new ProfessionConfiguration();
+			integrityCheck = false;
+		}
+		
+		// Load abilities:
+		if(config.abilityNames != null){
+			config.setAbilities(loadAbilities(config.abilityNames));
+		}
+		
+		// Integrity check and complete:
+		integrityCheck = config.complete() && integrityCheck;
+		
+		// Write default if integrity check failed:
+		if (!integrityCheck) {
+			Saga.severe("Integrity check failed for " + configName);
+			Saga.info("Writing " + configName + " with fixed default values. Edit and rename to use it.");
+			try {
+				WriterReader.writeProfessionConfig(config, WriteReadType.DEFAULTS);
+			} catch (IOException e) {
+				Saga.severe("Profession information write failure. Ignoring write.");
+			}
+		}
+		
+		// Set instance:
+		instance = config;
+		
+		return config;
+		
+		
+	}
 	
+	/**
+	 * Unloads configuration.
+	 * 
+	 */
+	public static void unload(){
+		instance = null;
+	}
+	
+	/**
+	 * Loads and completes abilities.
+	 * 
+	 * @param abilityNames ability names
+	 * @return abilities. Failed ones will be ignored
+	 */
+	private static ArrayList<Ability> loadAbilities(ArrayList<String> abilityNames) {
+
+		
+		ArrayList<Ability> abilities = new ArrayList<Ability>();
+		for (int i = 0; i < abilityNames.size(); i++) {
+			
+			
+			boolean integrityCheck = true;
+			// Load:
+			String configName = abilityNames.get(i) + " ability configuration";
+			Ability config = null;
+			try {
+				config = WriterReader.readAbilityConfig(abilityNames.get(i));
+				abilities.add(config);
+			} catch (FileNotFoundException e) {
+				Saga.severe("Missing " + configName + ". Ignoring ability.");
+				integrityCheck = false;
+				continue;
+			} catch (IOException e) {
+				Saga.severe("Failed to load " + configName + ". Ignoring ability.");
+				integrityCheck = false;
+				continue;
+			} catch (JsonParseException e) {
+				Saga.severe("Failed to parse " + configName + ". Ignoring ability.");
+				Saga.info("Parse message :" + e.getMessage());
+				integrityCheck = false;
+				continue;
+			}
+			
+			// Integrity check and complete:
+			integrityCheck = config.complete() && integrityCheck;
+			
+			// Write default if integrity check failed:
+			if (!integrityCheck) {
+				Saga.severe("Integrity check failed for " + configName);
+				Saga.info("Writing " + configName + " with fixed default values. Edit and rename to use it.");
+				try {
+					WriterReader.writeAbilityConfig(abilityNames.get(i) ,config, WriteReadType.ABILITY_DEFAULTS);
+				} catch (IOException e) {
+					Saga.severe("Profession information write failure. Ignoring write.");
+				}
+				
+			}
+			
+			
+		}
+		
+		return abilities;
+		
+	}
+	
+	
+	// Other:
 	/**
 	 * Used when an invalid profession reqest is made.
 	 * 
@@ -460,5 +517,6 @@ public class ProfessionInformation {
 		
 		
 	}
+	
 	
 }

@@ -7,6 +7,7 @@ package org.saga;
 
 import java.util.ArrayList;
 
+import org.saga.config.BalanceConfiguration;
 import org.saga.constants.PlayerMessages;
 import org.saga.exceptions.SagaPlayerNotLoadedException;
 import org.saga.professions.Profession;
@@ -175,7 +176,7 @@ public class SagaCommands {
 			return;
 		}
     	
-    	if(level > Saga.balanceInformation().maximumLevel || level < 0){
+    	if(level > BalanceConfiguration.getConfig().maximumLevel || level < 0){
 			sagaPlayer.sendMessage(PlayerMessages.invalidSetLevel(level + ""));
     		return;
 		}
@@ -252,7 +253,7 @@ public class SagaCommands {
     	for (int i = 0; i < professions.size(); i++) {
 			if(professions.get(i).getName().equalsIgnoreCase(args.getString(0))){
 				Short level = (short) (professions.get(i).getLevel() + 1);
-				if(level < 0 || level > Saga.balanceInformation().maximumLevel){
+				if(level < 0 || level > BalanceConfiguration.getConfig().maximumLevel){
 					sagaPlayer.sendMessage(PlayerMessages.levelLimitReached(level));
 					return;
 				}
@@ -287,7 +288,7 @@ public class SagaCommands {
     	for (int i = 0; i < professions.size(); i++) {
 			if(professions.get(i).getName().equalsIgnoreCase(args.getString(0))){
 				Short level = (short) (professions.get(i).getLevel() - 1);
-				if(level<0 || level>Saga.balanceInformation().maximumLevel){
+				if(level < 0 || level > BalanceConfiguration.getConfig().maximumLevel){
 					sagaPlayer.sendMessage(PlayerMessages.levelLimitReached(level));
 					return;
 				}

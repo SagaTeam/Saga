@@ -169,7 +169,7 @@ public class SagaChunk {
             SagaSettlement settlement = SagaSettlementManager.instance().getSettlement(settlementId);
             return settlement.getName();
         } else {
-            return General.WILDERNESS_STRING;
+            return IOConstants.WILDERNESS_STRING;
         }
 
     }
@@ -191,7 +191,7 @@ public class SagaChunk {
             return color + settlement.getName();
 
         } else {
-            return General.WILDERNESS_STRING;
+            return IOConstants.WILDERNESS_STRING;
         }
 
     }

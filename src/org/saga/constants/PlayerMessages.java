@@ -7,12 +7,13 @@ import org.bukkit.ChatColor;
 import org.bukkit.Effect;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.Player;
-import org.saga.Saga;
 import org.saga.SagaPlayer;
 import org.saga.abilities.Ability;
 import org.saga.abilities.Ability.AbilityActivateType;
 import org.saga.attributes.Attribute;
 import org.saga.attributes.Attribute.DisplayType;
+import org.saga.config.AttributeConfiguration;
+import org.saga.config.BalanceConfiguration;
 import org.saga.professions.Profession;
 import org.saga.professions.Profession.ProfessionType;
 
@@ -527,7 +528,7 @@ public class PlayerMessages {
 		String attributeElement = "";
 		
 		// Loop trough attack:
-		attributes = Saga.attributeInformation().attackAttributes;
+		attributes = AttributeConfiguration.getConfig().attackAttributes;
 		for (int i = 0; i < attributes.length; i++) {
 			if(attributes[i].getDisplayType().equals(DisplayType.OFFENCE)){
 				attributeElement = getAttributeElement(sagaPlayer, attributes[i], elementColor);
@@ -548,7 +549,7 @@ public class PlayerMessages {
 		}
 		
 		// Loop trough defense:
-		attributes = Saga.attributeInformation().defenseAttributes;
+		attributes = AttributeConfiguration.getConfig().defenseAttributes;
 		for (int i = 0; i < attributes.length; i++) {
 			if(attributes[i].getDisplayType().equals(DisplayType.OFFENCE)){
 				attributeElement = getAttributeElement(sagaPlayer, attributes[i], elementColor);
@@ -569,7 +570,7 @@ public class PlayerMessages {
 		}
 		
 		// Loop trough projectile shot:
-		attributes = Saga.attributeInformation().projectileShotAttributes;
+		attributes = AttributeConfiguration.getConfig().projectileShotAttributes;
 		for (int i = 0; i < attributes.length; i++) {
 			if(attributes[i].getDisplayType().equals(DisplayType.OFFENCE)){
 				attributeElement = getAttributeElement(sagaPlayer, attributes[i], elementColor);
@@ -878,7 +879,7 @@ public class PlayerMessages {
 	}
 	
 	public static String invalidSetLevel(String level){
-		return level + " is an invalid level. Level must be a number in the range 0-" + Saga.balanceInformation().maximumLevel + ".";
+		return level + " is an invalid level. Level must be a number in the range 0-" + BalanceConfiguration.getConfig().maximumLevel + ".";
 	}
 	
 	public static String setLevelTo(String playerName, Profession profession , Short level){
@@ -888,8 +889,8 @@ public class PlayerMessages {
 	public static String levelLimitReached(Short level) {
 
 		
-		if(level >= Saga.balanceInformation().maximumLevel){
-			return "Maximum level reached. You can't go above "+Saga.balanceInformation().maximumLevel+".";
+		if(level >= BalanceConfiguration.getConfig().maximumLevel){
+			return "Maximum level reached. You can't go above "+BalanceConfiguration.getConfig().maximumLevel+".";
 		}
 		if(level <= 0){
 			return "Minimum level reached. You can't go below 0.";

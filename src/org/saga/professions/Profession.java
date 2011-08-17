@@ -12,8 +12,6 @@ import org.bukkit.event.block.BlockPlaceEvent;
 import org.bukkit.event.entity.EntityDamageByEntityEvent;
 import org.bukkit.event.entity.EntityDamageEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
-import org.saga.ProfessionInformation.InvalidProfessionException;
-import org.saga.ProfessionInformation.ProfessionDefinition;
 import org.saga.Saga;
 import org.saga.SagaPlayer;
 import org.saga.abilities.Ability;
@@ -25,6 +23,11 @@ import org.saga.abilities.types.OnGotDamagedByEntity;
 import org.saga.abilities.types.OnLeftClick;
 import org.saga.abilities.types.OnRightClick;
 import org.saga.abilities.types.OnActivateAbility;
+import org.saga.config.AttributeConfiguration;
+import org.saga.config.BalanceConfiguration;
+import org.saga.config.ProfessionConfiguration;
+import org.saga.config.ProfessionConfiguration.InvalidProfessionException;
+import org.saga.config.ProfessionConfiguration.ProfessionDefinition;
 import org.saga.constants.PlayerDefaults;
 import org.saga.constants.PlayerMessages;
 
@@ -162,7 +165,7 @@ public class Profession {
 		modifyAttributeUpgrades(getRawLevel());
 		
 		// Retrieve definition and abilities:
-		professionDefinition = Saga.professionInformation().getDefinition(getName());
+		professionDefinition = ProfessionConfiguration.getConfig().getDefinition(getName());
 		if(professionDefinition == null){
 			throw new InvalidProfessionException(getName());
 		}
@@ -394,7 +397,7 @@ public class Profession {
 		
 		
 		// Retrieve attribute upgrades for the profession:
-		Hashtable<String, Short[]> upgrades = Saga.attributeInformation().getAttributeUpgrades(getName());
+		Hashtable<String, Short[]> upgrades = AttributeConfiguration.getConfig().getAttributeUpgrades(getName());
 		
 		// Loop trough all retrieved attributes:
 		Enumeration<String> allAttributeNames= upgrades.keys();
@@ -423,7 +426,7 @@ public class Profession {
 	 */
 	private Integer calculateExperienceRequirement(Short level) {
 
-		return level*Saga.balanceInformation().experienceSlope * level + Saga.balanceInformation().experienceIntercept;
+		return level * BalanceConfiguration.getConfig().experienceSlope * level + BalanceConfiguration.getConfig().experienceIntercept;
 
 	}
 	

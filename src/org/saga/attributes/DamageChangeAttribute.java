@@ -14,6 +14,7 @@ import org.bukkit.event.entity.EntityDamageByProjectileEvent;
 import org.bukkit.event.entity.EntityDamageEvent.DamageCause;
 import org.saga.Saga;
 import org.saga.SagaPlayer;
+import org.saga.config.AttributeConfiguration;
 
 public class DamageChangeAttribute extends Attribute {
 
@@ -194,8 +195,8 @@ public class DamageChangeAttribute extends Attribute {
 		
 		// Increase to minimum damage:
 		int damage = floor(((EntityDamageByEntityEvent) event).getDamage() - damageChange);
-		if(damage < Saga.attributeInformation().minimumAttributeDamage){
-			damage = Saga.attributeInformation().minimumAttributeDamage;
+		if(damage < AttributeConfiguration.getConfig().minimumAttributeDamage){
+			damage = AttributeConfiguration.getConfig().minimumAttributeDamage;
 		}
 		
 		event.setDamage(damage);

@@ -1,8 +1,11 @@
-package org.saga;
+package org.saga.config;
 
+import java.io.FileNotFoundException;
+import java.io.IOException;
 import java.util.Hashtable;
 
 import org.bukkit.Material;
+import org.saga.Saga;
 import org.saga.SagaPlayerListener.SagaPlayerProjectileShotEvent.ProjectileType;
 import org.saga.attributes.Attribute;
 import org.saga.attributes.Attribute.DisplayType;
@@ -10,9 +13,29 @@ import org.saga.attributes.DamageChangeAttribute;
 import org.saga.attributes.DamageChangeAttribute.AttackType;
 import org.saga.attributes.DamageChangeAttribute.EntityType;
 import org.saga.attributes.ProjectileShotAttribute;
+import org.saga.constants.IOConstants.WriteReadType;
+import org.saga.utility.WriterReader;
 
-public class AttributeInformation {
+import com.google.gson.JsonParseException;
 
+public class AttributeConfiguration {
+
+	
+	/**
+	 * Instance of the configuration.
+	 */
+	transient private static AttributeConfiguration instance;
+	
+	/**
+	 * Gets the instance.
+	 * 
+	 * @return instance
+	 */
+	public static AttributeConfiguration getConfig() {
+		return instance;
+	}
+	
+	
 	/**
 	 * Minimum damage that an attribute can reduce to.
 	 */
@@ -33,13 +56,10 @@ public class AttributeInformation {
 	 */
 	public ProjectileShotAttribute[] projectileShotAttributes;
 	
-	
 	/**
 	 * Resistance attributes.
 	 */
 	public Attribute[] resistanceAttributes;
-	
-	
 	
 	/**
 	 * Profession attribute gain levels.
@@ -53,7 +73,7 @@ public class AttributeInformation {
 	 * Used by gson.
 	 * 
 	 */
-	public AttributeInformation() {
+	public AttributeConfiguration() {
 	}
 	
 	/**
@@ -155,4 +175,66 @@ public class AttributeInformation {
 	}
 
 
+	// Load unload:
+	/**
+	 * Loads the configuration.
+	 * 
+	 * @return experience configuration
+	 */
+	public static AttributeConfiguration load(){
+		
+		
+		boolean integrityCheck = true;
+		
+		// Load:
+		String configName = "attribute configuration";
+		AttributeConfiguration config;
+		try {
+			config = WriterReader.readAttributeConfig();
+		} catch (FileNotFoundException e) {
+			Saga.severe("Missing " + configName + ". Loading defaults.");
+			config = new AttributeConfiguration();
+			integrityCheck = false;
+		} catch (IOException e) {
+			Saga.severe("Failed to load " + configName + ". Loading defaults.");
+			config = new AttributeConfiguration();
+			integrityCheck = false;
+		} catch (JsonParseException e) {
+			Saga.severe("Failed to parse " + configName + ". Loading defaults.");
+			Saga.info("Parse message :" + e.getMessage());
+			config = new AttributeConfiguration();
+			integrityCheck = false;
+		}
+		
+		// Integrity check and complete:
+		integrityCheck = config.complete() && integrityCheck;
+		
+		// Write default if integrity check failed:
+		if (!integrityCheck) {
+			Saga.severe("Integrity check failed for " + configName);
+			Saga.info("Writing " + configName + " with fixed default values. Edit and rename to use it.");
+			try {
+				WriterReader.writeAttributeConfig(config, WriteReadType.DEFAULTS);
+			} catch (IOException e) {
+				Saga.severe("Profession information write failure. Ignoring write.");
+			}
+		}
+		
+		// Set instance:
+		instance = config;
+		
+		return config;
+		
+		
+	}
+	
+	/**
+	 * Unloads the instance.
+	 * 
+	 */
+	public static void unload(){
+		instance = null;
+	}
+	
+	
 }

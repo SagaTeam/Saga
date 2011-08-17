@@ -1,11 +1,31 @@
-package org.saga;
+package org.saga.config;
 
-import java.util.*;
+import java.io.FileNotFoundException;
+import java.io.IOException;
 
-import org.saga.abilities.*;
+import org.saga.Saga;
+import org.saga.constants.IOConstants.WriteReadType;
+import org.saga.utility.WriterReader;
 
-public class BalanceInformation {
+import com.google.gson.JsonParseException;
 
+public class BalanceConfiguration {
+
+
+	/**
+	 * Instance of the configuration.
+	 */
+	transient private static BalanceConfiguration instance;
+	
+	/**
+	 * Gets the instance.
+	 * 
+	 * @return instance
+	 */
+	public static BalanceConfiguration getConfig() {
+		return instance;
+	}
+	
 	
 	// Player:
 	/**
@@ -34,11 +54,6 @@ public class BalanceInformation {
 	 */
 	public Integer experienceSlope;
 
-	/**
-	 * All abilities.
-	 */
-	public Hashtable<String, Ability> abilities = new Hashtable<String, Ability>();
-	
 	// Other
 	/**
 	 * Time in seconds that the an ability remains active.
@@ -51,10 +66,11 @@ public class BalanceInformation {
 	public Integer baseLightningDamage;
 	
 	
+	// Initialization:
 	/**
 	 * Used by gson.
 	 */
-	public BalanceInformation() {
+	public BalanceConfiguration() {
 		
 	}
 	
@@ -108,23 +124,8 @@ public class BalanceInformation {
 			integrity=false;
 		}
 		
-		// Complete abilities:
-		Ability[] allAbilities = getAllAbilities();
-		for (int i = 0; i < allAbilities.length; i++) {
-			Ability ability = abilities.get(allAbilities[i].getClass().getSimpleName());
-			if(ability == null){
-				ability = allAbilities[i];
-				Saga.warning("Adding "+allAbilities[i].getClass().getSimpleName()+" ability to balance information and setting default values.");
-				abilities.put(ability.getClass().getSimpleName(), ability);
-				integrity=false;
-			}
-			if(!ability.complete()){
-				integrity = false;
-			}
-			
-		}
-		
 		return integrity;
+		
 		
 	}
 
@@ -141,26 +142,67 @@ public class BalanceInformation {
 
 	}
 	
-//	/**
-//	 * Returns all available professions.
-//	 * 
-//	 * @return all professions
-//	 */
-//	public Profession[] getAllProfessions() {
-//		
-//		return new Profession[]{new FighterProfession(), new WoodcutterProfession(), new MinerProfession(), new FarmerProfession(), new MageProfession()};
-//
-//	}
-	
-	/**
-	 * Returns all abilities.
-	 * 
-	 * @return all abilities
-	 */
-	private Ability[] getAllAbilities() {
 
-		return new Ability[]{new HeavyHitAbility(), new CounterattackAbility(), new DisarmAbility(), new PowerfulSwings(), new ResistLavaAbility(), new FocusedHitsAbility(), new ChopDownAbility(), new TreeClimbAbility(), new HarvestAbility(), new FireballAbility()};
+	// Load unload:
+	/**
+	 * Loads the configuration.
+	 * 
+	 * @return experience configuration
+	 */
+	public static BalanceConfiguration load(){
+		
+		
+		boolean integrityCheck = true;
+		
+		// Load:
+		String configName = "balance configuration";
+		BalanceConfiguration config;
+		try {
+			config = WriterReader.readBalanceConfig();
+		} catch (FileNotFoundException e) {
+			Saga.severe("Missing " + configName + ". Loading defaults.");
+			config = new BalanceConfiguration();
+			integrityCheck = false;
+		} catch (IOException e) {
+			Saga.severe("Failed to load " + configName + ". Loading defaults.");
+			config = new BalanceConfiguration();
+			integrityCheck = false;
+		} catch (JsonParseException e) {
+			Saga.severe("Failed to parse " + configName + ". Loading defaults.");
+			Saga.info("Parse message :" + e.getMessage());
+			config = new BalanceConfiguration();
+			integrityCheck = false;
+		}
+		
+		// Integrity check and complete:
+		integrityCheck = config.complete() && integrityCheck;
+		
+		// Write default if integrity check failed:
+		if (!integrityCheck) {
+			Saga.severe("Integrity check failed for " + configName);
+			Saga.info("Writing " + configName + " with fixed default values. Edit and rename to use it.");
+			try {
+				WriterReader.writeBalanceConfig(config, WriteReadType.DEFAULTS);
+			} catch (IOException e) {
+				Saga.severe("Profession information write failure. Ignoring write.");
+			}
+		}
+		
+		// Set instance:
+		instance = config;
+		
+		return config;
+		
 		
 	}
+	
+	/**
+	 * Unloads the instance.
+	 * 
+	 */
+	public static void unload(){
+		instance = null;
+	}
+	
 	
 }

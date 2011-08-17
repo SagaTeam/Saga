@@ -33,11 +33,6 @@ public class DischargeAbility extends AbilityFunction implements OnActivateAbili
 	private Double spread;
 	
 	/**
-	 * Calm zone strike ignore chance.
-	 */
-	private Double calmZoneIgnoreChance;
-	
-	/**
 	 * Random generator.
 	 */
 	private transient Random random;
@@ -73,11 +68,6 @@ public class DischargeAbility extends AbilityFunction implements OnActivateAbili
 		if(spread==null){
 			spread = 2.0;
 			Saga.info(getAbilityName() + " ability spread field not initialized. Setting default.");
-			integrity = false;
-		}
-		if(calmZoneIgnoreChance==null){
-			calmZoneIgnoreChance = 0.5;
-			Saga.info(getAbilityName() + " ability calmZoneIgnoreChance field not initialized. Setting default.");
 			integrity = false;
 		}
 		
