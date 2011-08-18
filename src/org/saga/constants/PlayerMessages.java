@@ -49,11 +49,15 @@ public class PlayerMessages {
 	// Information colors:
 	public static ChatColor normalColor = ChatColor.WHITE;
 	
+	public static ChatColor veryPositiveHighlightColor = ChatColor.DARK_GREEN; // DO NOT OVERUSE.
+	
 	public static ChatColor positiveHighlightColor = ChatColor.GREEN;
 	
 	public static ChatColor neutralHighlightColor = ChatColor.YELLOW;
 	
 	public static ChatColor negativeHighlightColor = ChatColor.RED;
+	
+	public static ChatColor veryNegativeHighlightColor = ChatColor.RED; // DO NOT OVERUSE.
 	
 	public static ChatColor unavailableHighlightColor = ChatColor.DARK_GRAY;
 	
@@ -333,7 +337,7 @@ public class PlayerMessages {
 
 	public static String levelUp(Profession profession, int level) {
 		
-		return capitalize(profession.getName()) + " is now level " + level + ".";
+		return veryPositiveHighlightColor + capitalize(profession.getName()) + " " + profession.getProfessionType().getName() + " is now level " + level + ".";
 		
 	}
 

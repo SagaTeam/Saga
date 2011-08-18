@@ -1,1 +1,11 @@
-{"blockBrakeExperienceTable":{"BED":{"2":1,"1":2},"WALL_SIGN":{"2":1,"0":2}},"entityKillExperienceTable":{"Mr Sssss":1,"EntityName1":1}}
+{"experienceIntercept":30,
+
+"experienceSlope":1.5,
+
+"blockBrakeExperienceTable":{
+"COBBLESTONE":{"0":10},
+"WALL_SIGN":{"2":1,"0":2}},
+
+"entityKillExperienceTable":{
+"CraftSkeleton":20,
+"EntityName1":1}}

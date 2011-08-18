@@ -29,6 +29,20 @@ public class ExperienceConfiguration {
 		return instance;
 	}
 	
+	
+	// Level requirement:
+	/**
+	 * Experience Intercept.
+	 */
+	public Integer experienceIntercept;
+
+	/**
+	 * Experience slope.
+	 */
+	public Integer experienceSlope;
+
+	
+	// Experience tables:
 	/**
 	 * Experience table for blocks with special block states.
 	 */
@@ -40,6 +54,7 @@ public class ExperienceConfiguration {
 	public Hashtable<String, Integer> entityKillExperienceTable;
 	
 	
+	// Initialization:
 	/**
 	 * Used by gson.
 	 * 
@@ -60,6 +75,18 @@ public class ExperienceConfiguration {
 		// Set instance:
 		instance = this;
 		
+		// Check level requirement:
+		if(experienceIntercept == null){
+			Saga.warning("Setting default value for balance information experienceIntercept.");
+			experienceIntercept= 10000;
+			integrity=false;
+		}
+		if(experienceSlope == null){
+			Saga.warning("Setting default value for balance information experienceSlope.");
+			experienceSlope= 10000;
+			integrity=false;
+		}
+		
 		// Check tables:
 		if(blockBrakeExperienceTable == null){
 			blockBrakeExperienceTable = new Hashtable<Material, Hashtable<Byte,Integer>>();
@@ -77,7 +104,7 @@ public class ExperienceConfiguration {
 		if(entityKillExperienceTable == null){
 			entityKillExperienceTable = new Hashtable<String, Integer>();
 			Saga.severe("Experience information entityKillExperienceTable field is not initialized. Adding tto examples.");
-			entityKillExperienceTable.put("EntityName1", 1);
+			entityKillExperienceTable.put("Player", 1);
 			entityKillExperienceTable.put("MrSssss", 1);
 			integrity = false;
 		}
@@ -90,31 +117,22 @@ public class ExperienceConfiguration {
 		
 	}
 	
-
-	/**
-	 * Gets experience configuration instance.
-	 * 
-	 * @return experience information instance.
-	 */
-	public static ExperienceConfiguration getExperienceConfig() {
-		return instance;
-	}
 	
-	
+	// Experience tables:
 	/**
 	 * Gets experience for the given material.
 	 * 
 	 * @param material material
 	 * @return experience. 0 if not found
 	 */
-	public Integer getBlockBrakeExperience(Material material) {
+	public Integer getBlockBrakeExperience(Material material, Byte data) {
 		
 		
 		Hashtable<Byte, Integer> element = blockBrakeExperienceTable.get(material);
 		if(element == null){
 			return 0;
 		}
-		Integer exp = element.get(0);
+		Integer exp = element.get(data);
 		if(exp == null){
 			return 0;
 		}
@@ -148,6 +166,7 @@ public class ExperienceConfiguration {
 	/**
 	 * Gets entity kill experience.
 	 * 
+	 * @param name entity name
 	 * @return experience. 0 if not found
 	 */
 	public Integer getEntityKillExperience(String name) {
@@ -163,6 +182,20 @@ public class ExperienceConfiguration {
 	}
 
 	
+	// Level requirement:
+	/**
+	 * Returns the required experience for level up.
+	 *
+	 * @param level level
+	 */
+	public Integer calculateExperienceRequirement(Short level) {
+
+		return experienceSlope * level + experienceIntercept;
+
+	}
+	
+	
+	// Load unload:
 	/**
 	 * Loads configuration.
 	 * 

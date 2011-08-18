@@ -143,9 +143,9 @@ public class Saga extends JavaPlugin {
 
         // Configuration:
         BalanceConfiguration.load();
-        AttributeConfiguration.load();
-        ProfessionConfiguration.load();
         ExperienceConfiguration.load();
+        AttributeConfiguration.load();
+        ProfessionConfiguration.load(); // Needs access to experience info.
         
         // Add all already online players:
         Player[] onlinePlayers = getServer().getOnlinePlayers();

@@ -44,16 +44,6 @@ public class BalanceConfiguration {
 	 */
 	public Short maximumLevel;
 	
-	/**
-	 * Experience Intercept.
-	 */
-	public Integer experienceIntercept;
-
-	/**
-	 * Experience slope.
-	 */
-	public Integer experienceSlope;
-
 	// Other
 	/**
 	 * Time in seconds that the an ability remains active.
@@ -102,16 +92,6 @@ public class BalanceConfiguration {
 			maximumLevel= 1;
 			integrity=false;
 		}
-		if(experienceIntercept == null){
-			Saga.warning("Setting default value for balance information experienceIntercept.");
-			experienceIntercept= 10000;
-			integrity=false;
-		}
-		if(experienceSlope == null){
-			Saga.warning("Setting default value for balance information experienceSlope.");
-			experienceSlope= 10000;
-			integrity=false;
-		}
 		// Other:
 		if(abilitySelectedTime == null){
 			Saga.warning("Setting default value for balance information abilitySelectedTime.");
@@ -129,19 +109,6 @@ public class BalanceConfiguration {
 		
 	}
 
-	
-	// Calculations:
-	/**
-	 * Returns the required experience for level up.
-	 *
-	 * @param pLevel
-	 */
-	public Integer calculateExperienceRequirement(Short pLevel) {
-
-		return pLevel*experienceSlope*pLevel+experienceIntercept;
-
-	}
-	
 
 	// Load unload:
 	/**

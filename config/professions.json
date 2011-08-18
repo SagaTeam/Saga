@@ -9,13 +9,38 @@
 
 
 
-"professionDefinitions":
-[
-{"name":"mage","materials":["PAPER"],"type":"CLASS","abilityNames":["fireball","discharge"]},
+"professionDefinitions":[
 
-{"name":"rouge","materials":["BOW","WOOD_SWORD","STONE_SWORD","IRON_SWORD","GOLD_SWORD","DIAMOND_SWORD"],"type":"CLASS","abilityNames":["leap","disorient"]},
 
-{"name":"warrior","materials":["WOOD_SWORD","STONE_SWORD","IRON_SWORD","GOLD_SWORD","DIAMOND_SWORD"],"type":"CLASS","abilityNames":["heavy hit","counterattack"]}
+
+
+{"name":"mage","materials":["PAPER"],
+"type":"CLASS",
+"abilityNames":["fireball","discharge"],
+"blockBrakeExpTable":{"WOOD":{"0":1},"COBBLESTONE":{"0":1}},
+"entityKillExpTable":{"CraftSkeleton":1,"CraftPlayer":1}
+},
+
+
+
+
+{"name":"rouge",
+"materials":["BOW","WOOD_SWORD","STONE_SWORD","IRON_SWORD","GOLD_SWORD","DIAMOND_SWORD"],
+"type":"CLASS",
+"abilityNames":["leap","disorient"],
+"blockBrakeExpTable":{"WOOD":{"0":1},"COBBLESTONE":{"0":1}},
+"entityKillExpTable":{"CraftSkeleton":1,"CraftPlayer":1}
+},
+
+
+
+
+{"name":"warrior",
+"materials":["WOOD_SWORD","STONE_SWORD","IRON_SWORD","GOLD_SWORD","DIAMOND_SWORD"],
+"type":"CLASS",
+"abilityNames":["heavy hit","counterattack"],
+"blockBrakeExpTable":{"WOOD":{"0":1},"COBBLESTONE":{"0":1}},
+"entityKillExpTable":{"CraftSkeleton":1,"CraftPlayer":1}}
 ]
 
 

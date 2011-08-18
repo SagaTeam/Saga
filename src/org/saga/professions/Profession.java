@@ -6,6 +6,8 @@ import java.util.Enumeration;
 import java.util.Hashtable;
 
 import org.bukkit.Material;
+import org.bukkit.entity.Entity;
+import org.bukkit.entity.LivingEntity;
 import org.bukkit.event.block.BlockBreakEvent;
 import org.bukkit.event.block.BlockDamageEvent;
 import org.bukkit.event.block.BlockPlaceEvent;
@@ -24,7 +26,7 @@ import org.saga.abilities.types.OnLeftClick;
 import org.saga.abilities.types.OnRightClick;
 import org.saga.abilities.types.OnActivateAbility;
 import org.saga.config.AttributeConfiguration;
-import org.saga.config.BalanceConfiguration;
+import org.saga.config.ExperienceConfiguration;
 import org.saga.config.ProfessionConfiguration;
 import org.saga.config.ProfessionConfiguration.InvalidProfessionException;
 import org.saga.config.ProfessionConfiguration.ProfessionDefinition;
@@ -159,7 +161,7 @@ public class Profession {
 		}
 		
 		// Initialize dependent fields:
-		experienceRequirement = calculateExperienceRequirement(level);
+		experienceRequirement = ExperienceConfiguration.getConfig().calculateExperienceRequirement(level);
 		
 		// Initiate attributes:
 		modifyAttributeUpgrades(getRawLevel());
@@ -326,10 +328,13 @@ public class Profession {
 	 */
 	public void gainExperience(Integer amount) {
 		
+		
+		System.out.println("exp gained");
 		levelExperience+=amount;
 		if(levelExperience >= experienceRequirement){
 			levelUp();
 		}
+	
 		
 	}
 	
@@ -354,8 +359,8 @@ public class Profession {
 		// Increase level:
 		this.level = level;
 		levelExperience = 0;
-		experienceRequirement = calculateExperienceRequirement(level);
-		PlayerMessages.levelUp(this, level);
+		experienceRequirement = ExperienceConfiguration.getConfig().calculateExperienceRequirement(level);
+		sagaPlayer.sendMessage(PlayerMessages.levelUp(this, level));
 		
 		// Modify attributes:
 		modifyAttributeUpgrades(level);
@@ -419,17 +424,6 @@ public class Profession {
 		
 	}
 
-	/**
-	 * Calculates the required experience for level up experience.
-	 * 
-	 * @param level level
-	 */
-	private Integer calculateExperienceRequirement(Short level) {
-
-		return level * BalanceConfiguration.getConfig().experienceSlope * level + BalanceConfiguration.getConfig().experienceIntercept;
-
-	}
-	
 	/**
 	 * Returns the raw level.
 	 * 
@@ -500,7 +494,8 @@ public class Profession {
 		
 	}
     
-    // Events:
+
+	// Events:
 	/**
 	 * Got damaged by living entity event.
 	 *
@@ -560,6 +555,38 @@ public class Profession {
 			
 		}
 
+		// Killed entity:
+		Entity damaged = event.getEntity();
+		if(event.getDamage() >= ((LivingEntity) damaged).getHealth()){
+			killedLivingEntityEvent(event);
+		}
+		
+		
+	}
+	
+	/**
+	 * Killed an entity event.
+	 * 
+	 * @param event event
+	 */
+	private void killedLivingEntityEvent(EntityDamageByEntityEvent event) {
+
+
+		if(!(event.getEntity() instanceof LivingEntity)){
+			return;
+		}
+		LivingEntity damaged = (LivingEntity) event.getEntity();
+		
+		if(event.isCancelled()){
+			return;
+		}
+		
+		// Add experience:
+		Integer exp = professionDefinition.getEntityKillExperience(damaged.getClass().getSimpleName());
+		if(exp != 0){
+			gainExperience(exp);
+		}
+		
 		
 	}
 	
@@ -654,6 +681,13 @@ public class Profession {
 	 */
 	public void brokeBlockEvent(BlockBreakEvent event) {
 
+		
+		// Add experience:
+		Integer exp = professionDefinition.blockBrakeExperience(event.getBlock());
+			if(exp != 0 && !event.isCancelled()){
+			gainExperience(exp);
+		}
+		
 
 	}
 	
