@@ -151,6 +151,10 @@ public class Profession {
 		
 		
 		// Fields:
+		if(professionName==null){
+			professionName = "null profession";
+			Saga.info("Setting default value for profession professionName.", sagaPlayer.getName());
+		}
 		if(level==null){
 			level = PlayerDefaults.level;
 			Saga.info("Setting default value for profession level.", sagaPlayer.getName());
