@@ -346,7 +346,7 @@ public class SagaPlayer implements Ticker{
 		
 
 		ArrayList<Profession> filteredProfessions = new ArrayList<Profession>();
-		for (Profession profession : filteredProfessions) {
+		for (Profession profession : professions) {
 			if(profession.getProfessionType().equals(type)){
 				filteredProfessions.add(profession);
 			}
