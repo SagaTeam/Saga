@@ -38,7 +38,7 @@ import org.saga.config.AttributeConfiguration;
 import org.saga.config.BalanceConfiguration;
 import org.saga.config.ProfessionConfiguration;
 import org.saga.config.ProfessionConfiguration.InvalidProfessionException;
-import org.saga.config.ProfessionConfiguration.ProfessionDefinition;
+import org.saga.config.ProfessionDefinition;
 import org.saga.constants.*;
 import org.saga.factions.SagaFaction;
 

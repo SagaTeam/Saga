@@ -29,7 +29,7 @@ import org.saga.config.AttributeConfiguration;
 import org.saga.config.ExperienceConfiguration;
 import org.saga.config.ProfessionConfiguration;
 import org.saga.config.ProfessionConfiguration.InvalidProfessionException;
-import org.saga.config.ProfessionConfiguration.ProfessionDefinition;
+import org.saga.config.ProfessionDefinition;
 import org.saga.constants.PlayerDefaults;
 import org.saga.constants.PlayerMessages;
 
@@ -278,6 +278,18 @@ public class Profession {
 		return professionDefinition.getAbilities();
 	}
 
+	/**
+	 * Gets a property.
+	 * 
+	 * @param key property key
+	 * @return property. null if not found
+	 */
+	public String getProperty(String key) {
+
+		return professionDefinition.getProperty(key);
+		
+	}
+	
 	/**
 	 * Checks if the ability is already active.
 	 * 
