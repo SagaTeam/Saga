@@ -29,6 +29,7 @@ import org.bukkit.util.Vector;
 import org.saga.pattern.SagaPatternElement;
 import org.saga.pattern.SagaPatternInitiator;
 import org.saga.professions.*;
+import org.saga.professions.Profession.ProfessionType;
 import org.saga.utility.WriterReader;
 import org.saga.SagaPlayerListener.SagaPlayerProjectileShotEvent;
 import org.saga.SagaPlayerListener.SagaPlayerProjectileShotEvent.ProjectileType;
@@ -331,6 +332,45 @@ public class SagaPlayer{
 		
 	}
 
+	/**
+	 * Gets all professions of given type.
+	 * 
+	 * @param type profession type
+	 * @return professions. empty list if not found
+	 */
+	public ArrayList<Profession> getProfessions(ProfessionType type){
+		
+		
+		ArrayList<Profession> professions = new ArrayList<Profession>();
+		for (Profession profession : professions) {
+			if(profession.getProfessionType().equals(type)){
+				professions.add(profession);
+			}
+		}
+		return professions;
+		
+		
+	}
+	
+	/**
+	 * Gets a profession property for the given type.
+	 * The value for the last profession that has the property is returned.
+	 * 
+	 * @param type profession type
+	 * @param key property key
+	 * @return property
+	 */
+	public String getProfessionProperty(ProfessionType type, String key) {
+
+		ArrayList<Profession> professions = getProfessions(type);
+		String value = null;
+		for (Profession profession : professions) {
+			String lValue = profession.getProperty(key);
+			if(lValue != null) value = lValue;
+		}
+		return value;
+		
+	}
 	
 	// Player entity management:
 	/**
