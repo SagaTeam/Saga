@@ -16,6 +16,8 @@ import org.saga.config.ExperienceConfiguration;
 import org.saga.config.ProfessionConfiguration;
 import org.saga.constants.PlayerMessages;
 import org.saga.exceptions.SagaPlayerNotLoadedException;
+import org.saga.factions.SagaFactionCommands;
+import org.saga.factions.SagaFactionManager;
 
 //External Imports
 import java.util.*;
@@ -92,6 +94,7 @@ public class Saga extends JavaPlugin {
         ProfessionConfiguration.unload();
         AttributeConfiguration.load();
         BalanceConfiguration.unload();
+        SagaFactionManager.unload();
         
     	//Say Goodbye
         Saga.info("Saga Goodbye!");
@@ -146,6 +149,7 @@ public class Saga extends JavaPlugin {
         ExperienceConfiguration.load();
         AttributeConfiguration.load();
         ProfessionConfiguration.load(); // Needs access to experience info.
+        SagaFactionManager.load();
         
         // Add all already online players:
         Player[] onlinePlayers = getServer().getOnlinePlayers();
@@ -173,6 +177,7 @@ public class Saga extends JavaPlugin {
         
         //Register Command Classes to the command map
         commandMap.register(SagaCommands.class);
+        commandMap.register(SagaFactionCommands.class);
 
         
     }
@@ -543,6 +548,17 @@ public class Saga extends JavaPlugin {
 
     }
 
+    // Messages:
+    /**
+     * Broadcast a message.
+     * 
+     * @param message message
+     */
+    public static void broadcast(String message){
+    	
+    	Saga.plugin().getServer().broadcastMessage(message);
+    	
+    }
     
     //Debug/Log Output Functions
     static public void info(String string) {

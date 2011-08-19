@@ -163,7 +163,7 @@ public class AttributeConfiguration {
 	 */
 	public Hashtable<String, Short[]> getAttributeUpgrades(String professionName) {
 	
-		
+
 		Hashtable<String, Short[]> professionGainLevels = attributeGainLevels.get(professionName);
 		if(professionGainLevels == null){
 			return new Hashtable<String, Short[]>();

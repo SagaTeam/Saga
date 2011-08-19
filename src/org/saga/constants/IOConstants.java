@@ -34,11 +34,14 @@ public class IOConstants {
 		ABILITY_DEFAULTS(DEFAULTS.getDirectory() + "abilities" + File.separator),
 		
 		PLAYER_NORMAL(PLUGIN_DIRECTORY.getDirectory() + "players" + File.separator),
-		PLAYER_BACKUP(PLUGIN_DIRECTORY.getDirectory() + "players backup" + File.separator);
+		PLAYER_BACKUP(BACKUP.getDirectory() + "players" + File.separator),
+		
+		FACTION_NORMAL(PLUGIN_DIRECTORY.getDirectory() + "factions" + File.separator),
+		FACTION_BACKUP(BACKUP.getDirectory() + "factions" + File.separator);
 		
 		
 		private String directory;
-		
+
 		
 		private WriteReadType(String fileName) {
 			this.directory = fileName;

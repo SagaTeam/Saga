@@ -40,6 +40,7 @@ import org.saga.config.ProfessionConfiguration;
 import org.saga.config.ProfessionConfiguration.InvalidProfessionException;
 import org.saga.config.ProfessionConfiguration.ProfessionDefinition;
 import org.saga.constants.*;
+import org.saga.factions.SagaFaction;
 
 import com.google.gson.JsonParseException;
 
@@ -97,6 +98,16 @@ public class SagaPlayer{
 	 */
 	transient private ArrayList<Integer> temporaryAttributeTimes = new ArrayList<Integer>();
 	
+	// Factions:
+	/**
+	 * All factions.
+	 */
+	transient private ArrayList<SagaFaction> registeredFactions = new ArrayList<SagaFaction>();
+	
+	/**
+	 * Selected faction.
+	 */
+	transient private int selectedFaction = 0;
 	
 	// Control:
 	/**
@@ -610,6 +621,116 @@ public class SagaPlayer{
 		
 	}
 	
+	// Factions:
+	/**
+	 * Registers a faction.
+	 * Will not add faction permanently to the player.
+	 * Also registers the player for the faction.
+	 * 
+	 * @param sagaFaction saga faction
+	 */
+	public void registerFaction(SagaFaction sagaFaction) {
+		
+		
+		// Check if already on the list:
+		if(registeredFactions.contains(sagaFaction)){
+			Saga.severe("Tried to register a faction an already registered faction. Ignoring register.", getName());
+			return;
+		}
+		
+		// Add:
+		registeredFactions.add(sagaFaction);
+		
+		// Register player for faction:
+		sagaFaction.registerMember(this);
+		
+		
+	}
+	
+	/**
+	 * Unregisters a faction.
+	 * Will not remove faction permanently to the player.
+	 * Also unregisters the player from the faction.
+	 * 
+	 * @param sagaFaction saga faction
+	 */
+	public void unregisterFaction(SagaFaction sagaFaction) {
+		
+		
+		// Check if not on the list:
+		if(!registeredFactions.contains(sagaFaction)){
+			Saga.severe("Tried to unregister an unregistered faction. Ignoring unregister.", getName());
+			return;
+		}
+		
+		// Remove:
+		registeredFactions.remove(sagaFaction);
+		
+		// Unregister player for faction:
+		sagaFaction.unregisterMember(this);
+		
+		
+	}
+	
+	/**
+	 * Check if a faction is registered.
+	 * 
+	 * @param sagaFaction saga faction
+	 * @return true if registered
+	 */
+	public boolean isRegisteredFaction(SagaFaction sagaFaction) {
+
+		return registeredFactions.contains(sagaFaction);
+		
+	}
+	
+	/**
+	 * Gets selected factions.
+	 * 
+	 * @return selected factions. Empty if none is selected
+	 */
+	public ArrayList<SagaFaction> getSelectedFactions() {
+		
+		
+		// No factions or none selected
+		if(registeredFactions.size() == 0 || selectedFaction == -1){
+			return new ArrayList<SagaFaction>();
+		}
+		
+		// Correct selection:
+		if(selectedFaction > registeredFactions.size()){
+			selectedFaction = -1;
+		}
+		if(selectedFaction < -1){
+			selectedFaction = -1;
+		}
+		
+		// All selected:
+		if(selectedFaction == registeredFactions.size()){
+			ArrayList<SagaFaction> factions = new ArrayList<SagaFaction>();
+			for (SagaFaction faction : registeredFactions) {
+				factions.add(faction);
+			}
+		}
+		
+		// One selected:
+		ArrayList<SagaFaction> factions = new ArrayList<SagaFaction>();
+		factions.add(registeredFactions.get(selectedFaction));
+		return factions;
+		
+		
+	}
+
+	/**
+	 * Returns factions count.
+	 * 
+	 * @return factions count.
+	 */
+	public int getFactionCount() {
+
+		return registeredFactions.size();
+		
+	}
 	
 	// Player notification:
 	/**

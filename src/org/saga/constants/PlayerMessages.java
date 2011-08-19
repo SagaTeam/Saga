@@ -14,6 +14,7 @@ import org.saga.attributes.Attribute;
 import org.saga.attributes.Attribute.DisplayType;
 import org.saga.config.AttributeConfiguration;
 import org.saga.config.BalanceConfiguration;
+import org.saga.factions.SagaFactionManager;
 import org.saga.professions.Profession;
 import org.saga.professions.Profession.ProfessionType;
 
@@ -60,6 +61,8 @@ public class PlayerMessages {
 	public static ChatColor veryNegativeHighlightColor = ChatColor.RED; // DO NOT OVERUSE.
 	
 	public static ChatColor unavailableHighlightColor = ChatColor.DARK_GRAY;
+	
+	public static ChatColor anouncmentColor = ChatColor.AQUA;
 	
 	public static ChatColor normalTextColor1 = ChatColor.GOLD;
 	
@@ -904,7 +907,7 @@ public class PlayerMessages {
 		
 	}
 	
-	
+
 	// Utility:
 	public static void sendMultipleLines(String message, Player player) {
 

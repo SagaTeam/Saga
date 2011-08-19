@@ -1,6 +1,7 @@
 package org.saga.utility;
 
 import java.io.*;
+import java.util.ArrayList;
 
 
 import org.saga.*;
@@ -21,6 +22,7 @@ import org.saga.config.ProfessionConfiguration;
 import org.saga.constants.*;
 import org.saga.constants.IOConstants.ConfigType;
 import org.saga.constants.IOConstants.WriteReadType;
+import org.saga.factions.SagaFaction;
 
 public class WriterReader {
 
@@ -340,6 +342,77 @@ public class WriterReader {
 		
 	}
 
+
+	/**
+	 * Reads configuration.
+	 * 
+	 * @param factionId faction ID
+	 * @throws JsonSyntaxException when parse fails
+	 * @throws IOException when read fails
+	 */
+	public static SagaFaction readFaction(String factionId) throws JsonParseException, IOException {
+
+		
+		Gson gson = new Gson();
+        return gson.fromJson(readConfig(WriteReadType.FACTION_NORMAL, factionId + IOConstants.FILE_EXTENTENSION), SagaFaction.class);
+		
+		
+	}
 	
+	/**
+	 * Writes configuration.
+	 * 
+	 * @param factionID faction ID
+	 * @param writeType write type
+	 * @throws IOException when write fails
+	 */
+	public static void writeFaction(String factionID, SagaFaction config, WriteReadType writeType) throws IOException {
+
+		
+        Gson gson = new Gson();
+        writeConfig(gson.toJson(config), writeType, factionID + IOConstants.FILE_EXTENTENSION);
+ 		
+		
+	}
+
+	/**
+	 * Gets all faction IDs in String form for reading.
+	 * 
+	 * @return all filenames
+	 */
+	public static String[] getAllFactionIds() {
+
+		
+		File directory = new File(WriteReadType.FACTION_NORMAL.getDirectory());
+		FilenameFilter filter = new FilenameFilter() {
+			
+			@Override
+			public boolean accept(File dir, String name) {
+				return name.endsWith(IOConstants.FILE_EXTENTENSION);
+			}
+		};
+		
+		if(!directory.exists()){
+			directory.mkdirs();
+			Saga.info("Creating "+directory+" directory.");
+		}
+		
+		String[] names = directory.list(filter);
+		
+		if(names == null){
+			Saga.severe("Could not retrieve faction names.");
+			names = new String[0];
+		}
+		
+		// Remove extensions:
+		for (int i = 0; i < names.length; i++) {
+			names[i] = names[i].replaceAll(IOConstants.FILE_EXTENTENSION, "");
+		}
+		
+		return names;
+
+		
+	}
+
 	
 }
