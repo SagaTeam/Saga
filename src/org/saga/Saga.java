@@ -87,6 +87,7 @@ public class Saga extends JavaPlugin {
         loadedPlayers = null;
 
         //Remove global instances
+        Clock.unload(); // Needs access to Saga.pluging()
         Saga.instance = null;
         Saga.playerListener = null;
         Saga.entityListener = null;
@@ -150,6 +151,7 @@ public class Saga extends JavaPlugin {
         AttributeConfiguration.load();
         ProfessionConfiguration.load(); // Needs access to experience info.
         SagaFactionManager.load();
+        Clock.load(); // Needs access to Saga.pluging()
         
         // Add all already online players:
         Player[] onlinePlayers = getServer().getOnlinePlayers();
@@ -158,7 +160,7 @@ public class Saga extends JavaPlugin {
         }
         
         //Add and activate clock:
-      	getServer().getScheduler().scheduleAsyncRepeatingTask(this, new Clock(), 200L, 20L);
+      	
         
         //Create listeners
       	playerListener = new SagaPlayerListener(this);
@@ -435,25 +437,6 @@ public class Saga extends JavaPlugin {
 
 	}
 
-	/**
-	 * Sends a clock tick.
-	 *
-	 * @param pTick tick number
-	 */
-	public void clockTickEvent(int pTick) {
-
-		
-		// Send to all online players:
-		for (SagaPlayer sagaPlayer : loadedPlayers.values()) {
-			if(sagaPlayer.isOnlinePlayer()){
-				sagaPlayer.clockTickEvent(pTick);
-			}
-		}
-		
-		
-	}
-    
-    
     //This code handles commands
     public boolean handleCommand(Player player, String[] split, String command) {
 

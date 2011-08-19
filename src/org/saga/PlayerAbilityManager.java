@@ -6,6 +6,7 @@ import java.util.Hashtable;
 
 import org.bukkit.Material;
 import org.bukkit.event.player.PlayerInteractEvent;
+import org.saga.Clock.Ticker;
 import org.saga.abilities.Ability;
 import org.saga.abilities.Ability.AbilityActivateType;
 import org.saga.config.BalanceConfiguration;
@@ -13,8 +14,9 @@ import org.saga.constants.BlockConstants;
 import org.saga.constants.PlayerMessages;
 import org.saga.professions.Profession;
 
-public class PlayerAbilityManager {
+public class PlayerAbilityManager implements Ticker{
 
+	
 	private Hashtable<Material, ArrayList<Ability>> materialsAbilities = new Hashtable<Material, ArrayList<Ability>>();
 	
 	private Hashtable<Ability, Profession> abilityProfessions = new Hashtable<Ability, Profession>();
@@ -64,6 +66,9 @@ public class PlayerAbilityManager {
 			}
 			
 		}
+		
+		// Add clock:
+		Clock.getClock().registerEachSecondTick(this);
 
 	
 	}
@@ -272,9 +277,8 @@ public class PlayerAbilityManager {
 	/**
 	 * Sends a clock tick.
 	 *
-	 * @param tick tick number
 	 */
-	public void clockTickEvent(int tick) {
+	public void clockTick() {
 		
 		
 		/// Check timers:

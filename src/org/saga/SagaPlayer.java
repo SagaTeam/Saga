@@ -31,6 +31,7 @@ import org.saga.pattern.SagaPatternInitiator;
 import org.saga.professions.*;
 import org.saga.professions.Profession.ProfessionType;
 import org.saga.utility.WriterReader;
+import org.saga.Clock.Ticker;
 import org.saga.SagaPlayerListener.SagaPlayerProjectileShotEvent;
 import org.saga.SagaPlayerListener.SagaPlayerProjectileShotEvent.ProjectileType;
 import org.saga.abilities.Ability;
@@ -45,7 +46,7 @@ import org.saga.factions.SagaFaction;
 
 import com.google.gson.JsonParseException;
 
-public class SagaPlayer{
+public class SagaPlayer implements Ticker{
 
 	
 	// Wrapped:
@@ -174,6 +175,9 @@ public class SagaPlayer{
 		
 		// Update ability manager:
 		updateAbilityManager();
+		
+		// Add clock:
+		Clock.getClock().registerEachSecondTick(this);
 		
 		
 	}
@@ -340,14 +344,15 @@ public class SagaPlayer{
 	 */
 	public ArrayList<Profession> getProfessions(ProfessionType type){
 		
-		
-		ArrayList<Profession> professions = new ArrayList<Profession>();
-		for (Profession profession : professions) {
+
+		ArrayList<Profession> filteredProfessions = new ArrayList<Profession>();
+		for (Profession profession : filteredProfessions) {
 			if(profession.getProfessionType().equals(type)){
-				professions.add(profession);
+				filteredProfessions.add(profession);
 			}
 		}
-		return professions;
+		
+		return filteredProfessions;
 		
 		
 	}
@@ -358,9 +363,10 @@ public class SagaPlayer{
 	 * 
 	 * @param type profession type
 	 * @param key property key
-	 * @return property
+	 * @return property null it not found
 	 */
 	public String getProfessionProperty(ProfessionType type, String key) {
+
 
 		ArrayList<Profession> professions = getProfessions(type);
 		String value = null;
@@ -370,6 +376,15 @@ public class SagaPlayer{
 		}
 		return value;
 		
+	}
+	
+	/**
+	 * Returns players professions.
+	 * 
+	 * @return players professions
+	 */
+	public ArrayList<Profession> getProfessions() {
+		return professions;
 	}
 	
 	// Player entity management:
@@ -771,6 +786,7 @@ public class SagaPlayer{
 		return registeredFactions.size();
 		
 	}
+	
 	
 	// Player notification:
 	/**
@@ -1362,17 +1378,6 @@ public class SagaPlayer{
 	}
 
 	
-	// General access:
-	/**
-	 * Returns players professions.
-	 * 
-	 * @return players professions
-	 */
-	public ArrayList<Profession> getProfessions() {
-		return professions;
-	}
-	
-	
 	// Events:
 	/**
 	 * Got damaged by living entity event, using melee.
@@ -1535,7 +1540,8 @@ public class SagaPlayer{
 	 *
 	 * @param tick tick number
 	 */
-	public void clockTickEvent(int tick) {
+	@Override
+	public void clockTick() {
 		
 		
 		// Stamina regeneration:
@@ -1561,14 +1567,6 @@ public class SagaPlayer{
 				
 			}
 		}
-		
-		// Forward to all professions:
-		for (Profession profession : professions) {
-			profession.clockTickEvent(tick);
-		}
-		
-		// Send to ability manager:
-		abilityManager.clockTickEvent(tick);
 		
 		
 	}

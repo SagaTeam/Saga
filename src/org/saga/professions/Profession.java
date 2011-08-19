@@ -285,7 +285,7 @@ public class Profession {
 	 * @return property. null if not found
 	 */
 	public String getProperty(String key) {
-
+		
 		return professionDefinition.getProperty(key);
 		
 	}
@@ -736,19 +736,6 @@ public class Profession {
 		}
 
 		
-	}
-
-	/**
-	 * Sends a clock tick.
-	 *
-	 * @param tick tick number
-	 */
-	public void clockTickEvent(int tick) {
-
-		
-		
-		
-
 	}
 
 	/**
