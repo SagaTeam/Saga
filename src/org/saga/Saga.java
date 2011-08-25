@@ -10,14 +10,17 @@ import java.util.logging.*;
 //imports from this project
 import org.sk89q.*;
 import org.saga.utility.*;
+import org.saga.chunkGroups.ChunkGroupCommands;
+import org.saga.chunkGroups.ChunkGroupManager;
 import org.saga.config.AttributeConfiguration;
 import org.saga.config.BalanceConfiguration;
 import org.saga.config.ExperienceConfiguration;
 import org.saga.config.ProfessionConfiguration;
 import org.saga.constants.PlayerMessages;
+import org.saga.exceptions.NonExistantSagaPlayerException;
 import org.saga.exceptions.SagaPlayerNotLoadedException;
-import org.saga.factions.SagaFactionCommands;
-import org.saga.factions.SagaFactionManager;
+import org.saga.factions.FactionCommands;
+import org.saga.factions.FactionManager;
 
 //External Imports
 import java.util.*;
@@ -84,7 +87,9 @@ public class Saga extends JavaPlugin {
     	
     	// Remove players:
     	removeAllPlayers();
-        loadedPlayers = null;
+    	
+    	// Remove instances:
+    	loadedPlayers = null;
 
         //Remove global instances
         Clock.unload(); // Needs access to Saga.pluging()
@@ -95,7 +100,8 @@ public class Saga extends JavaPlugin {
         ProfessionConfiguration.unload();
         AttributeConfiguration.load();
         BalanceConfiguration.unload();
-        SagaFactionManager.unload();
+        ChunkGroupManager.unload();
+        FactionManager.unload(); // Needs access to chunk group manager.
         
     	//Say Goodbye
         Saga.info("Saga Goodbye!");
@@ -115,7 +121,6 @@ public class Saga extends JavaPlugin {
 
         //Allocate Instance Variables
         loadedPlayers = new Hashtable<String, SagaPlayer>();
-
         
         //Test for specific plugins
         PluginManager pluginManager = getServer().getPluginManager();
@@ -150,7 +155,8 @@ public class Saga extends JavaPlugin {
         ExperienceConfiguration.load();
         AttributeConfiguration.load();
         ProfessionConfiguration.load(); // Needs access to experience info.
-        SagaFactionManager.load();
+        ChunkGroupManager.load();
+        FactionManager.load(); // Needs access to chunk group manager.
         Clock.load(); // Needs access to Saga.pluging()
         
         // Add all already online players:
@@ -176,10 +182,13 @@ public class Saga extends JavaPlugin {
         pluginManager.registerEvent(Event.Type.ENTITY_COMBUST, entityListener, Priority.Normal, this);
         pluginManager.registerEvent(Event.Type.BLOCK_BREAK, blockListener, Priority.Normal, this);
         pluginManager.registerEvent(Event.Type.BLOCK_DAMAGE, blockListener, Priority.Normal, this);
+        pluginManager.registerEvent(Event.Type.BLOCK_PLACE, blockListener, Priority.Normal, this);
+        pluginManager.registerEvent(Event.Type.PLAYER_MOVE, playerListener, Priority.Normal, this);
         
         //Register Command Classes to the command map
         commandMap.register(SagaCommands.class);
-        commandMap.register(SagaFactionCommands.class);
+        commandMap.register(FactionCommands.class);
+        commandMap.register(ChunkGroupCommands.class);
 
         
     }
@@ -218,7 +227,7 @@ public class Saga extends JavaPlugin {
         }
     	
     	// Check if online:
-    	if( sagaPlayer.isOnlinePlayer() ) {
+    	if( sagaPlayer.isOnline() ) {
             severe("Cant wrap player, because sagaPlayer is already set to online. Wrapping ignored. ", player.getName());
             return;
     	}
@@ -226,26 +235,7 @@ public class Saga extends JavaPlugin {
     	// Add the player and set sagaPlayer status to online:
     	sagaPlayer.setPlayer(player);
 
-    }
-    
-    /**
-     * Loads a saga player as offline.
-     * 
-     * @param name player name
-     */
-    public void loadSagaPlayer(String name) {
-    	
-    	SagaPlayer sagaPlayer;
-    	
-    	// Check if already loaded:
-    	if( loadedPlayers.get(name) != null ){
-            severe("Tried loading an already loaded saga player. Loading ignored.", name);
-            return;
-    	}
-
-    	sagaPlayer = SagaPlayer.load(name);
-    	loadedPlayers.put(name, sagaPlayer);
-    	
+    	// Send a join event:
     	
     }
 
@@ -264,7 +254,7 @@ public class Saga extends JavaPlugin {
     	}
     	
     	// Remove if online:
-    	if( !sagaPlayer.isOnlinePlayer() ) {
+    	if( !sagaPlayer.isOnline() ) {
             severe("Cant remove player wrap from an offline player.", name);
     	} else {
             sagaPlayer.removePlayer();
@@ -273,35 +263,6 @@ public class Saga extends JavaPlugin {
         // Unload saga player:
         unloadSagaPlayer(name);
 
-    }
-    
-    /**
-     * Unloads a saga player as offline.
-     * Wrapped player must be removed first or this method will ignore unloading.
-     * 
-     * @param name player name
-     */
-    public void unloadSagaPlayer(String name) {
-    	
-    	// Check if already unloaded:
-    	if( loadedPlayers.get(name) == null ) {
-            severe("Tried unloading an already not loaded saga player.", name);
-            return;
-    	}
-    	
-    	// Check if the player is still wrapped:
-    	if( loadedPlayers.get(name).isOnlinePlayer() ) {
-            severe("Tried unloading a online saga player. Unloading ignored.", name);
-            return;
-    	}
-    	
-    	// Unload:
-    	SagaPlayer sagaPlayer = loadedPlayers.remove(name);
-    	
-    	//Save player data:
-        sagaPlayer.save();
-        
-    	
     }
 
     /**
@@ -325,6 +286,86 @@ public class Saga extends JavaPlugin {
     }
     
     /**
+     * Loads a saga player. The minecraft player needs to be set separately.
+     * If no player exists, then a new one is created.
+     * 
+     * @param name player name
+     * @return loaded player
+     */
+    public SagaPlayer loadSagaPlayer(String name) {
+    	
+    	
+    	SagaPlayer sagaPlayer = loadedPlayers.get(name);
+    	
+    	// Check if already loaded:
+    	if( sagaPlayer != null ){
+            severe("Tried loading an already loaded saga player. Loading ignored.", name);
+            return sagaPlayer;
+    	}
+
+    	// Load from disc:
+    	sagaPlayer = SagaPlayer.load(name);
+    	Saga.info("Loading saga player.", name);
+    	loadedPlayers.put(name, sagaPlayer);
+    	
+    	// Register factions:
+    	FactionManager.getFactionManager().playerRegisterAll(sagaPlayer);
+    	
+    	// Register chunk groups:
+    	ChunkGroupManager.getChunkGroupManager().playerRegisterAll(sagaPlayer);
+    	
+    	
+    	return sagaPlayer;
+    	
+    	
+    }
+
+    /**
+     * Unloads a saga player as offline.
+     * Wrapped player must be removed first or this method will ignore unloading.
+     * 
+     * @param name player name
+     */
+    public void unloadSagaPlayer(String name) {
+    	
+    	
+    	SagaPlayer sagaPlayer = loadedPlayers.get(name);
+    	
+    	// Ignore if already unloaded:
+    	if( sagaPlayer == null ) {
+            severe("Tried unloading an non-loaded saga player.", name);
+            return;
+    	}
+    	
+    	// Ignore if still online:
+    	if( sagaPlayer.isOnline() ) {
+            severe("Tried unloading an online saga player. Unloading ignored.", name);
+            return;
+    	}
+    	
+    	// Ignore if forced:
+    	if( sagaPlayer.isForced() ){
+    		info("Can't unload saga player because he is forced. Unloading ignored.", name);
+            return;
+    	}
+    	
+    	// Unload:
+    	Saga.info("Unloading saga player.", name);
+    	loadedPlayers.remove(name);
+    	
+    	// Unregister factions:
+    	FactionManager.getFactionManager().playerUnregisterAll(sagaPlayer);
+    	
+    	// Register chunk groups:
+    	ChunkGroupManager.getChunkGroupManager().playerUnregisterAll(sagaPlayer);
+    	
+    	//Save player data:
+        sagaPlayer.save();
+        
+    	
+    }
+
+    /**
      * Checks if the player is loaded.
      * 
      * @param name name
@@ -345,14 +386,14 @@ public class Saga extends JavaPlugin {
 	}
     
     /**
-     * Gets the saga player.
-     * The player must be in the loaded list, before you can use this method.
+     * Gets a loaded saga player.
      * 
      * @param player player
      * @return saga player
      * @throws SagaPlayerNotLoadedException  if saga player is not loaded
      */
-    public SagaPlayer getSagaPlayer(String name) throws SagaPlayerNotLoadedException {
+    @Deprecated
+    public SagaPlayer getLoadedSagaPlayer(String name) throws SagaPlayerNotLoadedException {
     	
     	
     	// Search from loaded list:
@@ -368,6 +409,79 @@ public class Saga extends JavaPlugin {
         
     }
     
+    
+    /**
+     * Forces the player to get loaded in the forced list.
+     * Loads if necessary.
+     * 
+     * @param name player name
+     * @throws NonExistantSagaPlayerException if the player doesn't exist.
+     */
+    public SagaPlayer forceSagaPlayer(String name) throws NonExistantSagaPlayerException {
+
+    	
+    	SagaPlayer sagaPlayer;
+    	
+    	// Check in loaded list:
+    	sagaPlayer = loadedPlayers.get(name);
+    	if(sagaPlayer != null){
+    		Saga.info("Forcing saga player.", name);
+    		sagaPlayer.increaseForceLevel();
+    		return sagaPlayer;
+    	}
+    	
+    	// Check if the player exists:
+    	if(!isSagaPlayerExistant(name)){
+    		throw new NonExistantSagaPlayerException(name);
+    	}
+    	
+    	// Load:
+    	sagaPlayer = loadSagaPlayer(name);
+    	Saga.info("Forcing saga player.", name);
+    	sagaPlayer.increaseForceLevel();
+		return sagaPlayer;
+    	
+    	
+	}
+
+    /**
+     * Unforces the player to get loaded in the forced list.
+     * Saves if necessary.
+     * 
+     * @param name player name
+     * @throws NonExistantSagaPlayerException if the player doesn't exist.
+     */
+    public void unforceSagaPlayer(String name) {
+
+    	
+    	// Check in loaded list:
+    	SagaPlayer sagaPlayer = loadedPlayers.get(name);
+    	if(sagaPlayer == null){
+    		Saga.severe("Tried to unforce a non-loaded player.", name);
+    		return;
+    	}
+    	
+    	// Decrease force level:
+    	Saga.info("Unforcing saga player.", name);
+		sagaPlayer.decreaseForceLevel();
+    	
+    	// Unload if possible:
+		if(!sagaPlayer.isForced() && !sagaPlayer.isOnline()){
+			unloadSagaPlayer(name);
+		}
+    	
+    	
+	}
+    
+    /**
+     * Gets a saga player from the loaded list.
+     * 
+     * @param name name
+     * @return saga player. null if not loaded
+     */
+    public SagaPlayer getSagaPlayer(String name) {
+    	return loadedPlayers.get(name);
+	}
     
     // Events:
     /**
@@ -440,7 +554,6 @@ public class Saga extends JavaPlugin {
     //This code handles commands
     public boolean handleCommand(Player player, String[] split, String command) {
 
-    	System.out.println("handling command");
     	
         try {
 
@@ -462,7 +575,7 @@ public class Saga extends JavaPlugin {
             }
 
             try {
-                commandMap.execute(split, player, this, getSagaPlayer(player.getName()));
+                commandMap.execute(split, player, this, getLoadedSagaPlayer(player.getName()));
                 String logString = "[Saga Command] " + player.getName() + ": " + command;
                 Saga.info(logString);
             } catch (CommandPermissionsException e) {

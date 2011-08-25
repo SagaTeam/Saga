@@ -7,11 +7,13 @@ package org.saga;
 
 import java.util.ArrayList;
 
+import org.bukkit.World;
+import org.saga.chunkGroups.SagaMap;
 import org.saga.config.BalanceConfiguration;
 import org.saga.constants.PlayerMessages;
 import org.saga.exceptions.SagaPlayerNotLoadedException;
 import org.saga.factions.SagaFaction;
-import org.saga.factions.SagaFactionManager;
+import org.saga.factions.FactionManager;
 import org.saga.professions.Profession;
 import org.sk89q.*;
 
@@ -111,14 +113,14 @@ public class SagaCommands {
     		plugin.loadSagaPlayer(args.getString(0));
     		loadedPlayer = true;
     		try {
-				otherSagaPlayer = plugin.getSagaPlayer(args.getString(0));
+				otherSagaPlayer = plugin.getLoadedSagaPlayer(args.getString(0));
 			} catch (SagaPlayerNotLoadedException e) {
 				Saga.severe("Failed to use statsother command because the target player was not loaded.", args.getString(0));
 				return;
 			}
     	}else{
     		try {
-				otherSagaPlayer = plugin.getSagaPlayer(args.getString(0));
+				otherSagaPlayer = plugin.getLoadedSagaPlayer(args.getString(0));
 			} catch (SagaPlayerNotLoadedException e) {
 				Saga.severe("Failed to use statsother command because the target player was not loaded.", args.getString(0));
 				return;
@@ -148,7 +150,7 @@ public class SagaCommands {
     	}
     	
     	// Unload player if needed:
-    	if(!otherSagaPlayer.isOnlinePlayer() && loadedPlayer){
+    	if(!otherSagaPlayer.isOnline() && loadedPlayer){
     		if(Saga.debuging()) sagaPlayer.sendMessage(PlayerMessages.unloadingPlayerInformation(args.getString(0)));
     		Saga.info(PlayerMessages.unloadingPlayerInformation(args.getString(0)), sagaPlayer.getName());
     		plugin.unloadSagaPlayer(args.getString(0));
@@ -198,14 +200,14 @@ public class SagaCommands {
     		plugin.loadSagaPlayer(args.getString(0));
     		loadedPlayer = true;
     		try {
-				otherSagaPlayer = plugin.getSagaPlayer(args.getString(0));
+				otherSagaPlayer = plugin.getLoadedSagaPlayer(args.getString(0));
 			} catch (SagaPlayerNotLoadedException e) {
 				Saga.severe("Failed to use statsother command because the target player was not loaded.", args.getString(0));
 				return;
 			}
     	}else{
     		try {
-				otherSagaPlayer = plugin.getSagaPlayer(args.getString(0));
+				otherSagaPlayer = plugin.getLoadedSagaPlayer(args.getString(0));
 			} catch (SagaPlayerNotLoadedException e) {
 				Saga.severe("Failed to use statsother command because the target player was not loaded.", args.getString(0));
 				return;
@@ -230,7 +232,7 @@ public class SagaCommands {
 		}
     	
     	// Unload player if needed:
-    	if(!otherSagaPlayer.isOnlinePlayer() && loadedPlayer){
+    	if(!otherSagaPlayer.isOnline() && loadedPlayer){
     		if(Saga.debuging()) sagaPlayer.sendMessage(PlayerMessages.unloadingPlayerInformation(args.getString(0)));
     		Saga.info(PlayerMessages.unloadingPlayerInformation(args.getString(0)), sagaPlayer.getName());
     		plugin.unloadSagaPlayer(args.getString(0));
@@ -336,14 +338,14 @@ public class SagaCommands {
     		plugin.loadSagaPlayer(args.getString(0));
     		loadedPlayer = true;
     		try {
-				otherSagaPlayer = plugin.getSagaPlayer(args.getString(0));
+				otherSagaPlayer = plugin.getLoadedSagaPlayer(args.getString(0));
 			} catch (SagaPlayerNotLoadedException e) {
 				Saga.severe("Failed to use otherAddProfession command because the target player was not loaded.", args.getString(0));
 				return;
 			}
     	}else{
     		try {
-				otherSagaPlayer = plugin.getSagaPlayer(args.getString(0));
+				otherSagaPlayer = plugin.getLoadedSagaPlayer(args.getString(0));
 			} catch (SagaPlayerNotLoadedException e) {
 				Saga.severe("Failed to use otherAddProfession command because the target player was not loaded.", args.getString(0));
 				return;
@@ -361,7 +363,7 @@ public class SagaCommands {
     	}
     	
     	// Unload player if needed:
-    	if(!otherSagaPlayer.isOnlinePlayer() && loadedPlayer){
+    	if(!otherSagaPlayer.isOnline() && loadedPlayer){
     		if(Saga.debuging()) sagaPlayer.sendMessage(PlayerMessages.unloadingPlayerInformation(args.getString(0)));
     		Saga.info(PlayerMessages.unloadingPlayerInformation(args.getString(0)), sagaPlayer.getName());
     		plugin.unloadSagaPlayer(args.getString(0));
@@ -421,14 +423,14 @@ public class SagaCommands {
     		plugin.loadSagaPlayer(args.getString(0));
     		loadedPlayer = true;
     		try {
-				otherSagaPlayer = plugin.getSagaPlayer(args.getString(0));
+				otherSagaPlayer = plugin.getLoadedSagaPlayer(args.getString(0));
 			} catch (SagaPlayerNotLoadedException e) {
 				Saga.severe("Failed to use otherAddProfession command because the target player was not loaded.", args.getString(0));
 				return;
 			}
     	}else{
     		try {
-				otherSagaPlayer = plugin.getSagaPlayer(args.getString(0));
+				otherSagaPlayer = plugin.getLoadedSagaPlayer(args.getString(0));
 			} catch (SagaPlayerNotLoadedException e) {
 				Saga.severe("Failed to use otherAddProfession command because the target player was not loaded.", args.getString(0));
 				return;
@@ -446,7 +448,7 @@ public class SagaCommands {
     	}
     	
     	// Unload player if needed:
-    	if(!otherSagaPlayer.isOnlinePlayer() && loadedPlayer){
+    	if(!otherSagaPlayer.isOnline() && loadedPlayer){
     		if(Saga.debuging()) sagaPlayer.sendMessage(PlayerMessages.unloadingPlayerInformation(args.getString(0)));
     		Saga.info(PlayerMessages.unloadingPlayerInformation(args.getString(0)), sagaPlayer.getName());
     		plugin.unloadSagaPlayer(args.getString(0));
@@ -480,6 +482,41 @@ public class SagaCommands {
     	
     	
     }
+
+    @Command(
+        aliases = {"map"},
+        usage = "",
+        flags = "",
+        desc = "Print a map showing faction owned land.",
+        min = 0,
+        max = 0
+    )
+    @CommandPermissions({"saga.common.map"})
+    public static void map(CommandContext args, Saga plugin, SagaPlayer sagaPlayer) {
+
+    	
+    	ArrayList<SagaFaction> sagaFactions = sagaPlayer.getRegisteredFactions();
+        SagaFaction faction = null;
+        if(sagaFactions.size() > 0){
+        	faction = sagaFactions.get(0);
+        }
+        
+        
+
+        ArrayList<String> map = SagaMap.getMap(sagaPlayer, faction,  sagaPlayer.getLocation());
+
+        for ( String line : map ) {
+
+            sagaPlayer.sendMessage(line);
+            
+        }
+
+    }
+    
+    
+    
+    
+    
     
     
 }

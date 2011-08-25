@@ -56,6 +56,73 @@ public class BalanceConfiguration {
 	public Integer baseLightningDamage;
 	
 	
+	// Settlement claim:
+	/**
+	 * Settlement claim function X1;
+	 */
+	private Short settlementClaimFunctionX1;
+	
+	/**
+	 * Settlement claim function Y1;
+	 */
+	private Short settlementClaimFunctionY1;
+	
+	/**
+	 * Settlement claim function X2;
+	 */
+	private Short settlementClaimFunctionX2;
+	
+	/**
+	 * Settlement claim function Y2;
+	 */
+	private Short settlementClaimFunctionY2;
+	
+
+	// Faction settle:
+	/**
+	 * Faction settle function X1;
+	 */
+	private Short factionSettleFunctionX1;
+	
+	/**
+	 * Faction settle function Y1;
+	 */
+	private Short factionSettleFunctionY1;
+	
+	/**
+	 * Faction settle function X2;
+	 */
+	private Short factionSettleFunctionX2;
+	
+	/**
+	 * Faction settle function Y2;
+	 */
+	private Short factionSettleFunctionY2;
+	
+
+	// Player settle:
+	/**
+	 * Player settle function X1;
+	 */
+	private Short playerSettleFunctionX1;
+	
+	/**
+	 * Player settle function Y1;
+	 */
+	private Short playerSettleFunctionY1;
+	
+	/**
+	 * Player settle function X2;
+	 */
+	private Short playerSettleFunctionX2;
+	
+	/**
+	 * Player settle function Y2;
+	 */
+	private Short playerSettleFunctionY2;
+	
+	
+	
 	// Initialization:
 	/**
 	 * Used by gson.
@@ -73,34 +140,103 @@ public class BalanceConfiguration {
 	public boolean complete() {
 		
 		
-		// Fields:
-		// Player general:
+		// Player:
 		boolean integrity=true;
+		String config = "balance configuration";
 		if(maximumStamina == null){
-			Saga.warning("Setting default value for balance information maximumStamina.");
+			Saga.warning("Failed to initialize maximumStamina field for " + config + ". Setting default");
 			maximumStamina= 100.0;
 			integrity=false;
 		}
 		if(staminaPerSecond == null){
-			Saga.warning("Setting default value for balance information staminaPerSecond.");
+			Saga.warning("Failed to initialize staminaPerSecond field for " + config + ". Setting default");
 			staminaPerSecond= 0.1;
 			integrity=false;
 		}
-		// Profession general:
+		
+		// Profession:
 		if(maximumLevel == null){
-			Saga.warning("Setting default value for balance information maximumLevel.");
+			Saga.warning("Failed to initialize staminaPerSecond field for " + config + ". Setting default");
 			maximumLevel= 1;
 			integrity=false;
 		}
+		
 		// Other:
 		if(abilitySelectedTime == null){
-			Saga.warning("Setting default value for balance information abilitySelectedTime.");
+			Saga.warning("Failed to initialize abilitySelectedTime field for " + config + ". Setting default");
 			abilitySelectedTime= 3;
 			integrity=false;
 		}
 		if(baseLightningDamage == null){
-			Saga.warning("Setting default value for balance information baseLightningDamage.");
+			Saga.warning("Failed to initialize baseLightningDamage field for " + config + ". Setting default");
 			baseLightningDamage= 1;
+			integrity=false;
+		}
+		
+		// Settlement claim:
+		if(settlementClaimFunctionX1 == null){
+			Saga.warning("Failed to initialize settlementClaimFunctionX1 field for " + config + ". Setting default");
+			settlementClaimFunctionX1= 0;
+			integrity=false;
+		}
+		if(settlementClaimFunctionY1 == null){
+			Saga.warning("Failed to initialize settlementClaimFunctionY1 field for " + config + ". Setting default");
+			settlementClaimFunctionY1= 0;
+			integrity=false;
+		}
+		if(settlementClaimFunctionX2 == null){
+			Saga.warning("Failed to initialize settlementClaimFunctionX2 field for " + config + ". Setting default");
+			settlementClaimFunctionX2= maximumLevel;
+			integrity=false;
+		}
+		if(settlementClaimFunctionY2 == null){
+			Saga.warning("Failed to initialize settlementClaimFunctionY2 field for " + config + ". Setting default");
+			settlementClaimFunctionY2= 0;
+			integrity=false;
+		}
+		
+
+		// Faction settle:
+		if(factionSettleFunctionX1 == null){
+			Saga.warning("Failed to initialize factionSettleFunctionX1 field for " + config + ". Setting default");
+			factionSettleFunctionX1= 0;
+			integrity=false;
+		}
+		if(factionSettleFunctionY1 == null){
+			Saga.warning("Failed to initialize factionSettleFunctionY1 field for " + config + ". Setting default");
+			factionSettleFunctionY1= 0;
+			integrity=false;
+		}
+		if(factionSettleFunctionX2 == null){
+			Saga.warning("Failed to initialize factionSettleFunctionX2 field for " + config + ". Setting default");
+			factionSettleFunctionX2= maximumLevel;
+			integrity=false;
+		}
+		if(factionSettleFunctionY2 == null){
+			Saga.warning("Failed to initialize factionSettleFunctionY2 field for " + config + ". Setting default");
+			factionSettleFunctionY2= 0;
+			integrity=false;
+		}
+		
+		// Player settle:
+		if(playerSettleFunctionX1 == null){
+			Saga.warning("Failed to initialize playerSettleFunctionX1 field for " + config + ". Setting default");
+			playerSettleFunctionX1= 0;
+			integrity=false;
+		}
+		if(playerSettleFunctionY1 == null){
+			Saga.warning("Failed to initialize playerSettleFunctionY1 field for " + config + ". Setting default");
+			playerSettleFunctionY1= 0;
+			integrity=false;
+		}
+		if(playerSettleFunctionX2 == null){
+			Saga.warning("Failed to initialize playerSettleFunctionX2 field for " + config + ". Setting default");
+			playerSettleFunctionX2= maximumLevel;
+			integrity=false;
+		}
+		if(playerSettleFunctionY2 == null){
+			Saga.warning("Failed to initialize playerSettleFunctionY2 field for " + config + ". Setting default");
+			playerSettleFunctionY2= 0;
 			integrity=false;
 		}
 		
@@ -109,6 +245,79 @@ public class BalanceConfiguration {
 		
 	}
 
+	// Calculation:
+	/**
+	 * Calculates claim points the settlement has.
+	 * 
+	 * @param level level
+	 */
+	public Double calculateSettlementClaims(Short level) {
+
+		
+		if(level > settlementClaimFunctionX2){
+			level = settlementClaimFunctionX2;
+		}
+		
+		if(settlementClaimFunctionX2 - settlementClaimFunctionX1 == 0){
+			Saga.severe("Settlement claim function has an undefined or infinite slope. Returning function value 1.");
+			return 1.0;
+		}
+		
+		double k = (double)(settlementClaimFunctionY2 - settlementClaimFunctionY1) / (double)( settlementClaimFunctionX2 - settlementClaimFunctionX1);
+		double b = (double)settlementClaimFunctionY2 - k * settlementClaimFunctionX2;
+		return k * level + b;
+		
+		
+	}
+
+	/**
+	 * Calculates settle points the faction has.
+	 * 
+	 * @param level level
+	 */
+	public Double calculateFactionSettles(Short level) {
+
+		
+		if(level > factionSettleFunctionX2){
+			level = factionSettleFunctionX2;
+		}
+		
+		if(factionSettleFunctionX2 - factionSettleFunctionX1 == 0){
+			Saga.severe("Faction settle function has an undefined or infinite slope. Returning function value 1.");
+			return 1.0;
+		}
+		
+		double k= (double)(factionSettleFunctionY2 - factionSettleFunctionY1) / (double)( factionSettleFunctionX2 - factionSettleFunctionX1);
+		double b= (double)factionSettleFunctionY2 - k * factionSettleFunctionX2;
+		return k * level + b;
+		
+		
+	}
+
+	/**
+	 * Calculates settle points the player has.
+	 * 
+	 * @param level level
+	 */
+	public Double calculatePlayerSettles(Short level) {
+
+		
+		if(level > playerSettleFunctionX2){
+			level = playerSettleFunctionX2;
+		}
+		
+		if(playerSettleFunctionX2 - playerSettleFunctionX1 == 0){
+			Saga.severe("player settle function has an undefined or infinite slope. Returning function value 1.");
+			return 1.0;
+		}
+		
+		double k= (double)(playerSettleFunctionY2 - playerSettleFunctionY1) / (double)( playerSettleFunctionX2 - playerSettleFunctionX1);
+		double b= (double)playerSettleFunctionY2 - k * playerSettleFunctionX2;
+		return k * level + b;
+		
+		
+	}
+	
 
 	// Load unload:
 	/**

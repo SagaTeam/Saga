@@ -1,30 +1,28 @@
 package org.saga;
 
-import java.util.ArrayList;
 
-import org.bukkit.entity.HumanEntity;
-import org.bukkit.entity.Player;
 import org.bukkit.event.block.BlockBreakEvent;
 import org.bukkit.event.block.BlockDamageEvent;
 import org.bukkit.event.block.BlockListener;
-import org.bukkit.event.entity.EntityDamageByEntityEvent;
+import org.bukkit.event.block.BlockPlaceEvent;
 import org.saga.exceptions.SagaPlayerNotLoadedException;
-import org.saga.pattern.SagaPatternBreakElement;
-import org.saga.pattern.SagaPatternInitiator;
-import org.saga.pattern.SagaPatternListElement;
 
 public class SagaBlockListener extends BlockListener{
 
 	@Override
 	public void onBlockBreak(BlockBreakEvent event) {
+
 		
+		SagaPlayer loadedPlayer;
+		try {
+			loadedPlayer = Saga.plugin().getLoadedSagaPlayer(event.getPlayer().getName());
+		} catch (SagaPlayerNotLoadedException e) {
+			
+			return;
+		}
 		
-		if(Saga.plugin().isSagaPlayerLoaded(event.getPlayer().getName())){
-			try {
-				Saga.plugin().getSagaPlayer(event.getPlayer().getName()).brokeBlockEvent(event);
-			} catch (SagaPlayerNotLoadedException e) {
-				e.printStackTrace();
-			}
+		if(loadedPlayer != null){
+			loadedPlayer.brokeBlockEvent(event);
 		}else{
 			Saga.warning("Cant send an event for a not loaded player. Ignoring event.", event.getPlayer().getName());
 		}
@@ -36,17 +34,37 @@ public class SagaBlockListener extends BlockListener{
 	public void onBlockDamage(BlockDamageEvent event) {
 		
 		
-		if(Saga.plugin().isSagaPlayerLoaded(event.getPlayer().getName())){
-			try {
-				Saga.plugin().getSagaPlayer(event.getPlayer().getName()).damagedBlockEvent(event);
-			} catch (SagaPlayerNotLoadedException e) {
-				e.printStackTrace();
-			}
+		SagaPlayer loadedPlayer;
+		try {
+			loadedPlayer = Saga.plugin().getLoadedSagaPlayer(event.getPlayer().getName());
+		} catch (SagaPlayerNotLoadedException e) {
+			
+			return;
+		}
+		
+		if(loadedPlayer != null){
+			loadedPlayer.damagedBlockEvent(event);
 		}else{
 			Saga.warning("Cant send an event for a not loaded player. Ignoring event.", event.getPlayer().getName());
 		}
 		
 		
 	}
+	
+	@Override
+	public void onBlockPlace(BlockPlaceEvent event) {
+
+		
+		SagaPlayer sagaPlayer = Saga.plugin().getSagaPlayer(event.getPlayer().getName());
+		if(sagaPlayer == null){
+			Saga.warning("Cant send an event for a not loaded player. Ignoring event.", event.getPlayer().getName());
+		}
+		
+		// Placed block:
+		sagaPlayer.placedBlockEvent(event);
+		
+	
+	}
+	
 	
 }

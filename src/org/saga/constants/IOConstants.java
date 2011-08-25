@@ -37,7 +37,13 @@ public class IOConstants {
 		PLAYER_BACKUP(BACKUP.getDirectory() + "players" + File.separator),
 		
 		FACTION_NORMAL(PLUGIN_DIRECTORY.getDirectory() + "factions" + File.separator),
-		FACTION_BACKUP(BACKUP.getDirectory() + "factions" + File.separator);
+		FACTION_BACKUP(BACKUP.getDirectory() + "factions" + File.separator),
+		FACTION_DELETED(BACKUP.getDirectory() + "deleted factions" + File.separator),
+		
+		SETTLEMENT_NORMAL(PLUGIN_DIRECTORY.getDirectory() + "settlements" + File.separator),
+		SETTLEMENT_BACKUP(BACKUP.getDirectory() + "settlements" + File.separator),
+		SETTLEMENT_DELETED(BACKUP.getDirectory() + "deleted settlements" + File.separator);
+		
 		
 		
 		private String directory;
@@ -61,7 +67,8 @@ public class IOConstants {
 		EXPERIENCE("experience" + FILE_EXTENTENSION),
 		ATTRIBUTE("attributes" + FILE_EXTENTENSION),
 		PROFESSION("professions"+ FILE_EXTENTENSION),
-		BALANCE("balance" + FILE_EXTENTENSION);
+		BALANCE("balance" + FILE_EXTENTENSION),
+		FACTION("faction" + FILE_EXTENTENSION);
 		
 		
 		private String fileName;

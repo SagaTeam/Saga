@@ -224,7 +224,7 @@ public class ProfessionDefinition{
 	 * @return property. null if not found
 	 */
 	public String getProperty(String key) {
-
+		
 		return properties.getProperty(key);
 		
 	}
@@ -290,7 +290,6 @@ public class ProfessionDefinition{
 		
 		Integer exp = entityKillExpTable.get(name);
 		if(exp == null){
-			System.out.println("invalid entity:"+name);
 			return 0;
 		}
 		return exp;

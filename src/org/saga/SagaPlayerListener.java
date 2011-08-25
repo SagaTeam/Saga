@@ -5,12 +5,16 @@
 
 package org.saga;
 
+import org.bukkit.Chunk;
+import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.entity.Player;
 import org.bukkit.event.block.Action;
 import org.bukkit.event.Cancellable;
 import org.bukkit.event.Event;
 import org.bukkit.event.player.*;
+import org.saga.chunkGroups.ChunkGroupManager;
+import org.saga.chunkGroups.SagaChunk;
 import org.saga.exceptions.SagaPlayerNotLoadedException;
 
 /**
@@ -41,6 +45,13 @@ public class SagaPlayerListener extends PlayerListener {
 
         plugin.addPlayer(event.getPlayer());
 
+        SagaPlayer sagaPlayer = plugin.getSagaPlayer(event.getPlayer().getName());
+    	if(sagaPlayer == null){
+    		Saga.warning("Can't continue with onPlayerJoin, because the saga player isn't loaded.", event.getPlayer().getName());
+    		return;
+    	}
+        sagaPlayer.playerJoinEvent(event);
+        
     }
 
     @Override
@@ -58,7 +69,16 @@ public class SagaPlayerListener extends PlayerListener {
     @Override
     public void onPlayerMove(PlayerMoveEvent event) {
 
-
+    	
+    	SagaPlayer sagaPlayer = plugin.getSagaPlayer(event.getPlayer().getName());
+    	if(sagaPlayer == null){
+    		Saga.warning("Can't continue with onPlayerMove, because the saga player isn't loaded.", event.getPlayer().getName());
+    		return;
+    	}
+    	
+    	sagaPlayer.playerMoveEvent(event);
+    	
+        
     }
 
     @Override
@@ -73,7 +93,7 @@ public class SagaPlayerListener extends PlayerListener {
 
     	
     	try {
-			SagaPlayer sagaPlayer = Saga.plugin().getSagaPlayer(event.getPlayer().getName());
+			SagaPlayer sagaPlayer = Saga.plugin().getLoadedSagaPlayer(event.getPlayer().getName());
 			//Left click:
 			if(event.getAction().equals(Action.LEFT_CLICK_AIR) || event.getAction().equals(Action.LEFT_CLICK_BLOCK)){
 				sagaPlayer.leftClickInteractEvent(event);

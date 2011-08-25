@@ -198,7 +198,7 @@ public abstract class Ability implements OnAbility{
 	 */
 	public Double calculateStaminaUse(Short level) {
 
-		if(level>staminaFunctionX2){
+		if(level > staminaFunctionX2){
 			level = staminaFunctionX2;
 		}
 		

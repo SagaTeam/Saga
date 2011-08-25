@@ -11,6 +11,7 @@ import net.minecraft.server.EntityLiving;
 import net.minecraft.server.WorldServer;
 
 import org.bukkit.Bukkit;
+import org.bukkit.Chunk;
 import org.bukkit.Effect;
 import org.bukkit.Location;
 import org.bukkit.block.Block;
@@ -25,6 +26,8 @@ import org.bukkit.event.entity.EntityDamageByEntityEvent;
 import org.bukkit.event.entity.EntityDamageEvent;
 import org.bukkit.event.entity.EntityDamageEvent.DamageCause;
 import org.bukkit.event.player.PlayerInteractEvent;
+import org.bukkit.event.player.PlayerJoinEvent;
+import org.bukkit.event.player.PlayerMoveEvent;
 import org.bukkit.util.Vector;
 import org.saga.pattern.SagaPatternElement;
 import org.saga.pattern.SagaPatternInitiator;
@@ -36,13 +39,19 @@ import org.saga.SagaPlayerListener.SagaPlayerProjectileShotEvent;
 import org.saga.SagaPlayerListener.SagaPlayerProjectileShotEvent.ProjectileType;
 import org.saga.abilities.Ability;
 import org.saga.attributes.Attribute;
+import org.saga.chunkGroups.ChunkGroup;
+import org.saga.chunkGroups.ChunkGroupManager;
+import org.saga.chunkGroups.ChunkGroupMessages;
+import org.saga.chunkGroups.SagaChunk;
 import org.saga.config.AttributeConfiguration;
 import org.saga.config.BalanceConfiguration;
 import org.saga.config.ProfessionConfiguration;
 import org.saga.config.ProfessionConfiguration.InvalidProfessionException;
 import org.saga.config.ProfessionDefinition;
 import org.saga.constants.*;
+import org.saga.factions.FactionMessages;
 import org.saga.factions.SagaFaction;
+import org.saga.factions.FactionManager;
 
 import com.google.gson.JsonParseException;
 
@@ -72,6 +81,7 @@ public class SagaPlayer implements Ticker{
 	 */
 	private ArrayList<Profession> professions;
 	
+	
 	// Abilities:
 	/**
 	 * Ability manager.
@@ -100,7 +110,13 @@ public class SagaPlayer implements Ticker{
 	 */
 	transient private ArrayList<Integer> temporaryAttributeTimes = new ArrayList<Integer>();
 	
+	
 	// Factions:
+	/**
+	 * Player factions IDs.
+	 */
+	private ArrayList<Integer> factionIds;
+	
 	/**
 	 * All factions.
 	 */
@@ -110,6 +126,41 @@ public class SagaPlayer implements Ticker{
 	 * Selected faction.
 	 */
 	transient private int selectedFaction = 0;
+	
+	
+	// Chunk groups:
+	/**
+	 * Player settlements IDs.
+	 */
+	private ArrayList<Integer> chunkGroupIds;
+	
+	/**
+	 * All registered chunk groups.
+	 */
+	transient private ArrayList<ChunkGroup> registeredChunkGroups = new ArrayList<ChunkGroup>();
+	
+	/**
+	 * Last chunk the player was found on.
+	 */
+	transient private SagaChunk lastSagaChunk = null;
+	
+	/**
+	 * Last chunk the player was found on.
+	 */
+	transient private Chunk lastBukkitChunk = null;
+	
+	
+	// Invites:
+	/**
+	 * Invites to chunk groups.
+	 */
+	private ArrayList<Integer> chunkGroupInvites;
+	
+	/**
+	 * Invites to factions.
+	 */
+	private ArrayList<Integer> factionInvites;
+	
 	
 	// Control:
 	/**
@@ -122,6 +173,10 @@ public class SagaPlayer implements Ticker{
 	 */
 	transient private boolean isSavingEnabled=true;
 	
+	/**
+	 * Forced level. If above zero, the player can't be unforced.
+	 */
+	transient private int forcedLevel = 0;
 	
 	// Loading and initialization:
 	/**
@@ -152,14 +207,30 @@ public class SagaPlayer implements Ticker{
 			stamina = PlayerDefaults.stamina;
 			Saga.info("Setting default value for player stamina.", name);
 		}
+		if(factionIds == null){
+			factionIds = new ArrayList<Integer>();
+			Saga.info("Setting default value for factionIds.", name);
+		}
+		if(chunkGroupIds == null){
+			chunkGroupIds = new ArrayList<Integer>();
+			Saga.info("Setting default value for settlementIds.", name);
+		}
+		if(factionInvites == null){
+			factionInvites = new ArrayList<Integer>();
+			Saga.info("Setting default value for factionInvites.", name);
+		}
+		if(chunkGroupInvites == null){
+			chunkGroupInvites = new ArrayList<Integer>();
+			Saga.info("Setting default value for settlementInvites.", name);
+		}
 		
-		// Professions field is null:
+
+		// Professions:
 		if(professions == null){
 			Saga.info("Initializing an empty professions field.", name);
 			professions = new ArrayList<Profession>();
 		}
 		
-		// Complete and give access to professions:
 		for (int i = 0; i < professions.size(); i++) {
 			Profession profession = professions.get(i);
 			profession.setAccess(this);
@@ -172,6 +243,8 @@ public class SagaPlayer implements Ticker{
 				setSavingEnabled(false);
 			}
 		}
+		
+		
 		
 		// Update ability manager:
 		updateAbilityManager();
@@ -351,7 +424,6 @@ public class SagaPlayer implements Ticker{
 				filteredProfessions.add(profession);
 			}
 		}
-		
 		return filteredProfessions;
 		
 		
@@ -386,6 +458,22 @@ public class SagaPlayer implements Ticker{
 	public ArrayList<Profession> getProfessions() {
 		return professions;
 	}
+	
+	/**
+	 * Gets player level.
+	 * Calculated as a sum of all professions divided by 4.
+	 * 
+	 */
+	public int getLevel() {
+		
+		int sum = 0;
+		for (int i = 0; i < professions.size(); i++) {
+			sum += professions.get(i).getLevel();
+		}
+		return new Double(sum / 4).intValue();
+		
+	}
+	
 	
 	// Player entity management:
 	/**
@@ -451,7 +539,7 @@ public class SagaPlayer implements Ticker{
 	public void gainHealth(int amount) {
 		
 		
-		if(!isOnlinePlayer()){
+		if(!isOnline()){
 			return;
 		}
 		int health = player.getHealth();
@@ -475,7 +563,7 @@ public class SagaPlayer implements Ticker{
 	public void regenerateHealth(int amount) {
 		
 		
-		if(!isOnlinePlayer()){
+		if(!isOnline()){
 			return;
 		}
 		int health = player.getHealth();
@@ -676,11 +764,11 @@ public class SagaPlayer implements Ticker{
 		
 	}
 	
+	
 	// Factions:
 	/**
 	 * Registers a faction.
 	 * Will not add faction permanently to the player.
-	 * Also registers the player for the faction.
 	 * 
 	 * @param sagaFaction saga faction
 	 */
@@ -689,15 +777,12 @@ public class SagaPlayer implements Ticker{
 		
 		// Check if already on the list:
 		if(registeredFactions.contains(sagaFaction)){
-			Saga.severe("Tried to register a faction an already registered faction. Ignoring register.", getName());
+			Saga.severe("Tried to register an already registered " + sagaFaction.getId() + "(" + sagaFaction.getName() + ") faction" + ". Ignoring request.", getName());
 			return;
 		}
 		
 		// Add:
 		registeredFactions.add(sagaFaction);
-		
-		// Register player for faction:
-		sagaFaction.registerMember(this);
 		
 		
 	}
@@ -705,7 +790,6 @@ public class SagaPlayer implements Ticker{
 	/**
 	 * Unregisters a faction.
 	 * Will not remove faction permanently to the player.
-	 * Also unregisters the player from the faction.
 	 * 
 	 * @param sagaFaction saga faction
 	 */
@@ -714,15 +798,12 @@ public class SagaPlayer implements Ticker{
 		
 		// Check if not on the list:
 		if(!registeredFactions.contains(sagaFaction)){
-			Saga.severe("Tried to unregister an unregistered faction. Ignoring unregister.", getName());
+			Saga.severe("Tried to unregister an non-registered " + sagaFaction.getId() + "(" + sagaFaction.getName() + ") faction" + ". Ignoring request.", getName());
 			return;
 		}
 		
 		// Remove:
 		registeredFactions.remove(sagaFaction);
-		
-		// Unregister player for faction:
-		sagaFaction.unregisterMember(this);
 		
 		
 	}
@@ -733,7 +814,7 @@ public class SagaPlayer implements Ticker{
 	 * @param sagaFaction saga faction
 	 * @return true if registered
 	 */
-	public boolean isRegisteredFaction(SagaFaction sagaFaction) {
+	public boolean isFactionRegistered(SagaFaction sagaFaction) {
 
 		return registeredFactions.contains(sagaFaction);
 		
@@ -777,6 +858,24 @@ public class SagaPlayer implements Ticker{
 	}
 
 	/**
+	 * Gets all factions.
+	 * 
+	 * @return all factions. empty if none
+	 */
+	public ArrayList<Integer> getFactionIds() {
+		return factionIds;
+	}
+	
+	/**
+	 * Gets all registered factions.
+	 * 
+	 * @return registered factions
+	 */
+	public ArrayList<SagaFaction> getRegisteredFactions() {
+		return registeredFactions;
+	}
+	
+	/**
 	 * Returns factions count.
 	 * 
 	 * @return factions count.
@@ -784,6 +883,338 @@ public class SagaPlayer implements Ticker{
 	public int getFactionCount() {
 
 		return registeredFactions.size();
+		
+	}
+
+	/**
+	 * Adds a faction to the player.
+	 * 
+	 * @param sagaFaction saga faction
+	 */
+	public void addFaction(SagaFaction sagaFaction) {
+
+		
+		// Check if already on the list:
+		if(factionIds.contains(sagaFaction.getId())){
+			Saga.severe("Tried to add an already existing " + sagaFaction.getId() + "(" + sagaFaction.getName() + ") faction to saga player." + " Ignoring request.", getName());
+			return;
+		}
+		
+		// Add:
+		factionIds.add(sagaFaction.getId());
+		
+		
+	}
+
+	/**
+	 * Removes a faction from the player.
+	 * 
+	 * @param sagaFaction saga faction
+	 */
+	public void removeFaction(SagaFaction sagaFaction) {
+
+		
+		// Check if already on the list:
+		if(!factionIds.contains(sagaFaction.getId())){
+			Saga.severe("Tried to remove an non-existing " + sagaFaction.getId() + "(" + sagaFaction.getName() + ") faction from saga player." + " Ignoring request.", getName());
+			return;
+		}
+		
+		// Add:
+		factionIds.remove(sagaFaction.getId());
+		
+		
+	}
+
+	/**
+	 * Checks if the player is part of a faction.
+	 * 
+	 * @param sagaFaction saga faction
+	 * @return true if part of a faction
+	 */
+	public boolean hasFaction(SagaFaction sagaFaction) {
+		
+		for (int i = 0; i < factionIds.size(); i++) {
+			if(sagaFaction.getId().equals(factionIds.get(i))) return true;
+		}
+		return false;
+		
+	}
+
+	/**
+	 * Checks if shares a faction with a player.
+	 * 
+	 * @param sagaPlayer saga player
+	 * @return true if is a part of the same faction
+	 */
+	public boolean sharesFaction(SagaPlayer sagaPlayer) {
+
+		if(sagaPlayer.equals(this)){
+			return true;
+		}
+		for (int i = 0; i < registeredFactions.size(); i++) {
+			if(registeredFactions.get(i).isMember(sagaPlayer)) return true;
+		}
+		return false;
+		
+	}
+	
+	// Chunk groups:
+	/**
+	 * Registers a chunk group.
+	 * Will not add faction permanently to the player.
+	 * 
+	 * @param chunkGroup saga chunk group
+	 */
+	public void registerChunkGroup(ChunkGroup chunkGroup) {
+		
+		
+		// Check if already on the list:
+		if(registeredChunkGroups.contains(chunkGroup)){
+			Saga.severe("Tried to register an already registered " + chunkGroup.getId() + "(" + chunkGroup.getName() + ") settlement" + ". Ignoring request.", getName());
+			return;
+		}
+		
+		// Add:
+		registeredChunkGroups.add(chunkGroup);
+		
+		
+	}
+	
+	/**
+	 * Unregisters a chunk group.
+	 * Will not remove faction permanently to the player.
+	 * 
+	 * @param chunkGroup saga chunk group
+	 */
+	public void unregisterChunkGroup(ChunkGroup chunkGroup) {
+		
+		
+		// Check if not on the list:
+		if(!registeredChunkGroups.contains(chunkGroup)){
+			Saga.severe("Tried to unregister an non-registered " + chunkGroup.getId() + "(" + chunkGroup.getName() + ") settlement" + ". Ignoring request.", getName());
+			return;
+		}
+		
+		// Remove:
+		registeredChunkGroups.remove(chunkGroup);
+		
+		
+	}
+	
+	/**
+	 * Check if a chunk group is registered.
+	 * 
+	 * @param chunkGroup saga chunk group
+	 * @return true if registered
+	 */
+	public boolean isChunkGroupRegistered(ChunkGroup chunkGroup) {
+
+		return registeredChunkGroups.contains(chunkGroup);
+		
+	}
+	
+	
+	/**
+	 * Adds a chunk group to the player.
+	 * 
+	 * @param chunkGroup saga chunk group
+	 */
+	public void addChunkGroup(ChunkGroup chunkGroup) {
+
+		
+		// Check if already on the list:
+		if(chunkGroupIds.contains(chunkGroup.getId())){
+			Saga.severe("Tried to add an already existing " + chunkGroup + " chunk group to saga player." + " Ignoring request.", getName());
+			return;
+		}
+		
+		// Add:
+		chunkGroupIds.add(chunkGroup.getId());
+		
+		
+	}
+
+	/**
+	 * Removes a chunk group from the player.
+	 * 
+	 * @param chunkGroup saga chunk group
+	 */
+	public void removeChunkGroup(ChunkGroup chunkGroup) {
+
+		
+		// Check if already on the list:
+		if(!chunkGroupIds.contains(chunkGroup.getId())){
+			Saga.severe("Tried to remove an non-existing " + chunkGroup + " chunk group from saga player." + " Ignoring request.", getName());
+			return;
+		}
+		
+		// Add:
+		chunkGroupIds.remove(chunkGroup.getId());
+		
+		
+	}
+
+	/**
+	 * Chunk group count.
+	 * 
+	 * @return chunk group count
+	 */
+	public int getChunkGroupCount() {
+		return chunkGroupIds.size();
+	}
+	
+	/**
+	 * Gets the chunk group IDs.
+	 * 
+	 * @return the chunk group IDs
+	 */
+	public ArrayList<Integer> getChunkGroupIds() {
+		return chunkGroupIds;
+	}
+
+	/**
+	 * Gets the registeredSettlements.
+	 * 
+	 * @return the registeredSettlements
+	 */
+	public ArrayList<ChunkGroup> getRegisteredChunkGroups() {
+		return registeredChunkGroups;
+	}
+
+
+	/**
+	 * Checks if the player is part of a chunk group.
+	 * 
+	 * @param chunkGroup chunk group
+	 * @return true if part of a chunk group
+	 */
+	public boolean hasChunkGroup(ChunkGroup chunkGroup) {
+		
+		for (int i = 0; i < chunkGroupIds.size(); i++) {
+			if(chunkGroup.getId().equals(chunkGroupIds.get(i))) return true;
+		}
+		return false;
+		
+	}
+
+	
+	// Invitations:
+	/**
+	 * Adds a chunk group invite.
+	 * 
+	 * @param factionId faction ID
+	 */
+	public void addFactionInvite(Integer factionId) {
+		
+
+		// Ignore invite if already exists:
+		if(factionInvites.contains(factionId)){
+			return;
+		}
+		
+		// Add invite:
+		factionInvites.add(factionId);
+		
+		
+	}
+	
+	/**
+	 * Removes a faction invite.
+	 * 
+	 * @param factionId faction ID
+	 */
+	public void removeFactionInvite(Integer factionId) {
+		
+
+		// Ignore invite if doesn't exists:
+		if(!factionInvites.contains(factionId)){
+			return;
+		}
+
+		// Remove invite:
+		factionInvites.remove(factionId);
+		
+		
+	}
+	
+	/**
+	 * Adds a chunk group invite.
+	 * 
+	 * @param groupId chunk group ID
+	 */
+	public void addChunkGroupInvite(Integer groupId) {
+		
+		
+		// Ignore invite if already exists:
+		if(chunkGroupInvites.contains(groupId)){
+			return;
+		}
+		
+		// Add invite:
+		chunkGroupInvites.add(groupId);
+		
+		
+	}
+	
+	/**
+	 * Removes a chunk group invite.
+	 * 
+	 * @param chunkGroupId chunk group ID
+	 */
+	public void removeChunkGroupInvite(Integer chunkGroupId) {
+		
+		
+		// Ignore invite if doesn't exists:
+		if(!chunkGroupInvites.contains(chunkGroupId)){
+			return;
+		}
+		
+		// Remove invite:
+		chunkGroupInvites.remove(chunkGroupId);
+		
+		
+	}
+	
+	/**
+	 * Gets faction invites.
+	 * 
+	 * @return faction invites
+	 */
+	public ArrayList<Integer> getFactionInvites() {
+		return factionInvites;
+	}
+	
+	/**
+	 * Gets chunk group invites.
+	 * 
+	 * @return chunk group invites
+	 */
+	public ArrayList<Integer> getChunkGroupInvites() {
+		return chunkGroupInvites;
+	}
+	
+	/**
+	 * Invites the player to the given faction.
+	 * 
+	 * @param faction faction
+	 */
+	public void factionInvite(SagaFaction faction) {
+		
+		// Add invite:
+		addFactionInvite(faction.getId());
+		
+	}
+
+	/**
+	 * Invites the player to the given chunk group.
+	 * 
+	 * @param chunkGroup chunk group
+	 */
+	public void chunkGroupInvite(ChunkGroup chunkGroup) {
+		
+		// Add invite:
+		addChunkGroupInvite(chunkGroup.getId());
 		
 	}
 	
@@ -796,7 +1227,7 @@ public class SagaPlayer implements Ticker{
 	 */
 	public void sendMessage(String message) {
 		
-            if(isOnlinePlayer()){
+            if(isOnline()){
             	PlayerMessages.sendMultipleLines(message, player);
             }
 
@@ -812,7 +1243,7 @@ public class SagaPlayer implements Ticker{
 
 		
 		// Ignore if the player isn't online:
-		if(!isOnlinePlayer()){
+		if(!isOnline()){
 			return;
 		}
 		
@@ -831,7 +1262,7 @@ public class SagaPlayer implements Ticker{
 	 */
 	public void moveTo(Location location) {
 
-		if(isOnlinePlayer()){
+		if(isOnline()){
         	player.teleport(location);
         }
 		
@@ -910,7 +1341,7 @@ public class SagaPlayer implements Ticker{
 	public int calculatePlayerHorizontalDirection(){
 		
 		
-		if(!isOnlinePlayer()){
+		if(!isOnline()){
 			return 0;
 		}
 		
@@ -940,7 +1371,7 @@ public class SagaPlayer implements Ticker{
 	public boolean calculatePlayerVerticalDirection() {
 		
 		
-		if(!isOnlinePlayer()){
+		if(!isOnline()){
 			return true;
 		}
 		
@@ -965,7 +1396,7 @@ public class SagaPlayer implements Ticker{
 
 		
 		// Ignore if the player isn't online:
-		if(!isOnlinePlayer()){
+		if(!isOnline()){
 			return;
 		}
 		
@@ -1024,7 +1455,7 @@ public class SagaPlayer implements Ticker{
 
 		
 		// Ignore if the player isn't online:
-		if(!isOnlinePlayer()){
+		if(!isOnline()){
 			return;
 		}
 		Entity damager = player;
@@ -1074,7 +1505,7 @@ public class SagaPlayer implements Ticker{
 
 		
 		// Ignore if the player isn't online:
-		if(!isOnlinePlayer()){
+		if(!isOnline()){
 			return;
 		}
 		Entity damager = player;
@@ -1097,7 +1528,7 @@ public class SagaPlayer implements Ticker{
 		
 		
 		// Ignore if not online:
-		if(!isOnlinePlayer()){
+		if(!isOnline()){
 			return 0.0;
 		}
 		return player.getLocation().getYaw();
@@ -1110,11 +1541,11 @@ public class SagaPlayer implements Ticker{
 	 * 
 	 * @return pitch. 0 if not online
 	 */
-	public double getPithc() {
+	public double getPitch() {
 		
 		
 		// Ignore if not online:
-		if(!isOnlinePlayer()){
+		if(!isOnline()){
 			return 0.0;
 		}
 		return player.getLocation().getPitch();
@@ -1132,7 +1563,7 @@ public class SagaPlayer implements Ticker{
 		
 		
 		// Ignore if not online:
-		if(!isOnlinePlayer()){
+		if(!isOnline()){
 			return;
 		}
 		Entity entity = player;
@@ -1177,7 +1608,7 @@ public class SagaPlayer implements Ticker{
 		
 		
 		// Ignore if not online:
-		if(!isOnlinePlayer()){
+		if(!isOnline()){
 			return;
 		}
 		
@@ -1202,7 +1633,7 @@ public class SagaPlayer implements Ticker{
 		
 		
 		// Ignore if not online:
-		if(!isOnlinePlayer()){
+		if(!isOnline()){
 			return;
 		}
 		
@@ -1223,7 +1654,7 @@ public class SagaPlayer implements Ticker{
 		
 		
 		// Zero loaction if the player isn't online:
-		if(!isOnlinePlayer()){
+		if(!isOnline()){
 			return 0.0;
 		}
 		
@@ -1244,7 +1675,7 @@ public class SagaPlayer implements Ticker{
 		
 		
 		// Ignore if the player isn't online:
-		if(!isOnlinePlayer()){
+		if(!isOnline()){
 			return new ArrayList<Entity>();
 		}
 		
@@ -1261,7 +1692,7 @@ public class SagaPlayer implements Ticker{
 	public boolean tryDodge() {
 
 		// Works, but is annoying.
-		if(!isOnlinePlayer()){
+		if(!isOnline()){
 			return false;
 		}
 		
@@ -1341,7 +1772,7 @@ public class SagaPlayer implements Ticker{
 
 		
 		// Ignore if the player isn't online:
-		if(!isOnlinePlayer()){
+		if(!isOnline()){
 			return;
 		}
 		
@@ -1377,6 +1808,129 @@ public class SagaPlayer implements Ticker{
 		
 	}
 
+	/**
+	 * Gets the saga chunk the player is standing on.
+	 * 
+	 * @return saga chunk. null if not found
+	 */
+	public SagaChunk getSagaChunk(){
+		
+		
+		if(!isOnlinePlayer){
+			return null;
+		}
+		
+		// Check last chunk:
+		Chunk bukkitChunk = player.getLocation().getWorld().getChunkAt(player.getLocation());
+		
+		return getSagaChunk(bukkitChunk);
+		
+				
+	}
+	
+	/**
+	 * Gets the saga chunk that represents the bukkit chunk.
+	 * Only retrieves the new saga chunk when the chunk has changed.
+	 * 
+	 * @param bukkitChunk bukkit chunk
+	 * @return saga chunk represented by the bukkit chunk
+	 */
+	private SagaChunk getSagaChunk(Chunk bukkitChunk) {
+	
+		
+		// Check if the chunk changed:
+		if(bukkitChunk.equals(lastBukkitChunk)){
+			return lastSagaChunk;
+		}
+		
+		return ChunkGroupManager.getChunkGroupManager().getSagaChunk(bukkitChunk);
+		
+		
+	}
+
+	/**
+	 * Gets the player location.
+	 * 
+	 * @return player location. null if no location
+	 */
+	public Location getLocation() {
+
+		
+		if(!isOnlinePlayer){
+			return null;
+		}
+		return player.getLocation();
+		
+		
+	}
+	
+
+	// Chunk groups:
+	/**
+	 * Checks if the player can build.
+	 * 
+	 * @param bukkitChunk bukkit chunk
+	 * @return true if can build
+	 */
+	private Boolean canBuild(Chunk bukkitChunk) {
+
+		
+		SagaChunk newSagaChunk = getSagaChunk(bukkitChunk);
+		
+		if(newSagaChunk == null){
+			return true;
+		}
+		
+		ChunkGroup chunkGroup = newSagaChunk.getChunkGroup();
+		if(chunkGroup == null){
+			severe(PlayerMessages.chunkGroupNotFound());
+			Saga.severe("Could not check chunk group for building permission, because the group doesent exist.", getName());
+			return false;
+		}
+		return chunkGroup.canBuild(this);
+		
+		
+	}
+	
+	/**
+	 * Checks if the chunk ID changed. Accepts null parameters.
+	 * 
+	 * @param previousChunk first chunk
+	 * @return true if no change
+	 */
+	private static boolean idsChanged(SagaChunk sagaChunk1, SagaChunk sagaChunk2) {
+
+		
+		// From null to null:
+		if(sagaChunk1 == null && sagaChunk2 == null){
+			return false;
+		}
+		// From null to non-null or non-null to null:
+		if(sagaChunk1 == null || sagaChunk2 == null){
+			return true;
+		}
+		
+		// non-null to non-null:
+		return !sagaChunk1.getChunkGroupId().equals(sagaChunk2.getChunkGroupId());
+		
+		
+	}
+
+	/**
+	 * Forces an update on last saga chunk.
+	 * 
+	 */
+	public void updateLastSagaChunk() {
+		
+		
+		if(!isOnlinePlayer){
+			return;
+		}
+		
+		lastSagaChunk = ChunkGroupManager.getChunkGroupManager().getSagaChunk(player.getLocation());
+		
+		
+	}
 	
 	// Events:
 	/**
@@ -1487,10 +2041,22 @@ public class SagaPlayer implements Ticker{
 	 * @param event event
 	 */
 	public void placedBlockEvent(BlockPlaceEvent event) {
+	
+
+		// Build protection:
+		Chunk bukkitChunk = event.getBlock().getChunk();
+		if(!canBuild(bukkitChunk)){
+			event.setCancelled(true);
+			sendMessage(ChunkGroupMessages.noPermission());
+			return;
+		}
+		
 		// Forward to all professions:
 		for (Profession profession : professions) {
 			profession.placedBlockEvent(event);
 		}
+		
+		
 	}
 
 	/**
@@ -1499,10 +2065,22 @@ public class SagaPlayer implements Ticker{
 	 * @param event event
 	 */
 	public void brokeBlockEvent(BlockBreakEvent event) {
+		
+		
+		// Build protection:
+		Chunk bukkitChunk = event.getBlock().getChunk();
+		if(!canBuild(bukkitChunk)){
+			event.setCancelled(true);
+			sendMessage(ChunkGroupMessages.noPermission());
+			return;
+		}
+		
 		// Forward to all professions:
 		for (Profession profession : professions) {
 			profession.brokeBlockEvent(event);
 		}
+		
+		
 	}
 	
 	/**
@@ -1530,6 +2108,97 @@ public class SagaPlayer implements Ticker{
 		for (int i = 0; i < projectileShotAttributes.length; i++) {
 			String attributeName = projectileShotAttributes[i].getName();
 			projectileShotAttributes[i].use(getAttributeUpgrade(attributeName), this, event);
+		}
+		
+		
+	}
+	
+	/**
+	 * Player moved event.
+	 * 
+	 * @param event event
+	 */
+	public void playerMoveEvent(PlayerMoveEvent event) {
+
+		
+		// Old chunks:
+		SagaChunk oldSagaChunk = lastSagaChunk;
+		
+		// Chunk change:
+		Location to = event.getTo();
+		Chunk newBukkitChunk = to.getWorld().getChunkAt(to);
+		SagaChunk newSagaChunk = getSagaChunk(newBukkitChunk);
+
+		// Update last chunks:
+		lastBukkitChunk = newBukkitChunk;
+		lastSagaChunk = newSagaChunk;
+		
+		// Only if last chunk group changed:
+		if(idsChanged(oldSagaChunk, newSagaChunk)){
+			
+			// Enter chunk group:
+			if(newSagaChunk != null){
+				ChunkGroup toGroup = newSagaChunk.getChunkGroup();
+				if(toGroup != null){
+					sendMessage(ChunkGroupMessages.enterChunkGroup(toGroup));
+				}else{
+					Saga.severe(PlayerMessages.chunkGroupNotFound(), getName());
+					severe(PlayerMessages.chunkGroupNotFound());
+				}
+			}
+			// Enter wilderness:
+			else{
+				sendMessage(ChunkGroupMessages.leaveChunkGroup());
+			}
+			
+		}
+		
+		
+		
+		
+		
+		
+	}
+
+	/**
+	 * Player joined event.
+	 * 
+	 * @param event event
+	 */
+	public void playerJoinEvent(PlayerJoinEvent event) {
+		
+		
+		// Faction invites:
+		if(factionInvites.size() > 0){
+			ArrayList<SagaFaction> factions = new ArrayList<SagaFaction>();
+			for (int i = 0; i < factionInvites.size(); i++) {
+				SagaFaction faction = FactionManager.getFactionManager().getFaction(factionInvites.get(i));
+				if( faction != null ){
+					factions.add(faction);
+				}else{
+					Saga.info("SagaPlayer is invited to a non-existing faction. Removing invite.", getName());
+					factionInvites.remove(i);
+					i--;
+				}
+			}
+			sendMessage(FactionMessages.pendingInvitations(this, factions));
+		}
+		
+
+		// Chunk group invites:
+		if(chunkGroupInvites.size() > 0){
+			ArrayList<ChunkGroup> groups = new ArrayList<ChunkGroup>();
+			for (int i = 0; i < chunkGroupInvites.size(); i++) {
+				ChunkGroup chunkGroup = ChunkGroupManager.getChunkGroupManager().getChunkGroup(chunkGroupInvites.get(i));
+				if( chunkGroup != null ){
+					groups.add(chunkGroup);
+				}else{
+					Saga.info("SagaPlayer is invited to a non-existing chunk group. Removing invite.", getName());
+					chunkGroupInvites.remove(i);
+					i--;
+				}
+			}
+			sendMessage(ChunkGroupMessages.pendingInvitations(this, groups));
 		}
 		
 		
@@ -1571,7 +2240,7 @@ public class SagaPlayer implements Ticker{
 		
 	}
 
-	
+
 	// Saving and loading:
 	/**
 	 * Loads a offline saga player.
@@ -1652,7 +2321,7 @@ public class SagaPlayer implements Ticker{
 	 * 
 	 * @return true if the player is online
 	 */
-	public boolean isOnlinePlayer() {
+	public boolean isOnline() {
             return isOnlinePlayer;
 	}
 	
@@ -1674,13 +2343,42 @@ public class SagaPlayer implements Ticker{
             this.isSavingEnabled = savingDisabled;
 	}
 
+	/**
+	 * Increases player force level.
+	 * 
+	 */
+	public void increaseForceLevel() {
+
+		forcedLevel++;
+		
+	}
+	
+	/**
+	 * Decreases player force level.
+	 * 
+	 */
+	public void decreaseForceLevel() {
+
+		forcedLevel--;
+		
+	}
+	
+	/**
+	 * Check if the player can be unforced.
+	 * 
+	 * @return true if can be unforced.
+	 */
+	public boolean isForced() {
+		return forcedLevel > 0;
+	}
+	
 	
 	// Debuging:
 	public void info(String message) {
 
     	
-        if ( isOnlinePlayer() ) {
-            this.player.sendMessage(PlayerMessages.infoColor + message);
+        if ( isOnline() ) {
+            this.player.sendMessage(PlayerMessages.normalTextColor1 + message);
         }
 
         
@@ -1688,16 +2386,16 @@ public class SagaPlayer implements Ticker{
 
     public void warning(String message) {
 
-        if ( isOnlinePlayer() ) {
-            this.player.sendMessage(PlayerMessages.warningColor + message);
+        if ( isOnline() ) {
+            this.player.sendMessage(PlayerMessages.negativeHighlightColor + message);
         }
 
     }
 
     public void severe(String message) {
 
-        if ( isOnlinePlayer() ) {
-            this.player.sendMessage(PlayerMessages.warningColor + message);
+        if ( isOnline() ) {
+            this.player.sendMessage(PlayerMessages.veryNegativeHighlightColor + message);
         }
 
     }

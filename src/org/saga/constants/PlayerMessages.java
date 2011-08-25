@@ -12,49 +12,20 @@ import org.saga.abilities.Ability;
 import org.saga.abilities.Ability.AbilityActivateType;
 import org.saga.attributes.Attribute;
 import org.saga.attributes.Attribute.DisplayType;
+import org.saga.chunkGroups.ChunkGroup;
 import org.saga.config.AttributeConfiguration;
 import org.saga.config.BalanceConfiguration;
-import org.saga.factions.SagaFactionManager;
+import org.saga.factions.SagaFaction;
 import org.saga.professions.Profession;
 import org.saga.professions.Profession.ProfessionType;
 
 public class PlayerMessages {
 
 	
-	// Chunk colors:
-	/**
-	 * Info color.
-	 */
-	public static ChatColor errorColor= ChatColor.DARK_RED;
-	
-	/**
-	 * Info color.
-	 */
-	public static ChatColor infoColor= ChatColor.YELLOW;
-	
-	/**
-	 * Warning color.
-	 */
-	public static ChatColor warningColor= ChatColor.RED;
-	
-	/**
-	 * Haven color.
-	 */
-	public static ChatColor havenColor= ChatColor.BLUE;
-	
-	/**
-	 * Arena color.
-	 */
-	public static ChatColor arenaColor= ChatColor.RED;
-	
-	// Information colors:
-	public static ChatColor normalColor = ChatColor.WHITE;
-	
+	// Colors:
 	public static ChatColor veryPositiveHighlightColor = ChatColor.DARK_GREEN; // DO NOT OVERUSE.
 	
 	public static ChatColor positiveHighlightColor = ChatColor.GREEN;
-	
-	public static ChatColor neutralHighlightColor = ChatColor.YELLOW;
 	
 	public static ChatColor negativeHighlightColor = ChatColor.RED;
 	
@@ -82,28 +53,29 @@ public class PlayerMessages {
 	public static Effect abilityDeactivateSound = Effect.CLICK2;
 	
 	
-	// Error report:
+	// Error:
 	/**
 	 * First line of the error report to the player.
 	 */
-	public static String playerErrorMessage=errorColor+"Enouctered an error, please contact the owner!";
+	public static String playerErrorMessage= veryNegativeHighlightColor + "Enouctered an error, please contact the owner!";
 	
 	/**
 	 * Information will not be saved.
 	 */
-	public static String yourIformationWillNotBeSaved=errorColor+"Your player information will not be saved during this session.";
+	public static String yourIformationWillNotBeSaved = veryNegativeHighlightColor + "Your player information will not be saved during this session.";
 	
-	public String error(String message) {
-
-		return playerErrorMessage + "\n" + message;
-		
+	public static String failedToRetrieveSagaPlayerLocation() {
+		return "Failed to get saga player location.";
 	}
 	
-	public String errorOnProfessionAdd(String professionName) {
-		
-		return error("Cant add "+professionName + " profession.");
-				
+	public static String chunkGroupNotFound() {
+		return "Settlement not found.";
 	}
+	
+	public static String factionNotFound() {
+		return "Faction not found.";
+	}
+	
 	
 	// Health:
 	public static String healthGain(int amount) {
@@ -154,7 +126,7 @@ public class PlayerMessages {
 	 */
 	public static String abilityActivate(Ability ability) {
 
-		return neutralHighlightColor + "Activated "+ability.getAbilityName()+" ability.";
+		return normalTextColor1 + "Activated "+ability.getAbilityName()+" ability.";
 				
 	}
 	
@@ -173,7 +145,7 @@ public class PlayerMessages {
 	 */
 	public static String abilityDeactivate(Ability ability) {
 
-		return neutralHighlightColor + "Deactivated "+ability.getAbilityName()+" ability.";
+		return normalTextColor1 + "Deactivated "+ability.getAbilityName()+" ability.";
 				
 	}
 
@@ -349,10 +321,9 @@ public class PlayerMessages {
 	public static String playerStats(SagaPlayer sagaPlayer) {
 		
 		
-		ChatColor messageColor = PlayerMessages.normalColor;
+		ChatColor messageColor = PlayerMessages.normalTextColor1;
 		StringBuffer rString = new StringBuffer();
-		ChatColor professionsColor = normalTextColor1;
-		ChatColor attributesColor = normalTextColor2;
+		ColorCircle mainColors = (new ColorCircle()).addColor(normalTextColor1).addColor(normalTextColor2);
 		
 		// Physical:
 		rString.append(ChatColor.DARK_RED);
@@ -366,14 +337,33 @@ public class PlayerMessages {
 		rString.append("\n");
 		
 		// Professions:
-		rString.append(professionShortenedStats(sagaPlayer, professionsColor));
+		rString.append(professionShortenedStats(sagaPlayer, mainColors.nextColor()));
 		rString.append(messageColor);
 		
 		rString.append("\n");
 		
 		// Attributes:
-		rString.append(getAttributesStats(sagaPlayer, attributesColor));
+		rString.append(getAttributesStats(sagaPlayer, mainColors.nextColor()));
 		rString.append(messageColor);
+		
+		// Factions:
+		if(sagaPlayer.getFactionCount() > 0){
+			
+			rString.append("\n");
+		
+			rString.append(getFactionElement(sagaPlayer, mainColors.nextColor()));
+			
+		}
+		
+		// Settlements:
+		if(sagaPlayer.getChunkGroupCount() > 0){
+			
+			rString.append("\n");
+		
+			rString.append(getSettlementElement(sagaPlayer, mainColors.nextColor()));
+			
+		}
+		
 		
 		// Add main color:
 		rString.insert(0, messageColor);
@@ -656,7 +646,7 @@ public class PlayerMessages {
 		StringBuffer rString = new StringBuffer();
 		Short upgrade = sagaPlayer.getAttributeUpgrade(attribute.getName());
 		Short temporaryUpgrade =  sagaPlayer.getAttributeTemporaryUpgrade(attribute.getName());;
-		ChatColor attributeColor = normalColor;
+		ChatColor attributeColor = normalTextColor1;
 		
 		// Ignore if the attribute is not present:
 		if(temporaryUpgrade == 0 && upgrade == 0){
@@ -692,11 +682,66 @@ public class PlayerMessages {
 		
 	}
 
+	private static String getFactionElement(SagaPlayer sagaPlayer, ChatColor messageColor){
+		
+		
+		StringBuffer rString = new StringBuffer();
+		ArrayList<SagaFaction> playerFactions = sagaPlayer.getRegisteredFactions();
+		for (int i = 0; i < playerFactions.size(); i++) {
+			if(i!=0) rString.append(", ");
+			rString.append(playerFactions.get(i).getName());
+		}
+		if(playerFactions.size() == 0){
+			
+		}else if(playerFactions.size() == 1){
+			rString.insert(0, "Faction:");
+		}else{
+			rString.insert(0, "Factions:");
+		}
+		
+		return messageColor + rString.toString() + messageColor;
+		// TODO Add friendly and enemy factions to /stats
+		
+	}
+
+	private static String getSettlementElement(SagaPlayer sagaPlayer, ChatColor messageColor) {
+		
+		
+		// Initialize:
+		ArrayList<ChunkGroup> settlements = sagaPlayer.getRegisteredChunkGroups();
+		StringBuffer rString = new StringBuffer();
+		
+		// All settlements:
+		for (int i = 0; i < settlements.size(); i++) {
+			if(i != 0){
+				rString.append(", ");
+			}
+			rString.append(settlements.get(i).getName());
+			rString.append("(" + settlements.get(i).getSize() + ")");
+		}
+
+		// Title:
+		if(settlements.size() == 0){
+
+		}else if(settlements.size() == 1){
+			rString.insert(0, "Settlement: ");
+		}else{
+			rString.insert(0, "Settlements: ");
+		}
+		
+		// Color:
+		rString.insert(0, messageColor);
+		
+		return rString.toString();
+		
+		
+	}
+	
 	public static String professionStats(SagaPlayer sagaPlayer, Profession profession) {
 
 		
 		StringBuffer rString = new StringBuffer();
-		ChatColor messageColor = PlayerMessages.normalColor;
+		ChatColor messageColor = PlayerMessages.normalTextColor1;
 		ChatColor levelColor = ChatColor.GOLD;
 		ChatColor abilitiesColor = ChatColor.YELLOW;
 		
@@ -811,7 +856,6 @@ public class PlayerMessages {
 		return "No professions are available.";
 		
 	}
-	
 
 	public static String professionsRecieved(Profession profession){
 		
@@ -838,6 +882,13 @@ public class PlayerMessages {
 	}
 	
 	
+	// Commands:
+	public static String playerNonexistant(String playerName){
+		
+		return negativeHighlightColor + "Player with the name " + playerName + " doesn't exist.";
+	
+	}
+	
 	// Attributes:
 	public static String attackWasBlocked(){
 		return "Your attack was blocked.";
@@ -854,7 +905,7 @@ public class PlayerMessages {
 	public static String dodgedAttack(){
 		return "You dodged an attack.";
 	}
-	
+
 	
 	// Administrator only commands:
 	/**
@@ -936,7 +987,7 @@ public class PlayerMessages {
 		
 	}
 	
-	private static String frame(String frameName, String message, ChatColor messageColor) {
+	public static String frame(String frameName, String message, ChatColor messageColor) {
 
 		
 		int frameShift = 2;
@@ -968,6 +1019,36 @@ public class PlayerMessages {
 		
 	}
 	
+	
+	public static class ColorCircle{
+		
+		
+		ArrayList<ChatColor> colors = new ArrayList<ChatColor>();
+		
+		private int index = 0;
+		
+		
+		public ColorCircle() {
+		}
+		
+		
+		public ColorCircle addColor(ChatColor color){
+			colors.add(color);
+			return this;
+		}
+		
+		public ChatColor nextColor() {
+			if(colors.size() == 0) return normalTextColor1;
+			index++;
+			if(index >= colors.size()){
+				index = 0;
+			}
+			return colors.get(index);
+		}
+		
+		
+		
+	}
 	
 	
 }

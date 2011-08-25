@@ -235,7 +235,7 @@ public class ExperienceConfiguration {
 			try {
 				WriterReader.writeExperienceConfig(config, WriteReadType.DEFAULTS);
 			} catch (IOException e) {
-				Saga.severe("Profession information write failure. Ignoring write.");
+				Saga.severe(configName + " write failure. Ignoring write.");
 			}
 		}
 		
